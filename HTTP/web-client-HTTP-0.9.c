@@ -1,8 +1,10 @@
 
 #include <stdio.h>
-#include <sys/socket.h>
-#include <errno.h>
-#include <arpa/inet.h>
+#include <sys/socket.h>             // socket
+#include <errno.h>                  // errno
+#include <arpa/inet.h>              // htons
+#include <unistd.h>                 // write
+#include <string.h>                 // strlen
 
 
 
@@ -16,7 +18,6 @@ int main(){
     int s;          // socket
     int t;          // variabile temporanea
     unsigned char * p;          // puntatore per indirizzo IP
-
 
     /*
         Creiamo un socket:
@@ -77,24 +78,45 @@ int main(){
     
     /*
         Per capire quale indirizzo inserire per fare una richiesta a Google, è necessario digitare sul terminale:
-            nslookup www.google.com → mostra l'indirizzo del server di Google
+            nslookup www.google.com → mostra l'indirizzo del server di Google, in questo caso è 142.250.187.196
         Come rappresentare un indirizzo IP? La soluzione è utilizzare un puntatore di tipo char (quindi che occupa 8 bit) e poi accedere alle 4 celle, ciascuna delle quali definisce una parte dell'indirizzo IPv4. Si osserva che in questo caso non è necessario fare la conversione Host-TO-Network perchè già sono stati salvati nell'ordine giusto
+        Se inserisco un indirizzo IP erratto, il programma si mette in attesa della CONFIRM in quanto è una chiamata bloccante ad funzione asincrona. Dopo un po' di tempo, se l'indirizzo è inesistente, il programma termina dopo che il time-out scade. In altri casi la richiesta può essere direttamente rifiutata, si può provare inserendo come indirizzo 127.0.0.1 con una port non aperta. Ciò nonostante questa casistica è sempre più rara perchè sempre più spesso sono implementati dei firewall che bloccano una richiesta indesiderata ancora prima che raggiunga il server
     */
     p = (unsigned char *) &server_addr.sin_addr.s_addr;
-        // 142.250.187.196
     p[0] = 142;     p[1] = 250;     p[2] = 187;      p[3] = 196;
-    
-
 
     // per invocare la connect è necessario passare un puntatore a server_addr castato come sockaddr in modo da gestire il problema del polimorfismo con i puntatori
     t = connect(s, (struct sockaddr *) &server_addr, sizeof(struct sockaddr_in));
 
     
-    
-    if(t == -1){ // Per capire se la connect ha successo si controlla che il suo valore di ritorno sia diverso da -1
+    // Per capire se la connect ha successo si controlla che il suo valore di ritorno sia diverso da -1
+    if(t == -1){ 
         perror("Connessione fallita");
         return 1;
     }
+
+
+    /*
+        Per utilizzare un socket, quindi per poter mandare a Google una stream si usano le stesse chiamate a sistema che si usano per scrivere sui file.
+    
+        La funzione write() richiede un file un file_descriptor - che vale sia se è un socket, oppure un file -, un buffer e la dimensione.
+        Si osserva che la requesta ha due caratteri per indiricare il fine riga:
+            • \r che indica il carriage return
+            • \n che indica la nuova linea
+    */
+    char * request = "GET /\r\n";
+    write(s, request, strlen(request));
+
+    /*
+        Dopo aver mandato la stringa, si deve leggera la richiesta. La funzione read(), come la connect(), è bloccante. Ciò significa che finchè il server non mi risponde rimango in attesa e blocco l'esecuzione
+        
+    */
+
+
+
+
+
+
 
 
 
