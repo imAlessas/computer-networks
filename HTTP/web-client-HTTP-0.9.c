@@ -124,8 +124,11 @@ int main(){
     char response[RESPONSE_SIZE];        // buffer per la risposta
     
     for(    i = 0;
-            t = read(s, response + i, RESPONSE_SIZE - 1 - i);   // se t == 0 significa che il file è stato letto del tutto e si esce dal ciclo
-            // si sottrae i a RESPONSE_SIZE per limitare la read
+            /*
+                → se t == 0 significa che il file è stato letto del tutto e si esce dal ciclo
+                → si sottrae i a RESPONSE_SIZE per limitare la read, altrimenti si legge il file letto scrivendo sul buffer response[] ma la massima dimensione scrivibile non si ridurrebbe: sbagliato perche se ho 100 byte disponibili, dopo aver scritto 40 byte no ho 100 - 40 = 60, non 100 nuovamente.
+            */
+            t = read(s, response + i, RESPONSE_SIZE - 1 - i);
             i += t  // incremento del pezzo che ho letto quindi ad ogni iterazione i indica la posizione dove inziare a leggere riespetto a response[0]
         );
 
