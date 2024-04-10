@@ -108,9 +108,26 @@ int main(){
     write(s, request, strlen(request));
 
     /*
-        Dopo aver mandato la stringa, si deve leggera la richiesta. La funzione read(), come la connect(), è bloccante. Ciò significa che finchè il server non mi risponde rimango in attesa e blocco l'esecuzione
+        Dopo aver mandato la stringa, si deve leggera la richiesta. La funzione read(), come la connect(), è bloccante. Ciò significa che finchè il server non mi risponde rimango in attesa e blocco l'esecuzione.
         
+        Dato che stiamo usando un servizio di STREAM è necessario trattare la richiesta come tale e non come un messaggio. Uno stream è un flusso di dati che inizia e fino a che il server non finisce, si rimane in ascolto. Utilizzando la notazione:
+            t = read(s, response, RESPONSE_SIZE - 1);
+        Ci si aspetta un comportamento da messaggio. Non importa quanto RESPONSE_SIZE sia grande, ma la pagina di Google non arriverà mai tutta in un solo colpo.
+
+        La read() infatti tenta di leggere fino a RESPONSE_SIZE caratteri dal file descriptor. Questo non è altro che un limite per evitare di andare a scrivere in area di memoria non allocata e generare un segmentatio fault. Posto che questo limite sia sufficientemente grande, non è detto che tutto lo stream venga letto in una volta.
+
     */
+   const int RESPONSE_SIZE = 1000;      // dimensione del buffer
+   char response[RESPONSE_SIZE];        // buffer per la risposta
+   t = read(s, response, RESPONSE_SIZE - 1);
+   response[t] = 0;                     // null-terminare la stringa
+   printf("%s", response) 
+   
+   
+
+
+
+
 
 
 
