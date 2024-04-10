@@ -18,6 +18,8 @@ int main(){
     int s;          // socket
     int t;          // variabile temporanea
     unsigned char * p;          // puntatore per indirizzo IP
+    int i;
+
 
     /*
         Creiamo un socket:
@@ -114,14 +116,21 @@ int main(){
             t = read(s, response, RESPONSE_SIZE - 1);
         Ci si aspetta un comportamento da messaggio. Non importa quanto RESPONSE_SIZE sia grande, ma la pagina di Google non arriverà mai tutta in un solo colpo.
 
-        La read() infatti tenta di leggere fino a RESPONSE_SIZE caratteri dal file descriptor. Questo non è altro che un limite per evitare di andare a scrivere in area di memoria non allocata e generare un segmentatio fault. Posto che questo limite sia sufficientemente grande, non è detto che tutto lo stream venga letto in una volta.
-
+        La read() infatti tenta di leggere fino a RESPONSE_SIZE caratteri dal file descriptor. Questo non è altro che un limite per evitare di andare a scrivere in area di memoria non allocata e generare un segmentatio fault. Posto che questo limite sia sufficientemente grande, non è detto che tutto lo stream venga letto in una volta. Nel manuale [man 2 read] è sottolineato che quando la read ha successo viene ritornato il numero di bytes letti (zero nel caso in cui il file finisca) e la posizione del file è incrementata del suddetto numero. Viene inoltre specificato che non è un errore se il numero è minore dei bytes richisti, avviene perché il numero di byte inferiori sono gli effettivi disponibili nel momento in cui la read viene effettuata.
+        Dobbiamo gestire il momento in cui il file non è stato mandato completamente ma che il server è occupato a fare altro quindi siamo in attesa. È quindi necessario modificare la notazione precedente
+            t = read(s, response, RESPONSE_SIZE - 1);
     */
-   const int RESPONSE_SIZE = 1000;      // dimensione del buffer
-   char response[RESPONSE_SIZE];        // buffer per la risposta
-   t = read(s, response, RESPONSE_SIZE - 1);
-   response[t] = 0;                     // null-terminare la stringa
-   printf("%s", response) 
+    const int RESPONSE_SIZE = 2000000;      // dimensione del buffer
+    char response[RESPONSE_SIZE];        // buffer per la risposta
+    
+    for(    i = 0;
+            t = read(s, response + i, RESPONSE_SIZE - 1 - i);   // se t == 0 significa che il file è stato letto del tutto e si esce dal ciclo
+            // si sottrae i a RESPONSE_SIZE per limitare la read
+            i += t  // incremento del pezzo che ho letto quindi ad ogni iterazione i indica la posizione dove inziare a leggere riespetto a response[0]
+        );
+
+    response[i] = 0; // null-terminare la stringa, i indica esattamnte la fine del file letto
+    printf("%s", response);
    
    
 
