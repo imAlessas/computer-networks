@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <errno.h>
+#include <arpa/inet.h>
 
 
 
@@ -9,11 +10,12 @@
 
 
 int main(){
+
     // definizione di variabili locali
-    struct sockaddr_in server_addr;     // struct per definire il server
+    struct sockaddr_in server_addr;     // struct per definire l'indrizzo del server
     int s;          // socket
-    int t;          // tile temporaneo
-    
+    int t;          // variabile temporanea
+    unsigned char * p;          // puntatore per indirizzo IP
 
 
     /*
@@ -41,7 +43,7 @@ int main(){
     if( s == -1){
         printf("ERRNO = %d", errno);
         perror("Socket fallita");
-        return -1;
+        return 1;
     }
 
     /*
@@ -59,13 +61,40 @@ int main(){
                 struct in_addr      sin_addr;       // indirizzo internet
             }
         Prima di tutto va osservato che il tipo 'struct sockaddr_in' è diverso da 'struct sockaddr'. Questo perchè l'interfaccia Linux deve valere per tutto, tanto che questa funzione non fa alcun riferimento al TCP. Abbiamo quindi degli input spcifici su una funzione generica: problema tipico di polimorfismo. Questo problema è stato risolto mediante i puntatori in quanto questi, qualnque sia il contenuto dello cella, contiene sempre e solo l'indirizzo. Però il puntatore è di tipo 'struct sockaddr' che è un tipo generale che non si usa mai. Questo tipo contiene solo un campo, ovvero un numero intero che specifica il tipo di struttura sockaddr specializzata, ovvero la famiglia. Nel momento in cui sin_family = AF_INET, si determina il modo in cui gli altri due campi della struct verranno letti.
+        In secondo luogo la funzione necessita di un indirizzo. L'indirizzo IP è composto da 4 campi che in decimale vanno da 0 a 255 e si traducon in 8 bit. Questi 4 valori in memoria sono salvati nel modo in cui si leggono: 147.162.2.100 all'indirizzo x sarà contenuto 147, all'indrizzo x + 1 sarà contenuto 162 e così via. Si identifca quindi un'interfaccia di rete connessa ad internet. L'instradamento dell'informazione, quindi tutte le procedure necessarie per far passare un dato da un server ad un'altro con determinati indirizzi IP è risolto dal livello 3.
+        Infine è necessaria la porta. Questo perchè nel modello Client-Server, il server non è altro che un programma eseguito. L'indirizzo di rete non basta in quanto ci porta alla macchina server, a noi serve l'effettivo programma. È come avere l'indirizzo di un condominio ma non conoscere l'effettiva porta dell'appartamento giusto. Non a caso il terzo campo è la porta: questa ci porta ad un end-point - ad un socket - che è un file descriptor a sua volta.
+        → Per indirizzare un programma (server) che gira sulla macchina server, oltre all'indirizzo IP è anche necessario il port, ovvero un numero a 16bit, unico all'interno della macchina server, specifico per un tipo di servizio. Inoltre, i programmi server utilizzano dei numero di port, dette "well-known", che identificano il tipo di protocollo utilizzato. Nel nostro caso, per il servizio HTTP è necessaria la porta 80. [/etc/services]
 
     */
 
     // imposto i campi della struct sockaddr_in del server    
+    server_addr.sin_family = AF_INET;       // la famiglia qualificherà il tipo specifico
+    
+    /*
+        Alcune architetture sono BigEndian, altre LittleEndin; si è scelto che il network order è BigEndian. In una macchina Linux, è necessario utilizzare la funzione htons() function: Hosto-TO-Network-Short.
+    */
+    server_addr.sin_port = 80;              // la porta a cui ci vogliamo collegare
+    
+    /*
+        Per capire quale indirizzo inserire per fare una richiesta a Google, è necessario digitare sul terminale:
+            nslookup www.google.com → mostra l'indirizzo del server di Google
+        Come rappresentare un indirizzo IP? La soluzione è utilizzare un puntatore di tipo char (quindi che occupa 8 bit) e poi accedere alle 4 celle, ciascuna delle quali definisce una parte dell'indirizzo IPv4. Si osserva che in questo caso non è necessario fare la conversione Host-TO-Network perchè già sono stati salvati nell'ordine giusto
+    */
+    p = (unsigned char *) &server_addr.sin_addr.s_addr;
+        // 142.250.187.196
+    p[0] = 142;     p[1] = 250;     p[2] = 187;      p[3] = 196;
+    
 
-    t = connect(s, )
 
+    // per invocare la connect è necessario passare un puntatore a server_addr castato come sockaddr in modo da gestire il problema del polimorfismo con i puntatori
+    t = connect(s, (struct sockaddr *) &server_addr, sizeof(struct sockaddr_in));
+
+    
+    
+    if(t == -1){ // Per capire se la connect ha successo si controlla che il suo valore di ritorno sia diverso da -1
+        perror("Connessione fallita");
+        return 1;
+    }
 
 
 
