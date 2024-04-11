@@ -44,8 +44,8 @@ int main(){
         Per far scatenare un errore è sufficient inserire un numero casuale al posto di uno dei campi della funzione socket in quanto tali varibili rappresentano dei numeri interi.
     */
     if( s == -1){
-        printf("ERRNO = %d", errno);
-        perror("Socket fallita");
+        printf("ERRNO = %d (%d)\n", errno, EAFNOSUPPORT);
+        perror("Socket fallita\n");
         return 1;
     }
 
@@ -76,7 +76,7 @@ int main(){
     /*
         Alcune architetture sono BigEndian, altre LittleEndin; si è scelto che il network order è BigEndian. In una macchina Linux, è necessario utilizzare la funzione htons() function: Hosto-TO-Network-Short.
     */
-    server_addr.sin_port = 80;              // la porta a cui ci vogliamo collegare
+    server_addr.sin_port = htons(80);              // la porta a cui ci vogliamo collegare
     
     /*
         Per capire quale indirizzo inserire per fare una richiesta a Google, è necessario digitare sul terminale:
@@ -93,7 +93,7 @@ int main(){
     
     // Per capire se la connect ha successo si controlla che il suo valore di ritorno sia diverso da -1
     if(t == -1){ 
-        perror("Connessione fallita");
+        perror("Connessione fallita\n");
         return 1;
     }
 
@@ -143,22 +143,6 @@ int main(){
 
     response[i] = 0; // null-terminare la stringa, 'i' indica esattamente la fine del file letto
     // printf("%s", response);
-   
-   /*
-        
-   */
-   
-
-
-
-
-
-
-
-
-
-
-
 
 
     return 0;
