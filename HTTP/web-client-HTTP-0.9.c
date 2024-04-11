@@ -121,20 +121,32 @@ int main(){
             t = read(s, response, RESPONSE_SIZE - 1);
     */
     const int RESPONSE_SIZE = 2000000;      // dimensione del buffer
-    char response[RESPONSE_SIZE];        // buffer per la risposta
+    char response[RESPONSE_SIZE];           // buffer per la risposta
     
-    for(    i = 0;
+    // sleep(2);
+    for (   i = 0;
             /*
                 → se t == 0 significa che il file è stato letto del tutto e si esce dal ciclo
                 → si sottrae i a RESPONSE_SIZE per limitare la read, altrimenti si legge il file letto scrivendo sul buffer response[] ma la massima dimensione scrivibile non si ridurrebbe: sbagliato perche se ho 100 byte disponibili, dopo aver scritto 40 byte no ho 100 - 40 = 60, non 100 nuovamente.
             */
             t = read(s, response + i, RESPONSE_SIZE - 1 - i);
             i += t  // incremento del pezzo che ho letto quindi ad ogni iterazione i indica la posizione dove inziare a leggere riespetto a response[0]
-        );
+        ) {
+            /*
+                Siccome lo stream arriva quando vuole stampo 't' per capire quando arriva.
+                Si osserva che sono presenti molti multipli di 1400. Esiste quindi una unità di 1.4k che spesso ritorna intera. Se prima del ciclo facciamo una sleep(2), terminati i due secondi 't' viene stampato una volta e value 52kB, indice del fatto che aspettando due secondi la pagina è arrivata tutta ed è stata letta in una sola volta.
+                Stando sopra il lvl stiamo notando delle tracce di ciò che succede nei livelli sottostanti.
+            */
+            // printf("t = %d\n", t);
 
-    response[i] = 0; // null-terminare la stringa, i indica esattamnte la fine del file letto
-    printf("%s", response);
+        }
+
+    response[i] = 0; // null-terminare la stringa, 'i' indica esattamente la fine del file letto
+    // printf("%s", response);
    
+   /*
+        
+   */
    
 
 
