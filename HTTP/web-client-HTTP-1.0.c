@@ -7,6 +7,16 @@
 
 
 
+char hbuf[10000];
+
+// definisco la struttura per creare la taballa
+struct headers{
+    char * n;   // nome
+    char * v;   // valore
+} h[100];       // definisco il buffer
+
+
+
 int main(){
 
     // definizione di variabili locali
@@ -14,7 +24,7 @@ int main(){
     int s;                              // socket
     int t;                              // variabile temporanea
     unsigned char * p;                  // puntatore per indirizzo IP
-    int i;
+    int i, j;
 
 
     // crea il socket
@@ -103,8 +113,44 @@ int main(){
     print("%s\n\n", response);
 
     /*
-        Il prossimo passo consiste nel fare il parsing della risposta, tenendo conto che è uno stream e che dobbiamo farlo nel modo più efficiente possibile. È neecessario creare un parser che prima consumi tutto l'header e poi tutto l'Entity-Body.
+        Il prossimo passo consiste nel fare il parsing della risposta, tenendo conto che è uno stream e che dobbiamo farlo nel modo più efficiente possibile. È neecessario creare un parser che prima consumi tutto l'header e poi tutto l'Entity-Body: la difficoltà sta nel fatto che non esiste un carattere che riesca perfettamente a delineare la fine dell'Header con l'inizio dell'Entity-Body (c'è il CRLF, ma non è l'unica occorrenza). In secondo luogo il parser deve effettuare le operazione durante la ricezione: la scelta di attendere prima tutto lo stream e in secondo luogo analizzarlo crea una latenza non indifferente.
+        L'obiettivo del parser è quello di ottenere una tabella che classifica il nome-valore dell'Header a partire dai caratteri HTTP che mi arrivano e che raccolgo in un buffer. Si sttolinea inoltre che non si vuole copiare i dati in arrivo dal buffer alla tabella in quanto presenterebbe una inefficienza; piuttosto si sceglie di strutturare il buffer stesso.
+        Per implementare una tabella Nome-Valore si potrebbe pensare ad una mappa, ma questa è una struttura ad alto livello, poco compatibile con il C. Definiamo quindi la seguente struttura con due puntatori char
+            struct headers{
+                char * n;   // nome
+                char * v;   // valore
+            }
+        In particolare, al fine di creare la tabella on-the-fly, devo riconoscere che, per esempio, nello stream
+            Date: Sun, 14 Apr 2024 13:33:36 GMT
+            h[0].n = "Date"
+            h[0].v = "Sun, 14 Apr 2024 13:33:36 GMT"
+        Ma affinche siano delle stringhe, è necessario inserire un TERMINATORE (\0) alla fine di ciascuna delle due stringhe al momento giusto,
     */
+
+    j = 0;
+
+    // leggo un carattere alla volta
+    for(i = 0; read(s, hbuf + i, 1); i++ ){
+
+        if( hbuf[i] == ':'){    //  trovo ':'
+            h[j]. v = &hbuf[i + 1];     //
+            hbuf[i] = 0;                // metto il terminatore
+
+        }
+
+        if( hbuf[i - 1] == '\r' && hbuf[i] == '\n'){    // trovo 'CRLF
+            h[++j].n = &hbuf[i + 1];
+            hbuf[i - 1] = 0;
+        }
+
+
+
+
+    }
+
+
+
+
 
 
     return 0;
