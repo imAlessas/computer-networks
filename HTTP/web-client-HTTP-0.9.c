@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <sys/socket.h>             // socket
 #include <errno.h>                  // errno
