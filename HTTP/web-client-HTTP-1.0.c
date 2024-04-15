@@ -6,6 +6,9 @@
 #include <string.h>                 // strlen
 
 
+
+
+
 // definisco il buffer che conterrà i campi dell'header così come arrivano, da cui leggiamo i caratteri
 char hbuf[10000];
 
@@ -17,7 +20,6 @@ struct headers{
 
 
 
-
 int main(){
 
     // definizione di variabili locali
@@ -26,6 +28,7 @@ int main(){
     int t;                              // variabile temporanea
     unsigned char * p;                  // puntatore per indirizzo IP
     int i, j;
+    char * statusline;
 
 
     // crea il socket
@@ -103,7 +106,7 @@ int main(){
         Osserviamo che dopo aver stampato a schermo la response, la prima riga è proprio la Status-Line che contiene esattamente la HTTP-Version, lo Status-Code e la sua Reason-Phrase:
             HTTP/1.0 200 OK
     */
-   
+
     /*
         Ora che conosciamo meglio la teoria, il prossimo passo consiste nel fare il parsing dell'header della risposta, tenendo conto che è uno stream e che dobbiamo farlo nel modo più efficiente possibile. È neecessario creare un parser che prima consumi tutto l'header e poi tutto l'Entity-Body: la difficoltà sta nel fatto che non esiste un carattere che riesca perfettamente a delineare la fine dell'Header con l'inizio dell'Entity-Body (c'è il CRLF, ma non è l'unica occorrenza). In secondo luogo il parser deve effettuare le operazione durante la ricezione: la scelta di attendere prima tutto lo stream e in secondo luogo analizzarlo crea una latenza non indifferente.
         L'obiettivo del parser è quello di ottenere una tabella che classifica il nome-valore dell'Header a partire dai caratteri HTTP che mi arrivano e che raccolgo in un buffer. Si sttolinea inoltre che non si vuole copiare i dati in arrivo dal buffer alla tabella in quanto presenterebbe una inefficienza; piuttosto si sceglie di strutturare il buffer stesso.
@@ -118,6 +121,9 @@ int main(){
             h[0].v = "Sun, 14 Apr 2024 13:33:36 GMT"
         Ma affinche siano delle stringhe, è necessario inserire un TERMINATORE (\0) alla fine di ciascuna delle due stringhe al momento giusto,
     */
+
+    // inizializzo il primo puntatore di h[0].n al primo carattere del buffer dell'header (hbuf). Essendo la prima riga, questa è la status line
+    statusline = h[0].n = hbuf;
 
     j = 0;
 
@@ -160,6 +166,13 @@ int main(){
             hbuf[i] = 0;                // terminatore
         }
     }
+
+    // stampo la tabella di indicizzazione, j contiene l'ultima riga della tabella
+    for(i = 0; i < j; i++)
+        printf("%s —————> %s\n", h[i].n, h[i].v)
+
+
+
 
 
 
