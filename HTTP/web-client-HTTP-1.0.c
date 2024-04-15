@@ -6,14 +6,15 @@
 #include <string.h>                 // strlen
 
 
-
+// definisco il buffer che conterrà i campi dell'header così come arrivano, da cui leggiamo i caratteri
 char hbuf[10000];
 
-// definisco la struttura per creare la taballa
+// è un array di 'coppie' (una mappa) che puntano ciascuna ad il nome di un campo e al suo valore nell'header presente in hbuf 
 struct headers{
     char * n;   // nome
     char * v;   // valore
-} h[100];       // definisco il buffer
+} h[100];       // definisco la tabella di indicizzazione
+
 
 
 
@@ -73,12 +74,6 @@ int main(){
     char * request = "GET / HTTP/1.0\r\n\r\n";
     write(s, request, strlen(request));
 
-    // leggo la risposta
-    const int RESPONSE_SIZE = 2000000;      // dimensione del buffer
-    char response[RESPONSE_SIZE];           // buffer per la risposta
-    
-    for ( i = 0; t = read(s, response + i, RESPONSE_SIZE - 1 - i); i += t ) {}
-
     /*
         Controlliamo ora che la response sia conforme alla grammatica definita nell'RFC 1945:
             Simple-Response | Full-Response
@@ -108,12 +103,9 @@ int main(){
         Osserviamo che dopo aver stampato a schermo la response, la prima riga è proprio la Status-Line che contiene esattamente la HTTP-Version, lo Status-Code e la sua Reason-Phrase:
             HTTP/1.0 200 OK
     */
-
-    response[i] = 0;
-    print("%s\n\n", response);
-
+   
     /*
-        Il prossimo passo consiste nel fare il parsing della risposta, tenendo conto che è uno stream e che dobbiamo farlo nel modo più efficiente possibile. È neecessario creare un parser che prima consumi tutto l'header e poi tutto l'Entity-Body: la difficoltà sta nel fatto che non esiste un carattere che riesca perfettamente a delineare la fine dell'Header con l'inizio dell'Entity-Body (c'è il CRLF, ma non è l'unica occorrenza). In secondo luogo il parser deve effettuare le operazione durante la ricezione: la scelta di attendere prima tutto lo stream e in secondo luogo analizzarlo crea una latenza non indifferente.
+        Ora che conosciamo meglio la teoria, il prossimo passo consiste nel fare il parsing dell'header della risposta, tenendo conto che è uno stream e che dobbiamo farlo nel modo più efficiente possibile. È neecessario creare un parser che prima consumi tutto l'header e poi tutto l'Entity-Body: la difficoltà sta nel fatto che non esiste un carattere che riesca perfettamente a delineare la fine dell'Header con l'inizio dell'Entity-Body (c'è il CRLF, ma non è l'unica occorrenza). In secondo luogo il parser deve effettuare le operazione durante la ricezione: la scelta di attendere prima tutto lo stream e in secondo luogo analizzarlo crea una latenza non indifferente.
         L'obiettivo del parser è quello di ottenere una tabella che classifica il nome-valore dell'Header a partire dai caratteri HTTP che mi arrivano e che raccolgo in un buffer. Si sttolinea inoltre che non si vuole copiare i dati in arrivo dal buffer alla tabella in quanto presenterebbe una inefficienza; piuttosto si sceglie di strutturare il buffer stesso.
         Per implementare una tabella Nome-Valore si potrebbe pensare ad una mappa, ma questa è una struttura ad alto livello, poco compatibile con il C. Definiamo quindi la seguente struttura con due puntatori char
             struct headers{
@@ -131,24 +123,53 @@ int main(){
 
     // leggo un carattere alla volta
     for(i = 0; read(s, hbuf + i, 1); i++ ){
+        /*
+            Nel momento in cui troviamo un separatore, che può essere ':' oppure CRLF, concludiamo un token e puntiamo a quello successivo
+                → Nel primo caso, quando troviamo il fine riga, mettiamo il terminatore al posto di '\r'
+                → Nel secondo caso [':'] mettiamo il terminatore al posto di ':' e indicizziamo 
+            Inoltre per gestire la fine di un header, che è delimitato da due fine riga (CRLFCRLF) basta pensare che l'ultimo campo dell'header è nullo, che è proprio quello che succede duerante il ciclo.
 
-        if( hbuf[i] == ':'){    //  trovo ':'
-            h[j]. v = &hbuf[i + 1];     //
-            hbuf[i] = 0;                // metto il terminatore
+        */
 
+        // fine campo header
+        if( hbuf[i - 1] == '\r' && hbuf[i] == '\n'){
+            
+            hbuf[i - 1] = 0;            // terminatore su \r
+           
+            /*
+                La linea di codice sopra nullifica la stringa precedente e quindi fa si che, alla fine dell'header esista un campo nullo, quindi h[j].n[0] == 0.
+                Se ciò occorre significa che siamo arrivati alla fine dell'header e possiamo quindi interromper il ciclo con un break.
+                È necessario mettere questo prima della prossima istruzione perchè incrementare j non ha senso dato che se è finito l'headere non sono più presenti righe nella tabella.
+            */
+            if( !( h[j].n[0] ) )    // entro se sono alla fine dell'header
+                break;
+            
+            /*
+                Mi trovo alla fine di un campo header, di conseguenza il carattere successivo, ovvero hbuf[i + 1] indica l'inizio del nome del prossimo campo dell'header.
+                A questo proposito incremento j e accedo alla nuova riga della tabella che conterrà l'indirizzo al nome del campo 
+            */
+            h[++j].n = &hbuf[i + 1];    // imposto il nome della nuova riga della tabella
         }
 
-        if( hbuf[i - 1] == '\r' && hbuf[i] == '\n'){    // trovo 'CRLF
-            h[++j].n = &hbuf[i + 1];
-            hbuf[i - 1] = 0;
+       // fine nome campo header
+        if( hbuf[i] == ':'){
+            /*
+                Mi trovo alla fine del nome di un campo nell'header di conseguenza il carattere successivo indica l'inzio del valore del campo con nome h[j].n
+            */
+            h[j].v = &hbuf[i + 1];      // imposto il valore della tabella
+            hbuf[i] = 0;                // terminatore
         }
-
-
-
-
     }
 
 
+
+    // inizio a leggere l'Entity-Body
+    const int RESPONSE_SIZE = 2000000;      // dimensione del buffer
+    char response[RESPONSE_SIZE];           // buffer per la risposta
+    
+    for ( i = 0; t = read(s, response + i, RESPONSE_SIZE - 1 - i); i += t ) {}
+    response[i] = 0;
+    print("%s\n\n", response);
 
 
 
