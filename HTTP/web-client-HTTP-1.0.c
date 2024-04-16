@@ -3,9 +3,7 @@
 #include <errno.h>                  // errno
 #include <arpa/inet.h>              // htons
 #include <unistd.h>                 // write
-#include <string.h>                 // strlen
-
-
+#include <string.h>                 // strlen, strcmp
 
 
 
@@ -16,7 +14,9 @@ char hbuf[10000];
 struct headers{
     char * n;   // nome
     char * v;   // valore
-} h[100];       // definisco la tabella di indicizzazione
+} h[100];       // definisco la tabella di indicizzazione dei campi dell'header
+
+
 
 
 
@@ -123,7 +123,7 @@ int main(){
     */
 
     // inizializzo il primo puntatore di h[0].n al primo carattere del buffer dell'header (hbuf). Essendo la prima riga, questa è la status line
-    statusline = h[0].n = hbuf;
+    statusline = h[0].n = &hbuf;
 
     j = 0;
 
@@ -157,8 +157,12 @@ int main(){
             h[++j].n = &hbuf[i + 1];    // imposto il nome della nuova riga della tabella
         }
 
-       // fine nome campo header
-        if( hbuf[i] == ':'){
+        /*
+            Fine nome campo header. 
+            Dobbiamo stare però attenti alla datail quanto il valore contiene dei ':', rendendo non sufficiente il controllo hbuf[i] == ':' [Date —————> 37 GMT]
+            È quindi necessario inserire un controllo aggiuntivo per verificare che h[j].v == NULL. Ciò significa il puntatore al valore viene inserito solo quando il valore è NULL, ovvero prima del primo inserimento, altrimenti il puntatore non viene aggiornato, mantenendo integra l'intera stringa [Tue, 16 Apr 2024 14:59:24 GMT]
+        */
+        if( (hbuf[i] == ':') && (h[j].v == NULL) ){
             /*
                 Mi trovo alla fine del nome di un campo nell'header di conseguenza il carattere successivo indica l'inzio del valore del campo con nome h[j].n
             */
@@ -167,23 +171,23 @@ int main(){
         }
     }
 
-    // stampo la tabella di indicizzazione, j contiene l'ultima riga della tabella
+    // stampo la tabella di indicizzazione, j contiene il numero di righe della tabella
     for(i = 0; i < j; i++)
-        printf("%s —————> %s\n", h[i].n, h[i].v)
+        printf("%s —————> %s\n", h[i].n, h[i].v);
+    printf("\n\n");
 
 
 
-
-
-
-    // inizio a leggere l'Entity-Body
+    // mi preparo per leggere l'Entity-Body
     const int RESPONSE_SIZE = 2000000;      // dimensione del buffer
-    char response[RESPONSE_SIZE];           // buffer per la risposta
+    char response[RESPONSE_SIZE];           // buffer per la consumare il Body
     
+    // leggo l'Entity-Body
     for ( i = 0; t = read(s, response + i, RESPONSE_SIZE - 1 - i); i += t ) {}
-    response[i] = 0;
-    print("%s\n\n", response);
 
+    response[i] = 0;    // inserisco il terminatore alla fine del body
+
+    print("%s\n\n", response);
 
 
 
