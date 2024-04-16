@@ -123,7 +123,7 @@ int main(){
     */
 
     // inizializzo il primo puntatore di h[0].n al primo carattere del buffer dell'header (hbuf). Essendo la prima riga, questa è la status line
-    statusline = h[0].n = &hbuf;
+    statusline = h[0].n = hbuf;
 
     j = 0;
 
@@ -187,7 +187,7 @@ int main(){
 
     response[i] = 0;    // inserisco il terminatore alla fine del body
 
-    print("%s\n\n", response);
+    printf("%s\n\n", response);
 
 
 
