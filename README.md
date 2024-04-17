@@ -1,11 +1,7 @@
-# Computer networks
+# Reti di Calcolatori
 
-This repo contains the scripts for the "Computer Networks" course at Università degli Studi di Padova. The course is split into two main parts: HTTP and multimedia.
+Questa repository contiene gli script prodotti durante il corso "Reti di Calcolatori" tenuto allUniversità degli Studi di Padova. La repo, come il corso, è divisa in due porzioni:
 
-## HTTP
+* La parte __HTTP__, tenuta dal professore N. Zingarin, si occupa di trattare tutto ciò che concerne dei livelli 5, 6 e 7 del modello ISO/OSI, in particolare si concentra sul protocollo ```HTTP```
 
-This part contains C scripts created to have a better understanding of the ```HTTP``` protocol.
-
-## Multimedia
-
-This part contains mostly MATLAB scripts that study how the signal behaves and how the media are transmitted between the devices.
+* La parte __multimedia__, insegnata dal professore M. Cagnazzo, copre le tecniche di trasmissione a basso livello dei dati da un mittente a un destinatario
