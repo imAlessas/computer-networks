@@ -1,8 +1,9 @@
 # uni lessons folder
 lessons
 
-# MATLAB generated files
+# MATLAB files
 *.asv
+*.m
 
 
 
