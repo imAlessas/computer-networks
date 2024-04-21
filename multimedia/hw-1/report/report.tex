@@ -19,22 +19,84 @@
 
 \subsection*{Task 1}
 
-La prima richiesta dell'homewrok è quella di selezionare un'immagine e calcolarne l'entropia. 
+La prima richiesta dell'homework era divisa in due macro parti, la prima era quella di selezionare e mostrare un'immagine mentre la seconda richiesta chiedeva di calcolare l'entropia dell'immagine.
+
+L'immagine scelta è un'immagine di \textsl{Spider-Man} a colori, di conseguenza è necessario estrarne la luminaza per fara diventare in binaco e nero. Dopo aver caricato l'immagine a colori con l'opportuna funzione \texttt{imread} del pacchetto \texttt{matplotlib.image} è necessario usare la funzione \texttt{cvtColor} del pacchetto \texttt{cv2} di \texttt{opencv}. Il seguente script, dopo aver eseguito le suddette operazioni si occupa di mostrare le due immagini a schermo attraverso una \texttt{subplot}.
 
 \begin{lstlisting}
-    img_file_name = 'rocky-beach-greys.jpg';
-    img_folder = '../imgs/';
-    
-    img = imread("" + img_folder + img_file_name);
-    
-    % creates figure and settings
-    f = figure(1);
-    f.Name = 'Image';
-    f.NumberTitle = 'off';
-    f.Position = [450, 100, 700, 600];
-    
-    imagesc(img); colormap(gray); axis image; axis off; 
+# Prepare to load the image
+img_file_name = "spiderman.jpg"
+current_dir = os.getcwd()
+
+# construct the full path to the image file
+img_path = os.path.join(current_dir, "multimedia", "hw-1", "script", "imgs", img_file_name) 
+
+# loads the colored image
+img = mpimg.imread(img_path) 
+
+# extracts the luminance
+gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# creates a figure with two subplots
+fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+
+# displays the colored image in the first subplot
+axs[0].imshow(img, cmap='gray')
+axs[0].set_title('Colored image')
+axs[0].axis('off')
+
+# displays the grayscale image in the second subplot
+axs[1].imshow(gray_img, cmap='gray')
+axs[1].set_title('Grayscale image')
+axs[1].axis('off')
+
+plt.show()
 \end{lstlisting}
+
+\noindent Dopo aver eseguito lo script soprastante si può notare che la luminanza dell'immgine è stata estratta con successo (figura \ref{fig:luminanza}).
+
+\begin{figure}
+    \centering
+    \includegraphics[width = .7\textwidth]{hw-1/report/imgs/colored.png}
+    \includegraphics[width = .7\textwidth]{hw-1/report/imgs/grayscale.png}
+    \caption{Estrazione della luminaza da una immagine a colori.}
+    \label{fig:luminanza}
+\end{figure}
+
+\FloatBarrier\noindent In secondo luogo è necessario calcolare l'entropia dell'immagine in bianco e nero. L'entropia di di un'immagine, ma in genere di qualsiasi tipo di sorgente (o meglio, variabile aleatoria $X$), è un numero che indica l'\textbf{informazione media} ed è definita come segue:
+
+\begin{gather*}
+    H(X) = E[I(X)] \, = \, \sum_{i = 1}^M p_i\log_2\left( \frac{1}{p_i} \right)
+\end{gather*}
+
+\noindent Dove con $M$ si indica il numero di elementi nell'insieme $X$ e con $p_i$ si indica la probabilità di accadere dell'elemento \textit{i}-esimo della variabile aleatoria $X$. Questa formula si riassume nel seguente script, dove l'immagine viene trasporta e convertita in un vettore di pizel monodimensionale. In secondo luogo attraverso la funzione \texttt{numpy.histogram} si contano il numero di occorrenze per ogni valore di pixel. Infine, per calcolare la probabilità, si divide il numero di occorrezze per il numero totale di occorrenze, escludendo eventuali valori diversi da zero.
+
+
+\begin{lstlisting}
+# flatten the transposed matrix to read pixels row by row
+rasterScan = np.transpose(gray_img).flatten()
+
+# count the occurrences of each pixel value
+occurrencies = np.histogram(rasterScan, bins=range(256))[0]
+
+# calculate the relative frequencies
+p = occurrencies / np.sum(occurrencies)
+
+# remove zero-values of probability
+p = p[p > 0]
+
+# compute and display the entropy
+HX = - np.sum(p * np.log2(p))
+print(f"\nThe entropy of {img_file_name} is {HX:.3f} bpp\n")
+\end{lstlisting}
+
+\noindent Dopo aver eseguito lo script si ottiene che l'entropia dell'immagine scelta è di circa \textbf{7.530 bpp}.
+
+\subsection*{Task 2}
+
+
+
+
 
 
 
