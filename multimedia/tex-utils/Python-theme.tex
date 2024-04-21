@@ -1,0 +1,35 @@
+\definecolor{grey}{RGB}{175, 175, 175}
+\definecolor{green}{RGB}{154,205,50}
+\definecolor{purple}{RGB}{148,0,211}
+\definecolor{lighyellow}{RGB}{255, 255, 235}
+\definecolor{orange}{RGB}{255, 165, 0}
+
+
+
+\lstdefinestyle{Python}{language=python,
+  %
+  backgroundcolor=\color{lighyellow},
+  %
+  basicstyle=\ttfamily, 
+  %
+  keywordstyle=\bfseries\color{purple},
+  %
+  commentstyle=\slshape\small\color{orange},
+  %
+  stringstyle=\color{green},
+  % side numbers
+  numberstyle=\tiny\color{grey},
+  % 
+  belowskip=3mm,
+  breakatwhitespace=true,
+  breaklines=true,
+  classoffset=0,
+  columns=flexible,
+  framexleftmargin=0.25em,
+  frameshape={}{y}{}{}, % to remove to vertical lines on left, set `frameshape={}{}{}{}`
+  numbers=left, % if you want line numbers, set `numbers=left`
+  showstringspaces=false,
+  tabsize=3,
+  xleftmargin = 1.5em,
+  morekeywords = {nullptr, cout, cin}
+}
