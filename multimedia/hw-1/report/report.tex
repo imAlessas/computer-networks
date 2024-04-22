@@ -58,7 +58,7 @@ plt.show()
 
 \noindent Dopo aver eseguito lo script soprastante si può notare che la luminanza dell'immgine è stata estratta con successo (figura \ref{fig:luminanza}).
 
-\begin{figure}
+\begin{figure}[h]
     \centering
     \includegraphics[width = .7\textwidth]{hw-1/report/imgs/colored.png}
     \includegraphics[width = .7\textwidth]{hw-1/report/imgs/grayscale.png}
@@ -83,10 +83,10 @@ rasterScan = np.transpose(gray_img).flatten()
 occurrencies = np.histogram(rasterScan, bins=range(256))[0]
 
 # calculate the relative frequencies
-p = occurrencies / np.sum(occurrencies)
+rel_freq = occurrencies / np.sum(occurrencies)
 
 # remove zero-values of probability
-p = p[p > 0]
+p = rel_freq[rel_freq > 0]
 
 # compute and display the entropy
 HX = - np.sum(p * np.log2(p))
@@ -126,6 +126,18 @@ print(f"\nThe bitrate of {img_file_name}.zip is {zip_bitrate:.3f} bpp\n")
 \subsection*{Task 3}
 \todo{completa in base al risultato della 2}
 
+\subsection*{Task 4}
+La quarta richiesta dell'homework è quella di effettuare una codifica predittiva \textsl{semplice}
+
+
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width = .9\textwidth]{hw-1/report/imgs/prediction-error-magnitude.png}
+    \caption{Rappresentazione del modulo dell'errore di predizione.}
+    \label{fig:error-prediction-magnitude}
+\end{figure}
 
 
 \section{Conclusioni}
