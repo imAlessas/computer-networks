@@ -97,7 +97,7 @@ print(f"\nThe entropy of {img_file_name} is {HX:.3f} bpp\n")
 
 
 \subsection*{Task 2}
-La seconda task richiedeva di utilizzare una compressione a dizionario, come \texttt{zip} nel caso di \textsl{Windows} per poi calcolare il bitrate risultante. Lo script necessario per soddisfare la richiesta è presentato nel frammento di codice sottostante. In particolare le prime due righe si occupano di \textsl{zippare} il file mentre le seguenti si occupano di ottenere la dimensione dell'immagine compressa. Infine nelle ultime righe si calcola l'effettivo \textsl{bitrate} dividendo la dimensione del file compresso con \todo{capisci cosa mettere qui}
+La seconda task richiedeva di utilizzare una compressione a dizionario, come \texttt{zip} nel caso di \textsl{Windows} per poi calcolare il bitrate risultante. Lo script necessario per soddisfare la richiesta è presentato nel frammento di codice sottostante. In particolare le prime due righe si occupano di \textsl{zippare} il file mentre le seguenti si occupano di ottenere la dimensione dell'immagine compressa. Infine nelle ultime righe si calcola l'effettivo \textsl{bitrate} dividendo la dimensione del file compresso con la dimensione dell'immagine originale, ottenuta mediante l'attrobuto \texttt{size}.
 
 \begin{lstlisting}
 # zip the image
@@ -105,22 +105,28 @@ cmd = f"zip {path_to_img}{img_file_name}.zip {path_to_img}{img_file_name}.jpg"
 os.system(cmd)
 
 # get the zip bytes
-img_stats = os.stat(f"{path_to_img}{img_file_name}.zip")
+img_stats = os.stat(f"{path_to_img}{img_file_name}.jpg")
 zip_bytes = img_stats.st_size
 
+# get img size
+height, width, _ = img.shape
+
 # get the birate
-zip_bitrate = zip_bytes * 8 / (512 * 512) 
+zip_bitrate = zip_bytes * 8 / (height * width) 
 
 print(f"\nThe bitrate of {img_file_name}.zip is {zip_bitrate:.3f} bpp\n")
 \end{lstlisting}
 
-\noindent Dopo aver eseguito lo script si ottiene quindi il valore del bitrate che corrisponde a \todo{sistema}
+\noindent Dopo aver eseguito lo script si ottiene quindi il valore del bitrate che corrisponde a \textbf{1.340 bpp}, che è molto più basso al valore dell'entropia $H(X)$ osservato nel punto precedente.
 
 
 
 
 
 \subsection*{Task 3}
+\todo{completa in base al risultato della 2}
+
+
 
 \section{Conclusioni}
 

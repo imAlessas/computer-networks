@@ -24,17 +24,17 @@ img = mpimg.imread(path_to_img +  img_file_name + img_extension)
 gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 # creates a figure with two subplots
-fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+# fig, axs = plt.subplots(1, 2, figsize=(12, 6))
 
 # displays the colored image in the first subplot
-axs[0].imshow(img, cmap='gray')
-axs[0].set_title('Colored image')
-axs[0].axis('off')
+# axs[0].imshow(img, cmap='gray')
+# axs[0].set_title('Colored image')
+# axs[0].axis('off')
 
 # displays the grayscale image in the second subplot
-axs[1].imshow(gray_img, cmap='gray')
-axs[1].set_title('Grayscale image')
-axs[1].axis('off')
+# axs[1].imshow(gray_img, cmap='gray')
+# axs[1].set_title('Grayscale image')
+# axs[1].axis('off')
 
 # plt.show()
 
@@ -70,10 +70,24 @@ cmd = f"zip {path_to_img}{img_file_name}.zip {path_to_img}{img_file_name}.jpg"
 os.system(cmd)
 
 # get the zip bytes
-img_stats = os.stat(f"{path_to_img}{img_file_name}.zip")
+img_stats = os.stat(f"{path_to_img}{img_file_name}.jpg")
 zip_bytes = img_stats.st_size
 
+# get img size
+height, width, _ = img.shape
+
 # get the birate
-zip_bitrate = zip_bytes * 8 / (512 * 512) 
+zip_bitrate = zip_bytes * 8 / (height * width) 
 
 print(f"\nThe bitrate of {img_file_name}.zip is {zip_bitrate:.3f} bpp\n")
+
+
+
+
+
+
+
+
+
+
+
