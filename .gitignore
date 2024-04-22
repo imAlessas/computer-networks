@@ -5,6 +5,12 @@ lessons
 *.asv
 *.m
 
+# zips
+*.zip
+
+
+
+
 
 
 ### LaTeX .gitignore ###
