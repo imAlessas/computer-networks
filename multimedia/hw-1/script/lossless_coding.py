@@ -3,6 +3,12 @@ import matplotlib.image as mpimg
 import numpy as np
 import os
 import cv2
+import math
+
+from exp_golomb_signed import exp_golomb_signed
+
+
+
 
 
 #######    Task 1    #######
@@ -96,7 +102,7 @@ plt.axis('image')
 plt.axis('off')
 plt.colorbar()
 plt.title('Prediction Error Magnitude')
-plt.show()
+# plt.show()
 
 
 # count the occurrences of each prediction error value
@@ -110,6 +116,33 @@ p = freqRel[freqRel > 0]
 HY = -np.sum(p * np.log2(1/p))
 print(f"The entropy of the prediction error of {img_file_name} is {HY:.3f} bpp")
 print(f"The compression ratio of {img_file_name} is {8/HX:.4f}\n")
+
+
+
+
+
+#######    Task 5    #######
+
+bitCount = 0
+for symbol in pred_err:
+    codeword = exp_golomb_signed(symbol)
+    bitCount += len(codeword)
+
+EG_bpp = bitCount / (width * height)
+print(f"The S-EG coding rate on prediction error is {EG_bpp:.4f}\n")
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

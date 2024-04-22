@@ -1,6 +1,9 @@
 # uni lessons folder
 lessons
 
+# python generated files
+__pycache__
+
 # MATLAB files
 *.asv
 *.m
