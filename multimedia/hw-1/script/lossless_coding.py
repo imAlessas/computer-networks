@@ -102,13 +102,12 @@ pred_err = rasterScan[0] - 128
 pred_err = np.append(pred_err, np.diff(rasterScan))
 
 # plot error graph
-# plt.figure()
-# plt.imshow(np.transpose(np.reshape(np.abs(pred_err), (width, height))), cmap = 'seismic')
-# plt.axis('image')
-# plt.axis('off')
-# plt.colorbar()
-# plt.title('Prediction Error Magnitude')
-# plt.show()
+plt.figure()
+plt.imshow(np.transpose(np.reshape(np.abs(pred_err), (width, height))), cmap = 'seismic')
+plt.axis('image')
+plt.axis('off')
+plt.colorbar()
+plt.title('Prediction Error Magnitude')
 
 
 # count the occurrences of each prediction error value
@@ -129,13 +128,13 @@ print(f"The compression ratio of {img_file_name} is {8/HX:.4f}\n")
 
 #######    Task 5    #######
 
-# bit_count = 0
-# for symbol in pred_err:
-#     codeword = exp_golomb_signed(symbol)
-#     bit_count += len(codeword)
+bit_count = 0
+for symbol in pred_err:
+    codeword = exp_golomb_signed(symbol)
+    bit_count += len(codeword)
 
-# exp_golomb_bpp = bit_count / img_size
-# print(f"The S-EG coding rate on prediction error is {exp_golomb_bpp:.4f}\n")
+exp_golomb_bpp = bit_count / img_size
+print(f"The S-EG coding rate on prediction error is {exp_golomb_bpp:.4f}\n")
 
 
 
@@ -175,12 +174,3 @@ plt.axis('off')
 plt.colorbar()
 plt.title('Prediction Error Magnitude')
 plt.show()
-
-
-
-
-
-
-
-
-
