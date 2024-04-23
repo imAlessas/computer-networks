@@ -23,8 +23,7 @@ Il linguaggio scelto per completare le richieste dell'homework è \texttt{Python
 
 
 \vspace{15px}\subsection{Entropia dell'immagine}
-
-La prima richiesta dell'homework era divisa in due macro parti, la prima era quella di selezionare e mostrare un'immagine mentre la seconda richiesta chiedeva di calcolare l'entropia dell'immagine.
+La prima richiesta dell'homework è divisa in due macro parti, la prima richiede di selezionare e mostrare un'immagine mentre la seconda richiesta chiede di calcolare l'entropia dell'immagine.
 
 L'immagine scelta è un'immagine di \textsl{Spider-Man} a colori, di conseguenza è necessario estrarne la luminaza per fara diventare in binaco e nero. Dopo aver caricato l'immagine a colori con l'opportuna funzione \texttt{imread} del pacchetto \texttt{matplotlib.image} è necessario usare la funzione \texttt{cvtColor} del pacchetto \texttt{cv2} di \texttt{opencv}. Il seguente script, dopo aver eseguito le suddette operazioni si occupa di mostrare le due immagini a schermo attraverso una \texttt{subplot}.
 
@@ -73,13 +72,13 @@ axs[1].axis('off')
     I(X) = \log_2\left( \frac{1}{p_i} \right)
 \end{gather*}
 
-\noindent Che è una variabile che diminuisce all'aumentare della probabilità dellevento $p_i$. QUuesto è ragionevole in quanto più un evento è imporbabile (quindi $p_i \to 0$) e più la sua informazione è alta ($I(X) \to +\infty$). Assumento che gli eventi della sorgente siano indipendenti, l'informazione media si traduce nella seguente sommatoria:
+\noindent Che è una variabile che diminuisce all'aumentare della probabilità dellevento $p_i$. Questo è ragionevole in quanto più un evento è imporbabile (quindi $p_i \to 0$) e più la sua informazione è alta ($I(X) \to +\infty$). Assumendo che gli eventi della sorgente siano indipendenti, l'informazione media si traduce nella seguente formula:
 
 \begin{gather*}
     H(X) = E[I(X)] \, = \, \sum_{i = 1}^M p_i\log_2\left( \frac{1}{p_i} \right)
 \end{gather*}
 
-\noindent Dove con $M$ si indica il numero di elementi nell'insieme $X$. Questa formula si riassume nel seguente script, dove l'immagine viene trasposta e convertita in un vettore di pixel monodimensionale. In secondo luogo attraverso la funzione \texttt{numpy.histogram} vengono contate il numero di occorrenze per ogni valore di pixel. Infine, per calcolare la probabilità, si divide il numero di occorrezze per il numero totale di occorrenze, escludendo eventuali valori diversi da zero.
+\noindent Dove con $M$ si indica il numero di elementi nell'insieme $X$. Questa formula si riassume nel seguente script, dove la variabile contenente l'immagine in bianco e nero viene trasposta e convertita in un vettore di pixel monodimensionale. In secondo luogo attraverso la funzione \texttt{numpy.histogram} vengono contate il numero di occorrenze per ogni valore di pixel. Successivamente, per calcolare la probabilità, si divide il numero di occorrezze per il numero totale di occorrenze, escludendo eventuali valori diversi da zero. Una volta calcolare la probabilità, attraverso le funzioni  \texttt{numpy.sum} e \texttt{numpy.log2} si ottiene il valore dell'entropia $H(X)$.
 
 
 \begin{lstlisting}
@@ -100,14 +99,14 @@ HX = - np.sum(p * np.log2(p))
 print(f"\nThe entropy of {img_file_name} is {HX:.3f} bpp\n")
 \end{lstlisting}
 
-\noindent Dopo aver eseguito lo script si ottiene che l'entropia dell'immagine scelta è di circa \textbf{7.530 bpp}.
+\noindent Dopo aver eseguito lo script, l'entropia dell'immagine scelta è di \textbf{7.530 bpp}.
 
 
 
 
 
 \vspace{15px}\subsection{Codifica con dizionario}
-La seconda task richiedeva di utilizzare una compressione a dizionario, come \texttt{zip} nel caso di \textsl{Windows} per poi calcolare il bitrate risultante. Lo script necessario per soddisfare la richiesta è presentato nel frammento di codice sottostante. In particolare le prime due righe si occupano di \textsl{zippare} il file mentre le seguenti si occupano di ottenere la dimensione dell'immagine compressa. Infine nelle ultime righe si calcola l'effettivo \textsl{bitrate} dividendo la dimensione del file compresso con la dimensione dell'immagine originale, ottenuta mediante l'attrobuto \texttt{size}.
+La seconda task chiede di utilizzare una compressione a dizionario, come \texttt{zip} nel caso di \textsl{Windows} per poi calcolare il \textsl{bitrate} risultante. Lo script necessario per soddisfare la richiesta è presentato nel frammento di codice sottostante. In particolare le prime due righe si occupano di "zippare" il file mentre le istruzioni seguenti estraggono la dimensione dell'immagine compressa (in bytes). Infine nelle ultime linee del frammento di codice viene computato l'effettivo \textsl{bitrate} dividendo la dimensione del file compresso con la dimensione dell'immagine originale, ottenuta tramite i valori di ritorno dell'attributo \texttt{img.shape}.
 
 \begin{lstlisting}
 # zip the image
@@ -120,14 +119,14 @@ zip_bytes = img_stats.st_size
 
 # get img size
 height, width, _ = img.shape
+img_size = width * height
 
 # get the birate
-zip_bitrate = zip_bytes * 8 / (height * width) 
-
+zip_bitrate = zip_bytes * 8 / img_size 
 print(f"\nThe bitrate of {img_file_name}.zip is {zip_bitrate:.3f} bpp\n")
 \end{lstlisting}
 
-\noindent Dopo aver eseguito lo script si ottiene quindi il valore del bitrate che corrisponde a \textbf{1.340 bpp}, che è molto più basso al valore dell'entropia $H(X)$ osservato nel punto precedente.
+\noindent Dunque, dopo aver eseguito lo script si ottiene il valore del bitrate che corrisponde a \textbf{1.340 bpp} il quale è molto più basso rispetto al volore dell'entropia $H(X)$, calcolato nel punto precedente.
 
 
 
@@ -140,8 +139,18 @@ print(f"\nThe bitrate of {img_file_name}.zip is {zip_bitrate:.3f} bpp\n")
 
 
 
-\vspace{15px}\subsection{Codifica semplice}
-La quarta richiesta dell'homework è quella di effettuare una codifica predittiva \textsl{semplice}. In altre parole, 
+\vspace{15px}\subsection{Codifica semplice}\label{simple-coding}
+La quarta richiesta dell'homework è quella di effettuare una codifica predittiva \textsl{semplice}. In particolare, data l'immagine (che chiameremo $x$), la codifica predittiva $y(n)$ è definita come segue:
+
+\begin{gather*}
+    y(n) = 
+    \begin{cases}
+        x(n) - 128 \hspace{37px} \text{se } \, n = 0 \\
+        x(n) - x(n - 1) \hspace{15px} \text{altrimenti}\\
+    \end{cases}
+\end{gather*}
+
+\noindent La suddetta codifica predittiva si traduce nel seguente Python script il quale, dopo aver calcolato la predizione, mostra l'immagine codificata.
 
 \begin{lstlisting}
 # calculate prediction error
@@ -157,48 +166,94 @@ plt.colorbar()
 plt.title('Prediction Error Magnitude')
 \end{lstlisting}
 
-\noindent Dopo aver eseguito lo script soprastatnte si ottiene un'immagine simile affa figura \ref{fig:simple-coding}. Dall'immagine si può notare che le zone più rosse, ovvero le zone in cui il predittore ha fatto più errori sono le zone dei contorni, come la skyline della città oppure lo stacco tra il personaggio raffigurato e il cielo. Questo perchè il distacco dei colori tra una sezione e l'altra è estremamente differente. D'altro canto, le zone colorate di blu sono le zone dove i colori sono più uniformi, ecco quindi che i palazzi e il cielo sono per lo più dello stesso colore, suggerendo poca entropia. \todo{sistema paragrafo}
+\noindent Dopo aver eseguito lo script soprastatnte si ottiene un'immagine simile alla figura \ref{fig:simple-coding}. Dall'immagine si può notare che le zone più rosse, ovvero le zone in cui il predittore ha fatto più errori sono le zone dei contorni, come la skyline della città oppure lo stacco tra il personaggio raffigurato e il cielo. Questo perchè la differenza dei colori tra una sezione e l'altra è particolarmente accentuato. D'altro canto, le zone colorate di blu sono le zone dove i colori sono più uniformi: ecco quindi che i palazzi e il cielo sono per lo più dello stesso colore, suggerendo una zona dove la variazione di colore è molto bassa.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width = .9\textwidth]{hw-1/report/imgs/simple-coding.png}
-    \caption{Rappresentazione del modulo dell'errore di predizione.}
+    \caption{Rappresentazione del modulo dell'errore di predizione nella codifica semplice.}
     \label{fig:simple-coding}
 \end{figure}
 
+
+
+
+
+
+
+\subsubsection{Analisi} \todo{valuta se farla subsection}
+Seguedo le direttive della task numero 5 dell'homework, calcoliamo 
+
+\todo{capisci cosa significa il valore EG-bpp}
 \begin{lstlisting}
-# count the occurrences of each prediction error value
-occ, _ = np.histogram(pred_err, bins = range(-255, 256))
+bit_count = 0
+for symbol in pred_err:
+    codeword = exp_golomb_signed(symbol)
+    bit_count += len(codeword)
 
-# calculate the relative frequencies and remove any probability == 0
-freqRel = occ / np.sum(occ)
-p = freqRel[freqRel > 0]
-
-# calculate the entropy
-HY = -np.sum(p * np.log2(1/p))
-print(f"The entropy of the prediction error of {img_file_name} is {HY:.3f} bpp")
-print(f"The compression ratio of {img_file_name} is {8/HX:.4f}\n")
+exp_golomb_bpp = bit_count / img_size
+print(f"The S-EG coding rate on prediction error is {exp_golomb_bpp:.4f}\n")
 \end{lstlisting}
-\todo{capisci se è da inserire o meno}
-
-
-
-
-
-
-\subsubsection{Analisi}
-
-
 
 
 
 \vspace{15px}\subsection{Codifica avanzata}
 
-prova
+La penultima richiesta, esige di creare un nuovo tipo di codifica, detta \textsl{avanzata} definita come segue:
+
+\todo{capisci come rappresentare la mediana}
+\begin{gather*}
+    y(n, m) = 
+    \begin{cases}
+        x(n, m) - 128 \hspace{37px} \text{se } \, n = m = 0 \\
+        x(n, m - 1) \hspace{37px} \text{se } \, n = 0\\
+        x(n - 1, m) \hspace{37px} \text{se } \, m = 0\\
+        x(n, m - 1) \hspace{37px} \text{se } \, m = \text{MAX}\\
+        x(n, m - 1) \hspace{37px} \text{altrimenti}
+    \end{cases}
+\end{gather*} 
+
+\noindent Dove in questo caso l'immagine anziche essere vista come un vettore $x$ è vista come una matrice di dimensione $n \times m$. Le richieste della codifica sono tradotte in uno script contenente due cicli annidati - il primo che itera lungo le righe della matrice e il secondo che itera lungo le colonne - dove allintero sono presenti una serie di \texttt{if} statement che soddisfano la definizione di codifica avanzata precedentemente citata.
+
+
+\begin{lstlisting}
+predicted_img = np.zeros_like(img)
+
+# iterates through the rows (height)
+for row in range(height):
+
+    # iterates through the cols (width)
+    for col in range(width - 1):
+
+        if row == 0 and col == 0:   # first pixel
+            predicted_img[row][col] = img[row][col] - 128
+        
+        elif row == 1:              # first row
+            predicted_img[row][col] = img[row][col - 1]
+        
+        elif col == 1:              # first col
+            predicted_img[row][col] = img[row - 1][col]
+        
+        elif col == (width - 1):    # last col
+            predicted_img[row][col] = (img[row - 1][col] + img[row][col - 1] + img[row - 1][col - 1]) / 3
+
+        else:                       # other cases
+            predicted_img[row][col] = (img[row - 1][col] + img[row][col - 1] + img[row - 1][col + 1]) / 3
+\end{lstlisting}
+
+\noindent Dopo aver eseguito lo script è possibile mostrare l'errore di predizione sottraendo l'immagine predetta \texttt{predicted\_img} con l'immagine iniziale \texttt{img} e "plottando" il suo valore assoluto come segue mediante uno script simile a quello mostrato per la codifica semplice (\ref{simple-coding}). L'immagine mostrata in figura \ref{fig:advanced-coding} è ciò che risulta degli errori commessi durante la predizione.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width = .9\textwidth]{hw-1/report/imgs/advanced-coding.png}
+    \caption{Rappresentazione del modulo dell'errore di predizione nella codifica avanzata.}
+    \label{fig:advanced-coding}
+\end{figure}
 
 
 
-\subsubsection{Analisi}
+
+\subsubsection{Analisi}\todo{valuta se farla subsection}
 
 
 
