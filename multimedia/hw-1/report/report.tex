@@ -6,7 +6,9 @@
 
 \maketitle\newpage
 
+\tableofcontents\newpage
 
+\listoftodos\newpage
 
 
 \section{Obiettivo}
@@ -14,12 +16,13 @@
 
 
 
-\section{Codice sorgente}
+\vspace{30px}\section{Codice sorgente}
 \todo{Rifai introduzione}
 Il linguaggio scelto per completare le richieste dell'homework è \texttt{Python}; all'interno del documento saranno presenti solo i punti salienti dello script, che comunque può essere ispezionato al seguente \href{https://github.com/imAlessas/computer-networks/blob/main/multimedia/hw-1/script/lossless_coding.py}{\texttt{link}}.
 
 
-\subsection*{Task 1}
+
+\vspace{15px}\subsection{Entropia dell'immagine}
 
 La prima richiesta dell'homework era divisa in due macro parti, la prima era quella di selezionare e mostrare un'immagine mentre la seconda richiesta chiedeva di calcolare l'entropia dell'immagine.
 
@@ -64,13 +67,19 @@ axs[1].axis('off')
     \label{fig:luminanza}
 \end{figure}
 
-\FloatBarrier\noindent In secondo luogo è necessario calcolare l'entropia dell'immagine in bianco e nero. L'entropia di di un'immagine, ma in genere di qualsiasi tipo di sorgente (o meglio, variabile aleatoria $X$), è un numero che indica l'\textbf{informazione media} ed è definita come segue:
+\FloatBarrier\noindent In secondo luogo è necessario calcolare l'entropia dell'immagine in bianco e nero. L'entropia di una variabile aleatoria $X$ (in questo caso l'immagine) è definita come l'\textbf{informazione media} degli eventi della sorgente; l'informazione di un evento è descritta dalla funzione seguente:
+
+\begin{gather*}
+    I(X) = \log_2\left( \frac{1}{p_i} \right)
+\end{gather*}
+
+\noindent Che è una variabile che diminuisce all'aumentare della probabilità dellevento $p_i$. QUuesto è ragionevole in quanto più un evento è imporbabile (quindi $p_i \to 0$) e più la sua informazione è alta ($I(X) \to +\infty$). Assumento che gli eventi della sorgente siano indipendenti, l'informazione media si traduce nella seguente sommatoria:
 
 \begin{gather*}
     H(X) = E[I(X)] \, = \, \sum_{i = 1}^M p_i\log_2\left( \frac{1}{p_i} \right)
 \end{gather*}
 
-\noindent Dove con $M$ si indica il numero di elementi nell'insieme $X$ e con $p_i$ si indica la probabilità di accadere dell'elemento \textit{i}-esimo della variabile aleatoria $X$. Questa formula si riassume nel seguente script, dove l'immagine viene trasporta e convertita in un vettore di pizel monodimensionale. In secondo luogo attraverso la funzione \texttt{numpy.histogram} si contano il numero di occorrenze per ogni valore di pixel. Infine, per calcolare la probabilità, si divide il numero di occorrezze per il numero totale di occorrenze, escludendo eventuali valori diversi da zero.
+\noindent Dove con $M$ si indica il numero di elementi nell'insieme $X$. Questa formula si riassume nel seguente script, dove l'immagine viene trasposta e convertita in un vettore di pixel monodimensionale. In secondo luogo attraverso la funzione \texttt{numpy.histogram} vengono contate il numero di occorrenze per ogni valore di pixel. Infine, per calcolare la probabilità, si divide il numero di occorrezze per il numero totale di occorrenze, escludendo eventuali valori diversi da zero.
 
 
 \begin{lstlisting}
@@ -94,7 +103,10 @@ print(f"\nThe entropy of {img_file_name} is {HX:.3f} bpp\n")
 \noindent Dopo aver eseguito lo script si ottiene che l'entropia dell'immagine scelta è di circa \textbf{7.530 bpp}.
 
 
-\subsection*{Task 2}
+
+
+
+\vspace{15px}\subsection{Codifica con dizionario}
 La seconda task richiedeva di utilizzare una compressione a dizionario, come \texttt{zip} nel caso di \textsl{Windows} per poi calcolare il bitrate risultante. Lo script necessario per soddisfare la richiesta è presentato nel frammento di codice sottostante. In particolare le prime due righe si occupano di \textsl{zippare} il file mentre le seguenti si occupano di ottenere la dimensione dell'immagine compressa. Infine nelle ultime righe si calcola l'effettivo \textsl{bitrate} dividendo la dimensione del file compresso con la dimensione dell'immagine originale, ottenuta mediante l'attrobuto \texttt{size}.
 
 \begin{lstlisting}
@@ -121,10 +133,14 @@ print(f"\nThe bitrate of {img_file_name}.zip is {zip_bitrate:.3f} bpp\n")
 
 
 
-\subsection*{Task 3}
+\vspace{15px}\subsection{Discussione risultati parziali}
 \todo{completa in base al risultato della 2}
 
-\subsection*{Task 4}
+
+
+
+
+\vspace{15px}\subsection{Codifica semplice}
 La quarta richiesta dell'homework è quella di effettuare una codifica predittiva \textsl{semplice}. In altre parole, 
 
 \begin{lstlisting}
@@ -141,13 +157,13 @@ plt.colorbar()
 plt.title('Prediction Error Magnitude')
 \end{lstlisting}
 
-\noindent Dopo aver eseguito lo script soprastatnte si ottiene un'immagine simile affa figura \ref{fig:error-prediction-magnitude}. Dall'immagine si può notare che le zone più rosse, ovvero le zone in cui il predittore ha fatto più errori sono le zone dei contorni, come la skyline della città oppure lo stacco tra il personaggio raffigurato e il cielo. Questo perchè il distacco dei colori tra una sezione e l'altra è estremamente differente. D'altro canto, le zone colorate di blu sono le zone dove i colori sono più uniformi, ecco quindi che i palazzi e il cielo sono per lo più dello stesso colore, suggerendo poca entropia. \todo{sistema paragrafo}
+\noindent Dopo aver eseguito lo script soprastatnte si ottiene un'immagine simile affa figura \ref{fig:simple-coding}. Dall'immagine si può notare che le zone più rosse, ovvero le zone in cui il predittore ha fatto più errori sono le zone dei contorni, come la skyline della città oppure lo stacco tra il personaggio raffigurato e il cielo. Questo perchè il distacco dei colori tra una sezione e l'altra è estremamente differente. D'altro canto, le zone colorate di blu sono le zone dove i colori sono più uniformi, ecco quindi che i palazzi e il cielo sono per lo più dello stesso colore, suggerendo poca entropia. \todo{sistema paragrafo}
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width = .9\textwidth]{hw-1/report/imgs/prediction-error-magnitude.png}
+    \includegraphics[width = .9\textwidth]{hw-1/report/imgs/simple-coding.png}
     \caption{Rappresentazione del modulo dell'errore di predizione.}
-    \label{fig:error-prediction-magnitude}
+    \label{fig:simple-coding}
 \end{figure}
 
 \begin{lstlisting}
@@ -165,10 +181,32 @@ print(f"The compression ratio of {img_file_name} is {8/HX:.4f}\n")
 \end{lstlisting}
 \todo{capisci se è da inserire o meno}
 
-\subsection*{Task 5}
 
 
 
-\section{Conclusioni}
+
+
+\subsubsection{Analisi}
+
+
+
+
+
+\vspace{15px}\subsection{Codifica avanzata}
+
+prova
+
+
+
+\subsubsection{Analisi}
+
+
+
+
+
+\vspace{30px}\section{Conclusioni}
+
+
+
 
 \end{document}
