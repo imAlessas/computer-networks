@@ -1,6 +1,9 @@
 # uni lessons folder
 lessons
 
+# ignore folders
+ignore
+
 # python generated files
 __pycache__
 

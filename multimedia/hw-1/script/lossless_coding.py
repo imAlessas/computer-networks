@@ -1,11 +1,12 @@
+# python modules
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 import os
 import cv2
-import math
 
-from exp_golomb_signed import exp_golomb_signed
+# user defined modules
+from expgolomb import exp_golomb_signed
 
 
 
@@ -123,13 +124,13 @@ print(f"The compression ratio of {img_file_name} is {8/HX:.4f}\n")
 
 #######    Task 5    #######
 
-bitCount = 0
+bit_count = 0
 for symbol in pred_err:
     codeword = exp_golomb_signed(symbol)
-    bitCount += len(codeword)
+    bit_count += len(codeword)
 
-EG_bpp = bitCount / (width * height)
-print(f"The S-EG coding rate on prediction error is {EG_bpp:.4f}\n")
+exp_golomb_bpp = bit_count / (width * height)
+print(f"The S-EG coding rate on prediction error is {exp_golomb_bpp:.4f}\n")
 
 
 
