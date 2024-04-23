@@ -8,7 +8,11 @@ import cv2
 # user defined modules
 from expgolomb import exp_golomb_signed
 
-
+def median(a, b, c):
+    vector = [a, b, c]
+    vector.remove(min(vector))
+    vector.remove(max(vector))
+    return vector[0]
 
 
 
@@ -80,9 +84,10 @@ zip_bytes = img_stats.st_size
 
 # get img size
 height, width, _ = img.shape
+img_size = width * height
 
 # get the birate
-zip_bitrate = zip_bytes * 8 / (height * width) 
+zip_bitrate = zip_bytes * 8 / img_size 
 
 print(f"\nThe bitrate of {img_file_name}.zip is {zip_bitrate:.3f} bpp\n")
 
@@ -97,12 +102,12 @@ pred_err = rasterScan[0] - 128
 pred_err = np.append(pred_err, np.diff(rasterScan))
 
 # plot error graph
-plt.figure()
-plt.imshow(np.transpose(np.reshape(np.abs(pred_err), (width, height))), cmap = 'seismic')
-plt.axis('image')
-plt.axis('off')
-plt.colorbar()
-plt.title('Prediction Error Magnitude')
+# plt.figure()
+# plt.imshow(np.transpose(np.reshape(np.abs(pred_err), (width, height))), cmap = 'seismic')
+# plt.axis('image')
+# plt.axis('off')
+# plt.colorbar()
+# plt.title('Prediction Error Magnitude')
 # plt.show()
 
 
@@ -124,23 +129,52 @@ print(f"The compression ratio of {img_file_name} is {8/HX:.4f}\n")
 
 #######    Task 5    #######
 
-bit_count = 0
-for symbol in pred_err:
-    codeword = exp_golomb_signed(symbol)
-    bit_count += len(codeword)
+# bit_count = 0
+# for symbol in pred_err:
+#     codeword = exp_golomb_signed(symbol)
+#     bit_count += len(codeword)
 
-exp_golomb_bpp = bit_count / (width * height)
-print(f"The S-EG coding rate on prediction error is {exp_golomb_bpp:.4f}\n")
-
-
+# exp_golomb_bpp = bit_count / img_size
+# print(f"The S-EG coding rate on prediction error is {exp_golomb_bpp:.4f}\n")
 
 
 
 
 
+#######    Task 6    #######
 
 
+predicted_img = np.zeros_like(img)
 
+# iterates through the rows (height)
+for row in range(height):
+
+    # iterates through the cols (width)
+    for col in range(width - 1):
+
+        if row == 0 and col == 0:   # first pixel
+            predicted_img[row][col] = img[row][col] - 128
+        
+        elif row == 1:              # first row
+            predicted_img[row][col] = img[row][col - 1]
+        
+        elif col == 1:              # first col
+            predicted_img[row][col] = img[row - 1][col]
+        
+        elif col == (width - 1):    # last col
+            predicted_img[row][col] = (img[row - 1][col] + img[row][col - 1] + img[row - 1][col - 1]) / 3
+
+        else:                       # other cases
+            predicted_img[row][col] = (img[row - 1][col] + img[row][col - 1] + img[row - 1][col + 1]) / 3
+
+
+plt.figure()
+plt.imshow(np.abs(img - predicted_img), cmap='seismic')
+plt.axis('image')
+plt.axis('off')
+plt.colorbar()
+plt.title('Prediction Error Magnitude')
+plt.show()
 
 
 
