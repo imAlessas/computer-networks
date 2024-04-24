@@ -56,14 +56,14 @@ axs[1].set_title('Grayscale image')
 axs[1].axis('off')
 \end{lstlisting}
 
-\noindent Dopo aver eseguito lo script soprastante si può notare che la luminanza dell'immgine è stata estratta con successo (figura \ref{fig:luminanza}).
+\noindent Dopo aver eseguito lo script soprastante si può notare che la luminanza dell'immgine è stata estratta con successo (figura \ref{fig:colored-grayscale}).
 
 \begin{figure}[h]
     \centering
     \includegraphics[width = .7\textwidth]{hw-1/report/imgs/colored.png}
     \includegraphics[width = .7\textwidth]{hw-1/report/imgs/grayscale.png}
     \caption{Estrazione della luminaza da una immagine a colori.}
-    \label{fig:luminanza}
+    \label{fig:colored-grayscale}
 \end{figure}
 
 \FloatBarrier\noindent In secondo luogo è necessario calcolare l'entropia dell'immagine in bianco e nero. L'entropia di una variabile aleatoria $X$ (in questo caso l'immagine) è definita come l'\textbf{informazione media} degli eventi della sorgente; l'informazione di un evento è descritta dalla funzione seguente:
@@ -83,10 +83,10 @@ axs[1].axis('off')
 
 \begin{lstlisting}
 # flatten the transposed matrix to read pixels row by row
-rasterScan = np.transpose(gray_img).flatten()
+raster_scan = np.transpose(gray_img).flatten()
 
 # count the occurrences of each pixel value
-occurrencies = np.histogram(rasterScan, bins=range(256))[0]
+occurrencies = np.histogram(raster_scan, bins=range(256))[0]
 
 # calculate the relative frequencies
 rel_freq = occurrencies / np.sum(occurrencies)
@@ -96,7 +96,7 @@ p = rel_freq[rel_freq > 0]
 
 # compute and display the entropy
 HX = - np.sum(p * np.log2(p))
-print(f"\nThe entropy of {img_file_name} is {HX:.3f} bpp\n")
+print(f"\nThe entropy of {img_file_name}{img_extension} is {HX:.3f} bpp")
 \end{lstlisting}
 
 \noindent Dopo aver eseguito lo script, l'entropia dell'immagine scelta è di \textbf{7.530 bpp}.
@@ -118,13 +118,13 @@ img_stats = os.stat(f"{path_to_img}{img_file_name}.jpg")
 zip_bytes = img_stats.st_size
 
 # get img size
-height, width, _ = img.shape
+height, width = gray_img.shape
 img_size = width * height
 
 # get the birate
 zip_bitrate = zip_bytes * 8 / img_size 
 print(f"\nThe bitrate of {img_file_name}.zip is {zip_bitrate:.3f} bpp\n")
-\end{lstlisting}
+    \end{lstlisting}
 
 \noindent Dunque, dopo aver eseguito lo script si ottiene il valore del bitrate che corrisponde a \textbf{1.340 bpp} il quale è molto più basso rispetto al volore dell'entropia $H(X)$, calcolato nel punto precedente.
 
@@ -153,17 +153,16 @@ La quarta richiesta dell'homework è quella di effettuare una codifica predittiv
 \noindent La suddetta codifica predittiva si traduce nel seguente Python script il quale, dopo aver calcolato la predizione, mostra l'immagine codificata.
 
 \begin{lstlisting}
-# calculate prediction error
-pred_err = rasterScan[0] - 128
-pred_err = np.append(pred_err, np.diff(rasterScan))
+simple_coding_error = raster_scan[0] - 128
+simple_coding_error = np.append(simple_coding_error, np.diff(raster_scan))
 
 # plot error graph
 plt.figure()
-plt.imshow(np.transpose(np.reshape(np.abs(pred_err), (width, height))), cmap = 'seismic')
+plt.imshow(np.transpose(np.reshape(np.abs(simple_coding_error), (width, height))), cmap = 'seismic')
 plt.axis('image')
 plt.axis('off')
 plt.colorbar()
-plt.title('Prediction Error Magnitude')
+plt.title('Simple coding prediction error')
 \end{lstlisting}
 
 \noindent Dopo aver eseguito lo script soprastatnte si ottiene un'immagine simile alla figura \ref{fig:simple-coding}. Dall'immagine si può notare che le zone più rosse, ovvero le zone in cui il predittore ha fatto più errori sono le zone dei contorni, come la skyline della città oppure lo stacco tra il personaggio raffigurato e il cielo. Questo perchè la differenza dei colori tra una sezione e l'altra è particolarmente accentuato. D'altro canto, le zone colorate di blu sono le zone dove i colori sono più uniformi: ecco quindi che i palazzi e il cielo sono per lo più dello stesso colore, suggerendo una zona dove la variazione di colore è molto bassa.
@@ -187,12 +186,12 @@ Seguedo le direttive della task numero 5 dell'homework, calcoliamo
 \todo{capisci cosa significa il valore EG-bpp}
 \begin{lstlisting}
 bit_count = 0
-for symbol in pred_err:
+for symbol in simple_coding_error:
     codeword = exp_golomb_signed(symbol)
     bit_count += len(codeword)
 
 exp_golomb_bpp = bit_count / img_size
-print(f"The S-EG coding rate on prediction error is {exp_golomb_bpp:.4f}\n")
+print(f"The S-EG coding rate on prediction error is {exp_golomb_bpp:.4f}\n")    
 \end{lstlisting}
 
 
@@ -217,7 +216,8 @@ La penultima richiesta, esige di creare un nuovo tipo di codifica, detta \textsl
 
 
 \begin{lstlisting}
-predicted_img = np.zeros_like(img)
+# blank image 
+predicted_img = np.zeros_like(gray_img)
 
 # iterates through the rows (height)
 for row in range(height):
@@ -226,19 +226,21 @@ for row in range(height):
     for col in range(width - 1):
 
         if row == 0 and col == 0:   # first pixel
-            predicted_img[row][col] = img[row][col] - 128
+            predicted_img[row][col] = gray_img[row][col] - 128
         
         elif row == 1:              # first row
-            predicted_img[row][col] = img[row][col - 1]
+            predicted_img[row][col] = gray_img[row][col - 1]
         
         elif col == 1:              # first col
-            predicted_img[row][col] = img[row - 1][col]
+            predicted_img[row][col] = gray_img[row - 1][col]
         
         elif col == (width - 1):    # last col
-            predicted_img[row][col] = (img[row - 1][col] + img[row][col - 1] + img[row - 1][col - 1]) / 3
+            predicted_img[row][col] = median(gray_img[row - 1][col], gray_img[row][col - 1], gray_img[row - 1][col - 1])
 
         else:                       # other cases
-            predicted_img[row][col] = (img[row - 1][col] + img[row][col - 1] + img[row - 1][col + 1]) / 3
+            predicted_img[row][col] = median(gray_img[row - 1][col], gray_img[row][col - 1], gray_img[row - 1][col + 1])
+
+adv_coding_error = gray_img - predicted_img
 \end{lstlisting}
 
 \noindent Dopo aver eseguito lo script è possibile mostrare l'errore di predizione sottraendo l'immagine predetta \texttt{predicted\_img} con l'immagine iniziale \texttt{img} e "plottando" il suo valore assoluto come segue mediante uno script simile a quello mostrato per la codifica semplice (\ref{simple-coding}). L'immagine mostrata in figura \ref{fig:advanced-coding} è ciò che risulta degli errori commessi durante la predizione.
@@ -250,6 +252,14 @@ for row in range(height):
     \label{fig:advanced-coding}
 \end{figure}
 
+\noindent Si osserva che per quanto l'immagine \ref{fig:advanced-coding} sia simile alla figura \ref{fig:simple-coding}, è presente una differenza: è sufficente mostrare un'immagine che contenga la differenza in modulo tra le varaibili \texttt{adv\_coding\_error} e \texttt{simple\_coding\_error}. Dal risultato, mostrato nella figura \ref{fig:error-difference}, si può notare che non è di colore uniforme ma presenta diverse sfumature di blu, suggerendo quindi una bassa differenza tra le due che quindi le rende non identiche.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width = .9\textwidth]{hw-1/report/imgs/error-difference.png}
+    \caption{Rappresentazione della differenza tra l'errore della codifica semplice e della codifica avazata.}
+    \label{fig:error-difference}
+\end{figure}
 
 
 

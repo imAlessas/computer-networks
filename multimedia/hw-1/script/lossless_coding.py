@@ -52,10 +52,10 @@ axs[1].axis('off')
 ## Compute the entropy
 
 # flatten the transposed matrix to read pixels row by row
-rasterScan = np.transpose(gray_img).flatten()
+raster_scan = np.transpose(gray_img).flatten()
 
 # count the occurrences of each pixel value
-occurrencies = np.histogram(rasterScan, bins=range(256))[0]
+occurrencies = np.histogram(raster_scan, bins=range(256))[0]
 
 # calculate the relative frequencies
 rel_freq = occurrencies / np.sum(occurrencies)
@@ -83,7 +83,7 @@ img_stats = os.stat(f"{path_to_img}{img_file_name}.jpg")
 zip_bytes = img_stats.st_size
 
 # get img size
-height, width, _ = img.shape
+height, width = gray_img.shape
 img_size = width * height
 
 # get the birate
@@ -98,20 +98,20 @@ print(f"\nThe bitrate of {img_file_name}.zip is {zip_bitrate:.3f} bpp\n")
 #######    Task 4    #######
 
 # calculate prediction error
-pred_err = rasterScan[0] - 128
-pred_err = np.append(pred_err, np.diff(rasterScan))
+simple_coding_error = raster_scan[0] - 128
+simple_coding_error = np.append(simple_coding_error, np.diff(raster_scan))
 
 # plot error graph
 plt.figure()
-plt.imshow(np.transpose(np.reshape(np.abs(pred_err), (width, height))), cmap = 'seismic')
+plt.imshow(np.transpose(np.reshape(np.abs(simple_coding_error), (width, height))), cmap = 'seismic')
 plt.axis('image')
 plt.axis('off')
 plt.colorbar()
-plt.title('Prediction Error Magnitude')
+plt.title('Simple coding prediction error')
 
 
 # count the occurrences of each prediction error value
-occ, _ = np.histogram(pred_err, bins = range(-255, 256))
+occ, _ = np.histogram(simple_coding_error, bins = range(-255, 256))
 
 # calculate the relative frequencies and remove any probability == 0
 freqRel = occ / np.sum(occ)
@@ -129,7 +129,7 @@ print(f"The compression ratio of {img_file_name} is {8/HX:.4f}\n")
 #######    Task 5    #######
 
 bit_count = 0
-for symbol in pred_err:
+for symbol in simple_coding_error:
     codeword = exp_golomb_signed(symbol)
     bit_count += len(codeword)
 
@@ -142,8 +142,8 @@ print(f"The S-EG coding rate on prediction error is {exp_golomb_bpp:.4f}\n")
 
 #######    Task 6    #######
 
-
-predicted_img = np.zeros_like(img)
+# blank image 
+predicted_img = np.zeros_like(gray_img)
 
 # iterates through the rows (height)
 for row in range(height):
@@ -152,25 +152,37 @@ for row in range(height):
     for col in range(width - 1):
 
         if row == 0 and col == 0:   # first pixel
-            predicted_img[row][col] = img[row][col] - 128
+            predicted_img[row][col] = gray_img[row][col] - 128
         
         elif row == 1:              # first row
-            predicted_img[row][col] = img[row][col - 1]
+            predicted_img[row][col] = gray_img[row][col - 1]
         
         elif col == 1:              # first col
-            predicted_img[row][col] = img[row - 1][col]
+            predicted_img[row][col] = gray_img[row - 1][col]
         
         elif col == (width - 1):    # last col
-            predicted_img[row][col] = (img[row - 1][col] + img[row][col - 1] + img[row - 1][col - 1]) / 3
+            predicted_img[row][col] = median(gray_img[row - 1][col], gray_img[row][col - 1], gray_img[row - 1][col - 1])
 
         else:                       # other cases
-            predicted_img[row][col] = (img[row - 1][col] + img[row][col - 1] + img[row - 1][col + 1]) / 3
+            predicted_img[row][col] = median(gray_img[row - 1][col], gray_img[row][col - 1], gray_img[row - 1][col + 1])
 
+
+adv_coding_error = gray_img - predicted_img
 
 plt.figure()
-plt.imshow(np.abs(img - predicted_img), cmap='seismic')
+plt.imshow(np.abs(adv_coding_error), cmap='seismic')
 plt.axis('image')
 plt.axis('off')
 plt.colorbar()
-plt.title('Prediction Error Magnitude')
+plt.title('Advanced coding prediction error')
+
+
+
+plt.figure()
+plt.imshow(np.abs(np.transpose(np.reshape(np.abs(simple_coding_error), (width, height))) - adv_coding_error), cmap='seismic')
+plt.axis('image')
+plt.axis('off')
+plt.colorbar()
+plt.title('Difference between two techniques')
+
 plt.show()
