@@ -6,7 +6,10 @@
 
 \maketitle\newpage
 
-\tableofcontents\newpage
+\tableofcontents
+\listoffigures
+\vspace{20px}
+\newpage
 
 \listoftodos\newpage
 
@@ -75,7 +78,7 @@ axs[1].axis('off')
 \noindent Che è una variabile che diminuisce all'aumentare della probabilità dellevento $p_i$. Questo è ragionevole in quanto più un evento è imporbabile (quindi $p_i \to 0$) e più la sua informazione è alta ($I(X) \to +\infty$). Assumendo che gli eventi della sorgente siano indipendenti, l'informazione media si traduce nella seguente formula:
 
 \begin{gather*}
-    H(X) = E[I(X)] \, = \, \sum_{i = 1}^M p_i\log_2\left( \frac{1}{p_i} \right)
+    H(X) = E[I(X)] \, = \, \sum_{i = 1}^M p_i\log_2\left( \frac{1}{p_i} \right) \, = \, - \sum_{i = 1}^M p_i\log_2{p_i}
 \end{gather*}
 
 \noindent Dove con $M$ si indica il numero di elementi nell'insieme $X$. Questa formula si riassume nel seguente script, dove la variabile contenente l'immagine in bianco e nero viene trasposta e convertita in un vettore di pixel monodimensionale. In secondo luogo attraverso la funzione \texttt{numpy.histogram} vengono contate il numero di occorrenze per ogni valore di pixel. Successivamente, per calcolare la probabilità, si divide il numero di occorrezze per il numero totale di occorrenze, escludendo eventuali valori diversi da zero. Una volta calcolare la probabilità, attraverso le funzioni  \texttt{numpy.sum} e \texttt{numpy.log2} si ottiene il valore dell'entropia $H(X)$.
@@ -126,21 +129,18 @@ zip_bitrate = zip_bytes * 8 / img_size
 print(f"\nThe bitrate of {img_file_name}.zip is {zip_bitrate:.3f} bpp\n")
     \end{lstlisting}
 
-\noindent Dunque, dopo aver eseguito lo script si ottiene il valore del bitrate che corrisponde a \textbf{1.340 bpp} il quale è molto più basso rispetto al volore dell'entropia $H(X)$, calcolato nel punto precedente.
+\noindent Dunque, dopo aver eseguito lo script si ottiene il valore del bitrate, corrispondente a \textbf{1.340 bpp}. 
 
 
 
-
-
-\vspace{15px}\subsection{Discussione risultati parziali}
-\todo{completa in base al risultato della 2}
-
+\vspace{15px}\subsection{Discussione risultati parziali}\todo{migliora risposta task 3}
+Il risultato trovato calcolando il bitrate della codifica con dizionario (1.340 bpp) è molto più basso rispetto al volore dell'entropia $H(X)$, calcolato nel primo punto (7.530 bpp), suggerendo che quindi la codifica con dizionario risulta efficace nel ridurre la quantità di informazione necessaria per rappresentare i dati, sfruttando le ridondanze presenti nel segnale.
 
 
 
 
 \vspace{15px}\subsection{Codifica semplice}\label{simple-coding}
-La quarta richiesta dell'homework è quella di effettuare una codifica predittiva \textsl{semplice}. In particolare, data l'immagine (che chiameremo $x$), la codifica predittiva $y(n)$ è definita come segue:
+La quarta richiesta dell'homework è quella di effettuare una codifica predittiva \textsl{semplice}. In particolare, data l'immagine (che chiameremo $x(n)$), la codifica predittiva $y(n)$ è definita come segue:
 
 \begin{gather*}
     y(n) = 
@@ -165,7 +165,7 @@ plt.colorbar()
 plt.title('Simple coding prediction error')
 \end{lstlisting}
 
-\noindent Dopo aver eseguito lo script soprastatnte si ottiene un'immagine simile alla figura \ref{fig:simple-coding}. Dall'immagine si può notare che le zone più rosse, ovvero le zone in cui il predittore ha fatto più errori sono le zone dei contorni, come la skyline della città oppure lo stacco tra il personaggio raffigurato e il cielo. Questo perchè la differenza dei colori tra una sezione e l'altra è particolarmente accentuato. D'altro canto, le zone colorate di blu sono le zone dove i colori sono più uniformi: ecco quindi che i palazzi e il cielo sono per lo più dello stesso colore, suggerendo una zona dove la variazione di colore è molto bassa.
+\noindent Dopo aver eseguito lo script soprastante si ottiene l'immagine mostrata nella figura \ref{fig:simple-coding}. Dall'immagine si può notare che le zone più rosse, ovvero le zone in cui il predittore ha fatto più errori, sono le zone dei contorni, come la skyline della città oppure lo stacco tra il personaggio raffigurato e il cielo. Questo perchè la differenza dei colori tra una sezione e l'altra è particolarmente accentuata. D'altro canto, le zone colorate di blu sono le zone dove i colori sono più uniformi: ecco quindi che i palazzi e il cielo sono per lo più dello stesso colore, suggerendo una zona dove la variazione di colore - e quindi di informazione - è molto bassa.
 
 \begin{figure}[h]
     \centering
@@ -200,22 +200,30 @@ print(f"The S-EG coding rate on prediction error is {exp_golomb_bpp:.4f}\n")
 
 La penultima richiesta, esige di creare un nuovo tipo di codifica, detta \textsl{avanzata} definita come segue:
 
-\todo{capisci come rappresentare la mediana}
 \begin{gather*}
     y(n, m) = 
     \begin{cases}
-        x(n, m) - 128 \hspace{37px} \text{se } \, n = m = 0 \\
-        x(n, m - 1) \hspace{37px} \text{se } \, n = 0\\
-        x(n - 1, m) \hspace{37px} \text{se } \, m = 0\\
-        x(n, m - 1) \hspace{37px} \text{se } \, m = \text{MAX}\\
-        x(n, m - 1) \hspace{37px} \text{altrimenti}
+        x(n, m) - 128 \hspace{161px} \text{se } \, n = m = 0 \\
+        x(n, m - 1) \hspace{171px} \text{se } \, n = 0\\
+        x(n - 1, m) \hspace{171px} \text{se } \, m = 0\\
+        \text{med}\left[ x(n, m - 1),\, x(n - 1, m),\, x(n - 1, m - 1) \right] \hspace{15px} \text{se } \, m = \text{MAX}\\
+        \text{med}\left[ x(n, m - 1),\, x(n - 1, m),\, x(n - 1, m + 1) \right] \hspace{15px} \text{altrimenti}
     \end{cases}
 \end{gather*} 
 
-\noindent Dove in questo caso l'immagine anziche essere vista come un vettore $x$ è vista come una matrice di dimensione $n \times m$. Le richieste della codifica sono tradotte in uno script contenente due cicli annidati - il primo che itera lungo le righe della matrice e il secondo che itera lungo le colonne - dove allintero sono presenti una serie di \texttt{if} statement che soddisfano la definizione di codifica avanzata precedentemente citata.
-
+\noindent Dove in questo caso l'immagine anziche essere vista come un vettore $x$ è vista come una matrice di dimensione $n \times m$. Le richieste della codifica sono tradotte in uno script contenente due cicli annidati - il primo che itera lungo le righe della matrice e il secondo che itera lungo le colonne - dove allintero sono presenti una serie di \texttt{if} statement che soddisfano la definizione di codifica avanzata precedentemente citata. Inoltre si osserva la mediana dei tre valori è calcolata tramite una funzione definita dall'utente, descritta anch'essa all'interno dello script. 
 
 \begin{lstlisting}
+# median function for advanced coding
+def median(a, b, c):
+    vector = [a, b, c]
+    vector.remove(min(vector))
+    vector.remove(max(vector))
+    
+    return vector[0]
+
+
+
 # blank image 
 predicted_img = np.zeros_like(gray_img)
 
@@ -252,7 +260,7 @@ adv_coding_error = gray_img - predicted_img
     \label{fig:advanced-coding}
 \end{figure}
 
-\noindent Si osserva che per quanto l'immagine \ref{fig:advanced-coding} sia simile alla figura \ref{fig:simple-coding}, è presente una differenza: è sufficente mostrare un'immagine che contenga la differenza in modulo tra le varaibili \texttt{adv\_coding\_error} e \texttt{simple\_coding\_error}. Dal risultato, mostrato nella figura \ref{fig:error-difference}, si può notare che non è di colore uniforme ma presenta diverse sfumature di blu, suggerendo quindi una bassa differenza tra le due che quindi le rende non identiche.
+\FloatBarrier\noindent Si osserva che per quanto l'immagine \ref{fig:advanced-coding} sia simile alla figura \ref{fig:simple-coding}, è presente una differenza: è sufficente mostrare un'immagine che contenga la differenza in modulo tra le varaibili \texttt{adv\_coding\_error} e \texttt{simple\_coding\_error}. Dal risultato, mostrato nella figura \ref{fig:error-difference}, si può notare che non è di colore uniforme ma presenta diverse sfumature di blu, suggerendo quindi una bassa differenza tra le due che quindi le rende non identiche.
 
 \begin{figure}[h]
     \centering
@@ -273,5 +281,17 @@ adv_coding_error = gray_img - predicted_img
 
 
 
+
+\begin{comment}
+
+    (1) Entropia b&w:       7.530 bpp
+    (2) Bitrate .zip:       1.340 bpp
+    (3) discussion
+    (4) simple-coding-img
+    (5) Bitrate EG:         10.0135 bpp
+    (6) advanced-coding-img
+    (7) Bitrate EG:         9.7443 bpp
+
+\end{comment}
 
 \end{document}
