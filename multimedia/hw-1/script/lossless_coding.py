@@ -123,7 +123,7 @@ if __name__ == "__main__":
     p = rel_freq[rel_freq > 0]
 
     # compute and display the entropy
-    HX = - np.sum(p * np.log2(p))
+    HX = np.sum(p * np.log2(1 / p))
     print(f"\nThe entropy of {img_file_name}{img_extension} is {HX:.3f} bpp")
     print(f"The compression ratio of {img_file_name}{img_extension} is {8/HX:.4f}\n")
 
@@ -172,7 +172,7 @@ if __name__ == "__main__":
     p = freqRel[freqRel > 0]
 
     # calculate the entropy
-    HY = -np.sum(p * np.log2(1/p))
+    HY = np.sum(p * np.log2(1 / p))
     
     print(f"The entropy of the prediction error of {img_file_name} is {HY:.3f} bpp")
     print(f"The compression ratio of {img_file_name} is {8/HX:.4f}\n")
