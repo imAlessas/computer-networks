@@ -181,7 +181,7 @@ plt.title('Simple coding prediction error')
 
 
 \subsubsection{Analisi} \todo{valuta se farla subsection}
-Seguedo le direttive della task numero 5 dell'homework, calcoliamo 
+Seguedo le direttive della task numero 5, calcoliamo ora la codifica esponenziale di Golomb (detta anche \textsl{exp-Golomb})
 
 \todo{capisci cosa significa il valore EG-bpp}
 \begin{lstlisting}
@@ -191,7 +191,8 @@ for symbol in simple_coding_error:
     bit_count += len(codeword)
 
 exp_golomb_bpp = bit_count / img_size
-print(f"The S-EG coding rate on prediction error is {exp_golomb_bpp:.4f}\n")    
+
+rint(f"The bitrate of the simple coding is {exp_golomb_bpp:.4f}\n")
 \end{lstlisting}
 
 

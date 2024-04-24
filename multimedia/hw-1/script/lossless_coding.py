@@ -31,7 +31,7 @@ def plot_figure(figure, title, style = 'gray', colorbar = True):
 def exp_golomb_bitrate(error_vector):
     bit_count = 0
     for symbol in error_vector:
-        bit_count += len(exp_golomb_signed(symbol))
+        bit_count += len(exp_golomb_signed(int(symbol)))
 
     return bit_count / img_size
 
@@ -91,8 +91,8 @@ if __name__ == "__main__":
     #######    Task 1    #######
 
     # Prepare to load the image
-    img_file_name = "spiderman"
-    img_extension = ".jpg"
+    img_file_name = "peppers"
+    img_extension = ".pgm"
     current_dir = os.getcwd()
 
     # path to reach the img
@@ -102,10 +102,11 @@ if __name__ == "__main__":
     img = mpimg.imread(path_to_img +  img_file_name + img_extension) 
 
     # extracts the luminance
-    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray_img = img
 
     # plots images
-    plot_figure(img, 'Colored image', colorbar = False)
+    # plot_figure(img, 'Colored image', colorbar = False)
     plot_figure(gray_img, 'Grayscale image')
 
 
@@ -125,7 +126,7 @@ if __name__ == "__main__":
     # compute and display the entropy
     HX = np.sum(p * np.log2(1 / p))
     print(f"\nThe entropy of {img_file_name}{img_extension} is {HX:.3f} bpp")
-    print(f"The compression ratio of {img_file_name}{img_extension} is {8/HX:.4f}\n")
+    # print(f"The compression ratio of {img_file_name}{img_extension} is {8/HX:.4f}\n")
 
 
 
@@ -134,11 +135,11 @@ if __name__ == "__main__":
     #######    Task 2    #######
 
     # zip the image
-    cmd = f"zip {path_to_img}{img_file_name}.zip {path_to_img}{img_file_name}.jpg"
+    cmd = f"zip {path_to_img}{img_file_name}.zip {path_to_img}{img_file_name}{img_extension}"
     os.system(cmd)
 
     # get the zip bytes
-    img_stats = os.stat(f"{path_to_img}{img_file_name}.jpg")
+    img_stats = os.stat(f"{path_to_img}{img_file_name}{img_extension}")
     zip_bytes = img_stats.st_size
 
     # get img size
@@ -157,8 +158,7 @@ if __name__ == "__main__":
     #######    Task 4    #######
 
     # calculate prediction error
-    simple_coding_error = raster_scan[0] - 128
-    simple_coding_error = np.append(simple_coding_error, np.diff(raster_scan))
+    simple_coding_error = np.concatenate(([raster_scan[0] - 128], np.diff(raster_scan.astype(float))))
 
     # plot error graph
     simple_coding_error_img = np.transpose(np.reshape(np.abs(simple_coding_error), (width, height)))
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     HY = np.sum(p * np.log2(1 / p))
     
     print(f"The entropy of the prediction error of {img_file_name} is {HY:.3f} bpp")
-    print(f"The compression ratio of {img_file_name} is {8/HX:.4f}\n")
+    print(f"The compression ratio of {img_file_name} is {8/HY:.4f}\n")
 
 
 
@@ -201,7 +201,7 @@ if __name__ == "__main__":
     plot_figure(np.abs(adv_coding_error_img), 'Advanced coding prediction error', 'seismic')
     
     # plots difference between error
-    plot_figure(np.abs(simple_coding_error_img - adv_coding_error_img), 'Difference between two techniques', 'seismic')
+    # plot_figure(np.abs(simple_coding_error_img - adv_coding_error_img), 'Difference between two techniques', 'seismic')
 
 
 
