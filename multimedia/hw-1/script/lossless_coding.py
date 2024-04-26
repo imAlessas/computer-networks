@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 import os
-import cv2
 
 # user defined modules
 from expgolomb import exp_golomb_signed
@@ -83,6 +82,9 @@ def advanced_coding(img):
 
 
 
+
+
+
 # - - - - -  main - - - - -
 
 if __name__ == "__main__":
@@ -91,23 +93,23 @@ if __name__ == "__main__":
     #######    Task 1    #######
 
     # Prepare to load the image
-    img_file_name = "peppers"
-    img_extension = ".pgm"
+    img_file_name = "spiderman"
+    img_extension = ".jpg"
     current_dir = os.getcwd()
 
     # path to reach the img
     path_to_img = os.path.join(current_dir, "multimedia", "hw-1", "script", "imgs") + "/"
 
     # loads the colored image
-    img = mpimg.imread(path_to_img +  img_file_name + img_extension) 
+    gray_img = mpimg.imread(path_to_img +  img_file_name + img_extension) 
 
-    # extracts the luminance
-    # gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    gray_img = img
+    # extracts the luminance if RGB
+    if gray_img[0][0].size > 1:
+        gray_img = np.dot(gray_img[...,:3], [0.2989, 0.5870, 0.1140])
 
     # plots images
     # plot_figure(img, 'Colored image', colorbar = False)
-    plot_figure(gray_img, 'Grayscale image')
+    plot_figure(gray_img, 'Grayscale image', colorbar = False)
 
 
 
@@ -125,7 +127,7 @@ if __name__ == "__main__":
 
     # compute and display the entropy
     HX = np.sum(p * np.log2(1 / p))
-    print(f"\nThe entropy of {img_file_name}{img_extension} is {HX:.3f} bpp")
+    print(f"\nThe entropy of {img_file_name}{img_extension} is {HX:.3f} bpp\n")
     # print(f"The compression ratio of {img_file_name}{img_extension} is {8/HX:.4f}\n")
 
 
@@ -137,6 +139,7 @@ if __name__ == "__main__":
     # zip the image
     cmd = f"zip {path_to_img}{img_file_name}.zip {path_to_img}{img_file_name}{img_extension}"
     os.system(cmd)
+    
 
     # get the zip bytes
     img_stats = os.stat(f"{path_to_img}{img_file_name}{img_extension}")
@@ -192,6 +195,8 @@ if __name__ == "__main__":
 
 
     #######    Task 6    #######
+    
+    # np.savetxt(f'{path_to_img}{img_file_name}.txt', gray_img)
 
     predicted_img = advanced_coding(gray_img)
 
@@ -201,7 +206,7 @@ if __name__ == "__main__":
     plot_figure(np.abs(adv_coding_error_img), 'Advanced coding prediction error', 'seismic')
     
     # plots difference between error
-    # plot_figure(np.abs(simple_coding_error_img - adv_coding_error_img), 'Difference between two techniques', 'seismic')
+    plot_figure(np.abs(simple_coding_error_img - adv_coding_error_img), 'Difference between two techniques', 'seismic')
 
 
 
