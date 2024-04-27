@@ -9,9 +9,6 @@ from utilities import *
 
 
 
-
-
-
 # median function for advanced coding
 def median(a, b, c):
     
@@ -59,9 +56,6 @@ def advanced_coding(img):
 
 
 
-
-# - - - - -  main - - - - -
-
 if __name__ == "__main__":
     
 
@@ -101,11 +95,41 @@ if __name__ == "__main__":
 
 
 
+    #######    Task 2    #######
+    # Compute entropy
+    print_task(2, task_color="purple", number_color="red")
 
 
-    # exp_golomb_bpp = exp_golomb_bitrate(np.reshape(adv_coding_error_img, img_size))
+    occ, _ = np.histogram(adv_coding_error_img, bins = range(-255, 256))
+
+    # calculate the relative frequencies and remove any probability == 0
+    freqRel = occ / np.sum(occ)
+    p = freqRel[freqRel > 0]
+
+    # calculate the entropy
+    HY = np.sum(p * np.log2(1 / p))
     
-    # print(f"The bitrate of the advanced coding is {exp_golomb_bpp:.4f}\n")
+    print(f"The entropy of the advanced prediction error of {img_file_name} is {HY:.3f} bpp")
+
+
+
+    #######    Task 3    #######
+    # Evaluate the number of bits required to encode the prediction error using Signed Exp-Golomb coding, and deduce the encoding bitrate.
+    print_task(3, task_color="purple", number_color="red")
+
+    # extracts image size
+    img_size = gray_img.shape[0] * gray_img.shape[1]
+
+    # calculates EG bits
+    exp_golomb_bit = exp_golomb_count(adv_coding_error_img.flatten())
+    
+    # camputes the bitrate
+    exp_golomb_bpp = exp_golomb_bit / img_size
+
+    print(f"The number of bits for the advanced coding is {exp_golomb_bit}")
+    print(f"The bitrate of the advanced coding is {exp_golomb_bpp:.4f}\n")
+
+
 
 
 

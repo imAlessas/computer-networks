@@ -113,7 +113,7 @@ if __name__ == "__main__":
     # calculate the entropy
     HY = np.sum(p * np.log2(1 / p))
     
-    print(f"The entropy of the SIMPLE prediction error of {img_file_name} is {HY:.3f} bpp")
+    print(f"The entropy of the simple prediction error of {img_file_name} is {HY:.3f} bpp")
 
 
 
