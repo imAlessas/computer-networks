@@ -14,52 +14,35 @@
 \listoftodos\newpage
 
 
-\section{Obiettivo}
-\todo{Descrivi decentemente l'obiettivo}
-
-
-
-\vspace{30px}\section{Codice sorgente}
-\todo{Rifai introduzione}
+\section*{Introduzione}
 Il linguaggio scelto per completare le richieste dell'homework è \texttt{Python}; all'interno del documento saranno presenti solo i punti salienti dello script, che comunque può essere ispezionato al seguente \href{https://github.com/imAlessas/computer-networks/blob/main/multimedia/hw-1/script/lossless_coding.py}{\texttt{link}}.
+\todo{Inserisci introduzione dove spieghi l'obiettivo discuti brevemente come hai fatto il codice e dove trovarlo. Inserisci link a github etc}
 
 
+\section{Codifica semplice} 
 
-\vspace{15px}\subsection{Entropia dell'immagine}
-La prima richiesta dell'homework è divisa in due macro parti, la prima richiede di selezionare e mostrare un'immagine mentre la seconda richiesta chiede di calcolare l'entropia dell'immagine.
 
-L'immagine scelta è un'immagine di \textsl{Spider-Man} a colori, di conseguenza è necessario estrarne la luminaza per fara diventare in binaco e nero. Dopo aver caricato l'immagine a colori con l'opportuna funzione \texttt{imread} del pacchetto \texttt{matplotlib.image} è necessario usare la funzione \texttt{cvtColor} del pacchetto \texttt{cv2} di \texttt{opencv}. Il seguente script, dopo aver eseguito le suddette operazioni si occupa di mostrare le due immagini a schermo attraverso una \texttt{subplot}.
+\vspace{15px}\subsection{Caricamento dell'immagine}
+La prima richiesta dell'homework consiste nel caricare un'immagine a livelli di grigio oppure un'immagine a colori ed estrane la luminanza, approssimabile come un media tra i tre canali di colori dell'immagine. Il frammento di codice seguente incontra esattamente le richeste della prima task dove, attraverso la funzione \texttt{imread} del modulo \texttt{matplotlib.image}, l'immagine viene letta correttamente.
 
 \begin{lstlisting}
-# Prepare to load the image
-img_file_name = "spiderman"
-img_extension = ".jpg"
-current_dir = os.getcwd()
+    # Prepare to load the image
+    img_file_name = "spiderman"
+    img_extension = ".jpg"
+    current_dir = os.getcwd()
 
-# path to reach the img
-path_to_img = os.path.join(current_dir, "multimedia", "hw-1", "script", "imgs") + "/"
+    # path to reach the img
+    path_to_img = os.path.join(current_dir, "multimedia", "hw-1", "script", "imgs") + "/"
 
-# loads the colored image
-img = mpimg.imread(path_to_img +  img_file_name + img_extension) 
+    # loads the colored image
+    gray_img = mpimg.imread(path_to_img +  img_file_name + img_extension) 
 
-# extracts the luminance
-gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-# creates a figure with two subplots
-fig, axs = plt.subplots(1, 2, figsize=(12, 6))
-
-# displays the colored image in the first subplot
-axs[0].imshow(img, cmap='gray')
-axs[0].set_title('Colored image')
-axs[0].axis('off')
-
-# displays the grayscale image in the second subplot
-axs[1].imshow(gray_img, cmap='gray')
-axs[1].set_title('Grayscale image')
-axs[1].axis('off')
+    # extracts the luminance if RGB
+    if gray_img[0][0].size > 1:
+        gray_img = np.dot(gray_img[..., :3], [1, 1, 1]) / 3
 \end{lstlisting}
 
-\noindent Dopo aver eseguito lo script soprastante si può notare che la luminanza dell'immgine è stata estratta con successo (figura \ref{fig:colored-grayscale}).
+\noindent Scegliendo un'immagine a colori, in questo caso si prende come riferimento quella di \textsl{Spiderm-Man}, è quindi possibile verificare il corretto funzionamento del codice, come mostrato nella figura \ref{fig:colored-grayscale}.
 
 \begin{figure}[h]
     \centering
@@ -69,7 +52,10 @@ axs[1].axis('off')
     \label{fig:colored-grayscale}
 \end{figure}
 
-\FloatBarrier\noindent In secondo luogo è necessario calcolare l'entropia dell'immagine in bianco e nero. L'entropia di una variabile aleatoria $X$ (in questo caso l'immagine) è definita come l'\textbf{informazione media} degli eventi della sorgente; l'informazione di un evento è descritta dalla funzione seguente:
+
+
+\subsection{Entropia dell'immagine}\label{img-entropy}
+La seconda task dell'homework richiede di calcolare l'entropia dell'immagine in bianco e nero. L'entropia di una variabile aleatoria $X$ (in questo caso l'immagine) è definita come l'\textbf{informazione media} degli eventi della sorgente; l'informazione di un evento è descritta dalla funzione seguente:
 
 \begin{gather*}
     I(X) = \log_2\left( \frac{1}{p_i} \right)
@@ -85,51 +71,52 @@ axs[1].axis('off')
 
 
 \begin{lstlisting}
-# flatten the transposed matrix to read pixels row by row
-raster_scan = np.transpose(gray_img).flatten()
+    # flatten the transposed matrix to read pixels row by row
+    raster_scan = np.transpose(gray_img).flatten()
 
-# count the occurrences of each pixel value
-occurrencies = np.histogram(raster_scan, bins=range(256))[0]
+    # count the occurrences of each pixel value
+    occurrencies = np.histogram(raster_scan, bins=range(256))[0]
 
-# calculate the relative frequencies
-rel_freq = occurrencies / np.sum(occurrencies)
+    # calculate the relative frequencies
+    rel_freq = occurrencies / np.sum(occurrencies)
 
-# remove zero-values of probability
-p = rel_freq[rel_freq > 0]
+    # remove zero-values of probability
+    p = rel_freq[rel_freq > 0]
 
-# compute and display the entropy
-HX = - np.sum(p * np.log2(p))
-print(f"\nThe entropy of {img_file_name}{img_extension} is {HX:.3f} bpp")
+    # compute and display the entropy
+    HX = np.sum(p * np.log2(1 / p))
+    print(f"The entropy of {img_file_name}{img_extension} is {HX:.3f} bpp")
 \end{lstlisting}
 
-\noindent Dopo aver eseguito lo script, l'entropia dell'immagine scelta è di \textbf{7.530 bpp}.
-
-
+\noindent Dopo aver eseguito lo script, l'entropia dell'immagine scelta è di \textbf{7.581 bpp}.
 
 
 
 \vspace{15px}\subsection{Codifica con dizionario}
-La seconda task chiede di utilizzare una compressione a dizionario, come \texttt{zip} nel caso di \textsl{Windows} per poi calcolare il \textsl{bitrate} risultante. Lo script necessario per soddisfare la richiesta è presentato nel frammento di codice sottostante. In particolare le prime due righe si occupano di "zippare" il file mentre le istruzioni seguenti estraggono la dimensione dell'immagine compressa (in bytes). Infine nelle ultime linee del frammento di codice viene computato l'effettivo \textsl{bitrate} dividendo la dimensione del file compresso con la dimensione dell'immagine originale, ottenuta tramite i valori di ritorno dell'attributo \texttt{img.shape}.
+La terza task chiede di utilizzare una compressione a dizionario, come \texttt{zip} nel caso di \textsl{Windows} per poi calcolare il \textsl{bitrate} risultante. Lo script necessario per soddisfare la richiesta è presentato nel frammento di codice sottostante. In particolare le prime righe si occupano di "zippare" il file mentre le istruzioni seguenti estraggono la dimensione dell'immagine compressa (in bytes). Infine nelle ultime linee del frammento di codice viene computato l'effettivo \textsl{bitrate} dividendo la dimensione del file compresso con la dimensione dell'immagine originale.
 
 \begin{lstlisting}
-# zip the image
-cmd = f"zip {path_to_img}{img_file_name}.zip {path_to_img}{img_file_name}.jpg"
-os.system(cmd)
+    # change the current working directory to the directory containing the image
+    os.chdir(path_to_img)
 
-# get the zip bytes
-img_stats = os.stat(f"{path_to_img}{img_file_name}.jpg")
-zip_bytes = img_stats.st_size
+    # zip the image
+    cmd = f"zip {img_file_name}.zip {img_file_name}{img_extension}"
+    os.system(cmd)
+    
+    # get the zip bytes
+    zip_bytes = os.stat(f"{img_file_name}.zip").st_size
 
-# get img size
-height, width = gray_img.shape
-img_size = width * height
+    # get img size
+    height, width = gray_img.shape
+    img_size = width * height
 
-# get the birate
-zip_bitrate = zip_bytes * 8 / img_size 
-print(f"\nThe bitrate of {img_file_name}.zip is {zip_bitrate:.3f} bpp\n")
-    \end{lstlisting}
+    # get the birate
+    zip_bitrate = zip_bytes * 8 / img_size 
 
-\noindent Dunque, dopo aver eseguito lo script si ottiene il valore del bitrate, corrispondente a \textbf{1.340 bpp}. 
+    print(f"The bitrate of {img_file_name}.zip is {zip_bitrate:.3f} bpp")
+\end{lstlisting}
+
+\noindent Dunque, dopo aver eseguito lo script si ottiene il valore del bitrate, corrispondente a \textbf{2.657 bpp}. 
 
 
 
@@ -140,7 +127,17 @@ Il risultato trovato calcolando il bitrate della codifica con dizionario (1.340 
 
 
 \vspace{15px}\subsection{Codifica semplice}\label{simple-coding}
-La quarta richiesta dell'homework è quella di effettuare una codifica predittiva \textsl{semplice}. In particolare, data l'immagine (che chiameremo $x(n)$), la codifica predittiva $y(n)$ è definita come segue:
+La quinta richiesta dell'homework è quella di effettuare una codifica predittiva \textsl{semplice}. In particolare, data l'immagine, definita come un vettore chiamato $x(n)$, la codifica predittiva è definita come segue:
+
+\begin{gather*}
+    x(n) = 
+    \begin{cases}
+        128 \hspace{37px} \text{se } \, n = 0 \\
+        x(n - 1) \hspace{15px} \text{altrimenti}\\
+    \end{cases}
+\end{gather*}
+
+\noindent Di conseguenza l'errore di predizione $y(n)$ sull'immagine $x(n)$ è dato da:
 
 \begin{gather*}
     y(n) = 
@@ -150,52 +147,130 @@ La quarta richiesta dell'homework è quella di effettuare una codifica predittiv
     \end{cases}
 \end{gather*}
 
-\noindent La suddetta codifica predittiva si traduce nel seguente Python script il quale, dopo aver calcolato la predizione, mostra l'immagine codificata.
+\noindent Tale codifica si traduce nel seguente codice Python, dove viene utilizzato il vettore \texttt{raster\_scan} contenete il vettore dell'immagine in scala di grigi.
 
 \begin{lstlisting}
-simple_coding_error = raster_scan[0] - 128
-simple_coding_error = np.append(simple_coding_error, np.diff(raster_scan))
+    # calculate prediction error
+    simple_coding_error = np.concatenate(([raster_scan[0] - 128], np.diff(raster_scan.astype(float))))
 
-# plot error graph
-plt.figure()
-plt.imshow(np.transpose(np.reshape(np.abs(simple_coding_error), (width, height))), cmap = 'seismic')
-plt.axis('image')
-plt.axis('off')
-plt.colorbar()
-plt.title('Simple coding prediction error')
+    # plot error graph
+    simple_coding_error_img = np.transpose(np.reshape(np.abs(simple_coding_error), (width, height)))
+
 \end{lstlisting}
 
-\noindent Dopo aver eseguito lo script soprastante si ottiene l'immagine mostrata nella figura \ref{fig:simple-coding}. Dall'immagine si può notare che le zone più rosse, ovvero le zone in cui il predittore ha fatto più errori, sono le zone dei contorni, come la skyline della città oppure lo stacco tra il personaggio raffigurato e il cielo. Questo perchè la differenza dei colori tra una sezione e l'altra è particolarmente accentuata. D'altro canto, le zone colorate di blu sono le zone dove i colori sono più uniformi: ecco quindi che i palazzi e il cielo sono per lo più dello stesso colore, suggerendo una zona dove la variazione di colore - e quindi di informazione - è molto bassa.
-
+\noindent Dopo aver eseguito lo script soprastante si ottiene l'immagine mostrata nella figura \ref{fig:simple-coding}.
 \begin{figure}[h]
     \centering
     \includegraphics[width = .9\textwidth]{hw-1/report/imgs/simple-coding.png}
     \caption{Rappresentazione del modulo dell'errore di predizione nella codifica semplice.}
     \label{fig:simple-coding}
 \end{figure}
+Dall'immagine si può notare che le zone più chiare, ovvero le zone in cui il predittore ha fatto più errori, sono le zone dei contorni, come i contorini del personaggio raffigurato. Questo perchè la differenza dei colori tra una sezione e l'altra è particolarmente accentuata. D'altro canto, le zone colorate di blu sono le zone dove i colori sono più uniformi: eccoil quindi che i palazzi e  cielo sono per lo più dello stesso colore, suggerendo una zona dove la variazione di colore - e quindi di informazione - è molto bassa.
 
 
 
+\subsection{Entropia dell'errore di predizione}
+La richiesta seguente è quella di calculare il valore dell'entropia dell'errore di predizione $y$. Utilizzando uno script del tutto simile a quello utilizzato nella task \ref{img-entropy} possiami quindi calcolare l'entropia richiesta.
 
-
-
-
-\subsubsection{Analisi} \todo{valuta se farla subsection}
-Seguedo le direttive della task numero 5, calcoliamo ora la codifica esponenziale di Golomb (detta anche \textsl{exp-Golomb})
-
-\todo{capisci cosa significa il valore EG-bpp}
 \begin{lstlisting}
-bit_count = 0
-for symbol in simple_coding_error:
-    codeword = exp_golomb_signed(symbol)
-    bit_count += len(codeword)
+    # count the occurrences of each prediction error value
+    occ, _ = np.histogram(simple_coding_error, bins = range(-255, 256))
 
-exp_golomb_bpp = bit_count / img_size
+    # calculate the relative frequencies and remove any probability == 0
+    freqRel = occ / np.sum(occ)
+    p = freqRel[freqRel > 0]
 
-rint(f"The bitrate of the simple coding is {exp_golomb_bpp:.4f}\n")
+    # calculate the entropy
+    HY = np.sum(p * np.log2(1 / p))
+    
+    print(f"The entropy of the simple prediction error of {img_file_name} is {HY:.3f} bpp")
 \end{lstlisting}
 
+\noindent Dopo l'esecuzione dello script si ottiene che l'entropia dell'errore di predizione semplice è \textbf{4.382 bpp}.
 
+
+
+\subsection{Exp Golomb}\label{exp-golomb}\todo{capisci cosa significa il valore EG-bpp}
+Seguedo le direttive della task numero 7, calcoliamo la codifica esponenziale di Golomb (detta anche \textsl{exp-Golomb}), la quale dato un numero intero ritorna la sua codifica binaria.
+
+Tale codifica può essere spiegata prima affrontando il caso in cui tutti i numeri da codificare siano ineri positivi e poi tale concetto si può generalizzare. La codifica di Golomb per interi positivi, detta anche \textsl{exponential Golomb unsigned}, è deifnita come segue.
+
+\begin{gather*}
+    \text{\texttt{eg\_unsigned}}(n) =
+    \begin{cases}
+        1 \hspace{180px} \text{se } \, n = 0 \\
+        \text{zeros}\left( \left\lfloor \log_2(n + 1) \right\rfloor \right) + \text{dec2bin}(n + 1) \hspace{20px} \text{altrimenti}
+    \end{cases}
+\end{gather*}
+
+\noindent A questo, dopo aver definito la codifica senza segno, la codifica con segno, detta anche \textsl{exponential Golomb signed}, è immediata:
+
+\begin{gather*}
+    \text{\texttt{eg\_signed}}(n) =
+    \begin{cases}
+        \text{\texttt{eg\_unsigned}}(2n - 1) \hspace{20px} \text{se } \, n > 0 \\
+        \text{\texttt{eg\_unsigned}}(-2n) \hspace{28px} \text{altrimenti}
+    \end{cases}
+\end{gather*}
+
+\noindent Dopo aver definito matematicamente la codifica, è possibile tradurla in due funzioni Python molto seplici, che riassumono esattamente quanto già osservato.
+
+\begin{lstlisting}
+    def exp_golomb_signed(n):
+        """
+        Computes the Exp-Golomb code for signed integers.
+        """
+
+        if n > 0:
+            return exp_golomb_unsigned(2 * n - 1)
+            
+        return exp_golomb_unsigned(-2 * n)
+        
+    def exp_golomb_unsigned(n):
+        """
+        Computes the Exp-Golomb code for non-negative integers.
+        """
+
+        # handle the case where N is zero
+        if n == 0:
+            return '1'
+        
+        # returns the coded string of bits
+        return '0' * int( math.floor( math.log2(n + 1) ) ) + format(n + 1, 'b')
+\end{lstlisting}
+
+\noindent Possiamo quindi ora occuparci di calcolare quanto richiesto dalla consegna. Per calcolare il numero di bit necessari utilizzando la codifica esponenziale di Golomb, è sufficiente calcolare la codifica per ogni errore della predizione semplice. La lunghezza delle codifica di ciascun valore viene sommata ottenendo quindi il numero totale di bit necessari per codificare l'errore. Infine, per ottenere il bitrate di codifica è necessario dividere il numero totali di bit per la grandezza dell'immagine. Il seguente script ricopre esattamente queste direttive.
+
+\begin{lstlisting}
+    def exp_golomb_count(vector):
+        """
+        Calculate the bitrate based on the exponential Golomb code for a given vector.
+        """
+
+        bit_count = 0
+        for symbol in vector:
+            bit_count += len(exp_golomb_signed(int(symbol)))
+
+        return bit_count
+
+    exp_golomb_bit = exp_golomb_count(simple_coding_error) 
+
+    exp_golomb_bpp = exp_golomb_bit / img_size
+
+    print(f"The number of bits for the simple coding is {exp_golomb_bit}")
+    print(f"The bitrate of the simple coding is {exp_golomb_bpp:.3f}\n")
+\end{lstlisting}
+
+\noindent Dopo l'esecuzione dello script, il bitrate di codifica ha il valore di \textbf{4.980 bpp}.
+
+
+\subsection{Conclusioni}
+
+
+
+
+
+\newpage\section{Codifica avanzata}
 
 \vspace{15px}\subsection{Codifica avanzata}
 
@@ -278,7 +353,6 @@ adv_coding_error = gray_img - predicted_img
 
 
 
-\vspace{30px}\section{Conclusioni}
 
 
 
