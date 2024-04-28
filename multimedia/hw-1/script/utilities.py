@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 
 
 
-# plot_figure function
 def plot_figure(figure, title, style='gray', colorbar=True):
     """
     Function to plot a figure with specified style and title.
@@ -40,23 +39,20 @@ def print_task(n, task_color = "white", number_color= "white"):
 
 
 
-
-
-
 # Exponential Golomb utilites
 
-def exp_golomb_count(error_vector):
+def exp_golomb_count(vector):
     """
-    Calculate the bitrate based on the exponential Golomb code for a given error vector.
+    Calculate the bitrate based on the exponential Golomb code for a given vector.
 
     Parameters:
-    error_vector (list): List of error symbols.
+    vector (list): List of symbols.
 
     Returns:
     float: Bitrate per pixel.
     """
     bit_count = 0
-    for symbol in error_vector:
+    for symbol in vector:
         bit_count += len(exp_golomb_signed(int(symbol)))
 
     return bit_count
@@ -87,7 +83,7 @@ def exp_golomb_unsigned(n):
     (str): Binary representation of the Exp-Golomb code.
     """
 
-    # Handle the case where N is zero
+    # handle the case where N is zero
     if n == 0:
         return '1'
     

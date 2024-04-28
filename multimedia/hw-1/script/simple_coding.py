@@ -3,8 +3,6 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 import os
-import zlib
-import zipfile
 
 # user defined modules
 from utilities import *
@@ -20,8 +18,8 @@ if __name__ == "__main__":
     print_task(1, task_color="purple", number_color="green")
 
     # Prepare to load the image
-    img_file_name = "peppers"
-    img_extension = ".pgm"
+    img_file_name = "spiderman"
+    img_extension = ".jpg"
     current_dir = os.getcwd()
 
     # path to reach the img
@@ -126,7 +124,7 @@ if __name__ == "__main__":
     exp_golomb_bpp = exp_golomb_bit / img_size
 
     print(f"The number of bits for the simple coding is {exp_golomb_bit}")
-    print(f"The bitrate of the simple coding is {exp_golomb_bpp:.4f}\n")
+    print(f"The bitrate of the simple coding is {exp_golomb_bpp:.3f}\n")
 
 
 
