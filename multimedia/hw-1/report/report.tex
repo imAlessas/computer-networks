@@ -265,6 +265,40 @@ Tale codifica può essere spiegata prima affrontando il caso in cui tutti i nume
 
 
 \subsection{Conclusioni}
+Cerchiamo ora di ottenere dei dati statistici che ci permettano di trarre delle informazioni utili. Si sono quindi prese le immagini in scala di grigi - formato \texttt{.pgm} - fornite nella demo, e si è eseguito il codice per ciascuna immagine. I risultati trovati eseguendo lo script descitto nelle precedenti sezioni per ogni immagine sono stati riassunti nella seguente tabella (\ref{tab:simple-conclusions}).
+
+
+\begin{table}[h]
+    \centering
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{ | c | c c c c | }
+        \hline
+        \textbf{img} & \texttt{.pgm} & \texttt{.zip} & \texttt{error} & \texttt{EG-coding} \\\hline\hline
+
+        einst & 6.785  & 6.391 & 5.343 & 6.897 \\
+
+        house & 7.056  & 4.002 & 3.613 & 3.786 \\
+
+        lake & 7.484  & 6.884 & 5.656 & 7.094 \\
+
+        lena & 7.445  & 6.808 & 4.675 & 5.542 \\
+
+        peppers & 7.594  & 7.081 & 5.026 & 6.261 \\
+
+        plane & 6.704  & 5.714 & 4.675 & 5.252 \\
+
+        spring & 7.157 & 6.918 & 5.342 & 6.757 \\
+        \hline
+
+    \end{tabular}
+    \caption{Dati ottenute dalle varie istanze di esecuzione dello script, con immagini diverse.}
+    \label{tab:simple-conclusions}
+    \renewcommand{\arraystretch}{1}
+\end{table}
+
+\noindent Osservando la tebella riassuntiva si possono notare dei pattern tra i vari risultati. Prima di tutto va osservato che, ragionevolmente, l'immagine originale ha un'entropia maggiore rispetto ad una qualsisa forma di codifica o di compressione. Questo risultato suggerisce che tale ridondanza può essere sfruttata al fine di comprimere l'immagine. Osservando infatti la seconda colonna, contenete i risultati della codifica a dizionario, possiamo osservar che tali valori sono nettamente ridotti rispetto all'immagine originale; in particolare si osserva una differenza notevole nell'immagine \texttt{house}. 
+
+In secondo luogo si osserva la differenza tra il bitrate dell'errore della codifica semplice e quello della compressione in zip. Si nota che il primo, in ciascuna iostanza di esecuzione è minore del secondo. Questo probabilmente è dovuto al fatto che la codifica predittiva riesce a comprimere meglio il file rispetto alla codifica generica. \todo{forse ho detto una cazzata}
 
 
 
@@ -347,7 +381,6 @@ adv_coding_error = gray_img - predicted_img
 
 
 
-\subsubsection{Analisi}\todo{valuta se farla subsection}
 
 
 
