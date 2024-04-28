@@ -19,6 +19,7 @@ def median(a, b, c):
 
 
 
+
 # codes an image based on the guidelines directives
 def advanced_coding(img):
     # blank image 
@@ -31,15 +32,15 @@ def advanced_coding(img):
     for row in range(height):
 
         # iterates through the cols (width)
-        for col in range(width - 1):
+        for col in range(width):
 
             if row == 0 and col == 0:   # first pixel
                 predicted_img[row][col] = img[row][col] - 128
             
-            elif row == 1:              # first row
+            elif row == 0:              # first row
                 predicted_img[row][col] = img[row][col - 1]
             
-            elif col == 1:              # first col
+            elif col == 0:              # first col
                 predicted_img[row][col] = img[row - 1][col]
             
             elif col == (width - 1):    # last col
@@ -62,8 +63,8 @@ if __name__ == "__main__":
     #######    Setup    #######
     print_task(0, task_color="purple")
 
-    img_file_name = "peppers"
-    img_extension = ".pgm"
+    img_file_name = "spiderman"
+    img_extension = ".jpg"
     current_dir = os.getcwd()
 
     # path to reach the img
