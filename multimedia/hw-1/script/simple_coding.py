@@ -26,7 +26,7 @@ if __name__ == "__main__":
     path_to_img = os.path.join(current_dir, "multimedia", "hw-1", "script", "imgs") + "/"
 
     # loads the colored image
-    gray_img = mpimg.imread(path_to_img +  img_file_name + img_extension) 
+    gray_img = mpimg.imread(path_to_img +  img_file_name + img_extension).astype(np.int16)
 
     # extracts the luminance if RGB
     if gray_img[0][0].size > 1:
@@ -125,8 +125,6 @@ if __name__ == "__main__":
 
     print(f"The number of bits for the simple coding is {exp_golomb_bit}")
     print(f"The bitrate of the simple coding is {exp_golomb_bpp:.3f}\n")
-
-
 
 
 
