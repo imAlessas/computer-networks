@@ -1,9 +1,10 @@
 import math
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 
-def plot_figure(figure, title, style='gray', colorbar=True):
+def plot_figure(figure: np.ndarray, title: str, style: str ='gray', colorbar: bool =True) -> None:
     """
     Function to plot a figure with specified style and title.
 
@@ -22,9 +23,9 @@ def plot_figure(figure, title, style='gray', colorbar=True):
     if colorbar:
         plt.colorbar()
 
-def print_task(n, task_color = "white", number_color= "white"):
+def print_task(n: int, task_color: str = "white", number_color: str = "white") -> None:
     
-    color = {
+    color: dict = {
     "black": "\033[30m",
     "red": "\033[31m",
     "green": "\033[32m",
@@ -41,7 +42,7 @@ def print_task(n, task_color = "white", number_color= "white"):
 
 # Exponential Golomb utilites
 
-def exp_golomb_count(vector):
+def exp_golomb_count(vector: list) -> int:
     """
     Calculate the bitrate based on the exponential Golomb code for a given vector.
 
@@ -51,13 +52,13 @@ def exp_golomb_count(vector):
     Returns:
     float: Bitrate per pixel.
     """
-    bit_count = 0
+    bit_count: int = 0
     for symbol in vector:
         bit_count += len(exp_golomb_signed(int(symbol)))
 
     return bit_count
 
-def exp_golomb_signed(n):
+def exp_golomb_signed(n: int) -> str:
     """
     Computes the Exp-Golomb code for signed integers.
     
@@ -72,7 +73,7 @@ def exp_golomb_signed(n):
         
     return exp_golomb_unsigned(-2 * n)
     
-def exp_golomb_unsigned(n):
+def exp_golomb_unsigned(n: int) -> str:
     """
     Computes the Exp-Golomb code for non-negative integers.
     
