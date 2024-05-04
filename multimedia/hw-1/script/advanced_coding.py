@@ -108,9 +108,9 @@ if __name__ == "__main__":
     p = freqRel[freqRel > 0]
 
     # calculate the entropy
-    HY = np.sum(p * np.log2(1 / p))
+    entropy_y = - np.sum(p * np.log2(p))
     
-    print(f"The entropy of the advanced prediction error of {img_file_name} is {HY:.3f} bpp")
+    print(f"The entropy of the advanced prediction error of {img_file_name} is {entropy_y:.3f} bpp")
 
 
 
@@ -128,12 +128,11 @@ if __name__ == "__main__":
     exp_golomb_bpp = exp_golomb_bit / img_size
 
     print(f"The number of bits for the advanced coding is {exp_golomb_bit}")
-    print(f"The bitrate of the advanced coding is {exp_golomb_bpp:.4f}\n")
+    print(f"The bitrate of the advanced coding is {exp_golomb_bpp:.3f}\n")
 
 
 
 
 
     ### Show all the figures ###
-
     plt.show()

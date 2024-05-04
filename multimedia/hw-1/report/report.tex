@@ -1,6 +1,6 @@
 \title{\vspace{160px} \textbf{\huge{Multimedia}} \\\vspace{17.5px} \LARGE{Homework 1}  \vspace{10px}}
 \author{\href{https://github.com/imAlessas}{Alessandro Trigolo}}
-\date{30 Aprile 2024}
+\date{7 Maggio 2024}
 
 \begin{document}
 
@@ -167,7 +167,7 @@ Dall'immagine si può notare che le zone più chiare, ovvero le zone in cui il p
 
 
 
-\subsection{Entropia dell'errore di predizione}
+\subsection{Entropia dell'errore di predizione}\label{simple-coding-error-entropy}
 La richiesta successiva è quella di calculare il valore dell'entropia dell'errore di predizione $y(n)$. Utilizzando uno script del tutto simile a quello utilizzato nella task \ref{img-entropy} è quindi possibile calcolare l'entropia richiesta.
 
 \begin{lstlisting}
@@ -186,7 +186,7 @@ La richiesta successiva è quella di calculare il valore dell'entropia dell'erro
 
 
 
-\subsection{Exp Golomb}\label{exp-golomb}\todo{capisci cosa significa il valore EG-bpp}
+\subsection{Codifica esponenziale di Golomb}\label{exp-golomb}
 Seguedo le direttive della task numero 7, calcoliamo la codifica esponenziale di Golomb (detta anche \textsl{exp-Golomb}), la quale dato un numero intero ritorna la sua codifica. Quest'ultima è più efficacie riespetto ad una normale codifica binaria in quanto durante la coidifica vengono risparmiati diversi bit, migliorando la compressione. 
 
 Tale codifica può essere esaminata prima affrontando il caso in cui tutti i numeri da codificare siano ineri positivi e poi tale concetto si può generalizzare. La codifica di Golomb per interi positivi, detta anche \textsl{exponential Golomb unsigned}, è deifnita come segue.
@@ -249,7 +249,7 @@ Tale codifica può essere esaminata prima affrontando il caso in cui tutti i num
     exp_golomb_bpp = exp_golomb_bit / img_size
 \end{lstlisting}
 
-\noindent Dopo l'esecuzione dello script, il numero di bit necessari per la codifica è $41305140$ mentre il bitrate di codifica ha il valore di \textbf{4.980 bpp}.
+\noindent Dopo l'esecuzione dello script, il numero di bit necessari per la codifica è $41\,305\,140$ mentre il bitrate di codifica ha il valore di \textbf{4.980 bpp}.
 
 
 \subsection{Conclusioni}
@@ -285,13 +285,15 @@ Cerchiamo ora di ottenere dei dati statistici che ci permettano di trarre delle 
 
 \noindent Osservando la tebella riassuntiva si possono notare dei pattern tra i vari risultati. Prima di tutto va osservato che, ragionevolmente, l'immagine originale ha un'entropia maggiore rispetto ad una qualsisa forma di codifica o di compressione. Questo risultato suggerisce che tale ridondanza può essere sfruttata al fine di comprimere l'immagine. Osservando infatti la seconda colonna, contenete i risultati della codifica a dizionario, possiamo osservar che tali valori sono nettamente ridotti rispetto all'immagine originale; in particolare si osserva una differenza notevole nell'immagine \texttt{house}. 
 
-In secondo luogo si osserva la differenza tra il bitrate dell'errore della codifica semplice e quello della compressione in zip. Si nota che il primo, in ciascuna iostanza di esecuzione è minore del secondo. Questo probabilmente è dovuto al fatto che la codifica predittiva riesce a comprimere meglio il file rispetto alla codifica generica. \todo{forse ho detto una cazzata}
+In secondo luogo si osserva la differenza tra il bitrate dell'errore della codifica semplice e quello della compressione in zip. Si nota che il primo, in ciascuna iostanza di esecuzione è minore del secondo. Questo probabilmente è dovuto al fatto che la codifica predittiva riesce a comprimere meglio il file rispetto alla codifica generica. \todo{Sistema conclusioni codifica semplice}
 
 
 
 
 
 \newpage\section{Codifica avanzata}
+La seconda parte dell'homewrok richiede di effettuare la modifica avanzata sull'immagine ed analizzarne i risultati. Infine viene richiesto di comprarli con quelli ottenuti nella codifica semplice.
+
 
 \vspace{15px}\subsection{Codifica avanzata}
 
@@ -308,47 +310,58 @@ La penultima richiesta, esige di creare un nuovo tipo di codifica, detta \textsl
     \end{cases}
 \end{gather*} 
 
-\noindent Dove in questo caso l'immagine anziche essere vista come un vettore $x$ è vista come una matrice di dimensione $n \times m$. Le richieste della codifica sono tradotte in uno script contenente due cicli annidati - il primo che itera lungo le righe della matrice e il secondo che itera lungo le colonne - dove allintero sono presenti una serie di \texttt{if} statement che soddisfano la definizione di codifica avanzata precedentemente citata. Inoltre si osserva la mediana dei tre valori è calcolata tramite una funzione definita dall'utente, descritta anch'essa all'interno dello script. 
+\noindent Dove in questo caso l'immagine anzichè essere vista come un vettore $x$ è vista come una matrice di dimensione $n \times m$. Le richieste della codifica sono tradotte in uno script contenente due cicli annidati - il primo che itera lungo le righe della matrice e il secondo che itera lungo le colonne - dove all'intero sono presenti una serie di \texttt{if} statement che soddisfano la definizione di codifica avanzata precedentemente citata. Inoltre si osserva la mediana dei tre valori è calcolata tramite una funzione definita dall'utente, descritta anch'essa all'interno dello script. 
 
 \begin{lstlisting}
-# median function for advanced coding
-def median(a, b, c):
-    vector = [a, b, c]
-    vector.remove(min(vector))
-    vector.remove(max(vector))
+    # median function for advanced coding
+    def median(a, b, c):
+        
+        v = [a, b, c]
+        v.sort()
     
-    return vector[0]
-
-
-
-# blank image 
-predicted_img = np.zeros_like(gray_img)
-
-# iterates through the rows (height)
-for row in range(height):
-
-    # iterates through the cols (width)
-    for col in range(width - 1):
-
-        if row == 0 and col == 0:   # first pixel
-            predicted_img[row][col] = gray_img[row][col] - 128
+        return v[1]
+    
+    
+    # codes an image based on the guidelines directives
+    def advanced_coding(img):
+        # blank image 
+        predicted_img = np.zeros_like(img)
         
-        elif row == 1:              # first row
-            predicted_img[row][col] = gray_img[row][col - 1]
-        
-        elif col == 1:              # first col
-            predicted_img[row][col] = gray_img[row - 1][col]
-        
-        elif col == (width - 1):    # last col
-            predicted_img[row][col] = median(gray_img[row - 1][col], gray_img[row][col - 1], gray_img[row - 1][col - 1])
+        # extracts the height and the width from the image
+        height, width = img.shape[0], img.shape[1]
+    
+        # iterates through the rows (height)
+        for row in range(height):
+    
+            # iterates through the cols (width)
+            for col in range(width):
+    
+                if row == 0 and col == 0:   # first pixel
+                    predicted_img[row][col] = img[row][col] - 128
+                
+                elif row == 0:              # first row
+                    predicted_img[row][col] = img[row][col - 1]
+                
+                elif col == 0:              # first col
+                    predicted_img[row][col] = img[row - 1][col]
+                
+                elif col == (width - 1):    # last col
+                    predicted_img[row][col] = median(img[row - 1][col], img[row][col - 1], img[row - 1][col - 1])
+    
+                else:                       # other cases
+                    predicted_img[row][col] = median(img[row - 1][col], img[row][col - 1], img[row - 1][col + 1])
+    
+        return predicted_img
 
-        else:                       # other cases
-            predicted_img[row][col] = median(gray_img[row - 1][col], gray_img[row][col - 1], gray_img[row - 1][col + 1])
 
-adv_coding_error = gray_img - predicted_img
+    # performs advanced coding
+    predicted_img = advanced_coding(gray_img)
+
+    # calculates the prediction error
+    adv_coding_error_img = gray_img - predicted_img
 \end{lstlisting}
 
-\noindent Dopo aver eseguito lo script è possibile mostrare l'errore di predizione sottraendo l'immagine predetta \texttt{predicted\_img} con l'immagine iniziale \texttt{img} e "plottando" il suo valore assoluto come segue mediante uno script simile a quello mostrato per la codifica semplice (\ref{simple-coding}). L'immagine mostrata in figura \ref{fig:advanced-coding} è ciò che risulta degli errori commessi durante la predizione.
+\noindent Dopo aver eseguito lo script è possibile mostrare l'errore di predizione sottraendo l'immagine predetta \texttt{predicted\_img} con l'immagine iniziale \texttt{img} e "plottando" il suo valore assoluto. L'immagine mostrata in figura \ref{fig:advanced-coding} è ciò che risulta degli errori commessi durante la predizione.
 
 \begin{figure}[h]
     \centering
@@ -357,7 +370,7 @@ adv_coding_error = gray_img - predicted_img
     \label{fig:advanced-coding}
 \end{figure}
 
-\FloatBarrier\noindent Si osserva che per quanto l'immagine \ref{fig:advanced-coding} sia simile alla figura \ref{fig:simple-coding}, è presente una differenza: è sufficente mostrare un'immagine che contenga la differenza in modulo tra le varaibili \texttt{adv\_coding\_error} e \texttt{simple\_coding\_error}. Dal risultato, mostrato nella figura \ref{fig:error-difference}, si può notare che non è di colore uniforme ma presenta diverse sfumature di blu, suggerendo quindi una bassa differenza tra le due che quindi le rende non identiche.
+\FloatBarrier\noindent Si osserva che per quanto l'immagine \ref{fig:advanced-coding} sia simile alla figura \ref{fig:simple-coding}, è presente una differenza: è sufficente mostrare un'immagine che contenga la differenza in modulo tra le varaibili \texttt{simple\_coding\_error} e \texttt{adv\_coding\_error}. Dal risultato, mostrato nella figura \ref{fig:error-difference}, si può notare che non è di colore uniforme ma presenta diverse sfumature di blu, suggerendo quindi una differenza tra le due immagini di errore.
 
 \begin{figure}[h]
     \centering
@@ -366,27 +379,60 @@ adv_coding_error = gray_img - predicted_img
     \label{fig:error-difference}
 \end{figure}
 
-\todo{Tutti i valori della codifica avanzata sono essenzialmente corretti in quanto sono minori rispettop alla codifica semplice}
+
+
+\vspace{15px}\subsection{Entropia dell'errore di predizione}
+Dopo aver calcolato l'errore del predittore avanzato dell'immagine, è necessario calcolarne l'entropia. Le istruzioni necessarie per il calcolo dell'entropia sono le stesse utilizzate per il calcolo dell'entropia del predittore semplice nel pargarfo \ref{simple-coding-error-entropy}.
+
+
+
+\begin{lstlisting}
+    occ, _ = np.histogram(adv_coding_error_img, bins = range(-255, 256))
+
+    # calculate the relative frequencies and remove any probability == 0
+    freqRel = occ / np.sum(occ)
+    p = freqRel[freqRel > 0]
+
+    # calculate the entropy
+    entropy_y = - np.sum(p * np.log2(p))
+\end{lstlisting}
+
+\noindent Dopo aver eseguito lo script, si ottene il valore dell'entropia del valore di predizione avcanzata il quale corrisponde a \textbf{4.195 bpp}, che è minore rispetto a quello ottenuto nell'errore di codifica semplice, suggerendo che la codifica avanzata è stata più efficacie.
+
+
+
+\vspace{15px}\subsection{Codifica esponenziale di Golomb}
+Come per la codifica semplice, anche in questo caso è necessario calcaolare la codifica esponenziale di Golomb sull'errore di predizione. Il codice utilizzato è esattamente lo stesso indicato sul paragrafo \ref{exp-golomb} con l'unica differenza che la funzione viene invocata sull'errore di predizione avanzata anzichè su quella semplice.
+
+\begin{lstlisting}
+    # calculates EG bits
+    exp_golomb_bit = exp_golomb_count(adv_coding_error_img.flatten())
+    
+    # camputes the bitrate
+    exp_golomb_bpp = exp_golomb_bit / img_size
+\end{lstlisting}
+
+\noindent In questo caso, per l'errore di predizione avanzata sull'immagine \ref{fig:colored-grayscale}, il numero di bit di necessari è di $38\,854\,794$ mentre il bitrate è \textbf{4.6845 bpp}, il quale, anche in questo caso, è minore rispetto a quello della codifica semplice. 
+
+
+
+\vspace{15px}\subsection{Confronto con codifica semplice}
+% Confrontare l’entropia e il tasso di codifica ottenuti con l’entropia dell’immagine e con il tasso di codifica dell’applicazione zip
+
+Confrontando i valori ottenuti con la codifica avanzata con i valori della codifica semplice, si desume che le prestazioni della codifica avanzata sono migliori. In particolare, per quanto riguarda l'entropia dell'errore, si ha che nella codifica semplice l'entropia è di 4.382 bpp mentre nella codifica avanzata l'entropia corrisponde a 4.195 bpp. Questa differenza indica che la codifica avanzata ha una maggiore efficienza nella riduzione dell'errore di predizione che si traduce in una migliore rappresentazione dell'immagine originale.
+
+In secondo luogo, si nota che anche il tasso di codifica si riduce tra la codifica semplice (che è di 4.980 bpp) e la codifca avanzata (4.685) sottolineando l'efficacia di quest'ultima. La differenza dei due valori indica che con la codifica avanzata si è in grado di rappresentare lo stesso numero di informazioni attraverso un numero minore di bit (infatti $38\,854\,794 < 41\,305\,140$).
+
+Per quanto il tasso di codifica sia largamente minore rispetto all'entropia dell'immagine originale (7.581 bpp), rimane comunque molto più elevato rispetto al \textsl{bitrate} ottenuto zippando l'immagine (che corrispnde a 1.329 bpp). Questo è dovuto al fatto che la codifica avanzata implementata rimane comunque molto meno inefficiente rispetto alle tecniche ottimizzate della codifica con dizionario offerta dai sistemi operativi.
 
 
 
 
 
 
+\vspace{15px}\section{Conclusioni}
 
 
 
-
-\begin{comment}
-
-    (1) Entropia b&w:       7.530 bpp
-    (2) Bitrate .zip:       1.340 bpp
-    (3) discussion
-    (4) simple-coding-img
-    (5) Bitrate EG:         10.0135 bpp
-    (6) advanced-coding-img
-    (7) Bitrate EG:         9.7443 bpp
-
-\end{comment}
 
 \end{document}
