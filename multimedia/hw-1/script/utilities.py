@@ -4,7 +4,7 @@ import numpy as np
 
 
 
-def plot_figure(figure: np.ndarray, title: str, style: str ='gray', colorbar: bool =True) -> None:
+def plot_figure(figure: np.ndarray, title: str = '', style: str ='gray', colorbar: bool =True) -> None:
     """
     Function to plot a figure with specified style and title.
 
@@ -18,8 +18,10 @@ def plot_figure(figure: np.ndarray, title: str, style: str ='gray', colorbar: bo
     plt.imshow(figure, cmap=style)
     plt.axis('image')
     plt.axis('off')
-    plt.title(title)
 
+    if not title == '':
+        plt.title(title)
+     
     if colorbar:
         plt.colorbar()
 
