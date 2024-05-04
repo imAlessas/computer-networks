@@ -253,7 +253,22 @@ Tale codifica può essere esaminata prima affrontando il caso in cui tutti i num
 
 
 \subsection{Conclusioni}
-Cerchiamo ora di ottenere dei dati statistici che ci permettano di trarre delle informazioni utili. Si sono quindi prese le immagini in scala di grigi - formato \texttt{.pgm} - fornite nella demo, e si è eseguito il codice per ciascuna immagine. I risultati trovati eseguendo lo script descitto nelle precedenti sezioni per ogni immagine sono stati riassunti nella seguente tabella (\ref{tab:simple-conclusions}).
+Cerchiamo ora di ottenere dei dati statistici che ci permettano di trarre delle informazioni utili. Si sono scelte sei immagini, mostarte nella figura \ref{fig:all-figures}, alcune delle quali volte propri a testare le capacità della codifica semplice (e poi di quella avanzata). In peritcolare le prime tre immagini hanno peculiartà uniche: la prima, completamente nera, rappresenta l'assenza di entropia, la seconda (la scacchiera) è composta da blocchi mentre la terza rappresenta del rumore Gaussiano, con l'intendo di avere un'immagine con alta entropia. Le altre immagini invece sono normali immagini da comparare.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width = .3\textwidth]{hw-1/report/imgs/black.png}
+    \includegraphics[width = .3\textwidth]{hw-1/report/imgs/chessboard.png}
+    \includegraphics[width = .3\textwidth]{hw-1/report/imgs/gaussian-noise.png}
+    \includegraphics[width = .3\textwidth]{hw-1/report/imgs/interstellar.png}
+    \includegraphics[width = .3\textwidth]{hw-1/report/imgs/dragon.png}
+    \includegraphics[width = .3\textwidth]{hw-1/report/imgs/great-wave.png}
+    \caption{Immagini scelte per effettuare le analisi. }
+    \label{fig:all-figures}
+\end{figure}
+
+
+\noindent Per ciascuna delle immagini si è eseguito il codice e i risultati trovati sono stati riassunti nella seguente tabella (\ref{tab:simple-conclusions}).
 
 
 \begin{table}[h]
@@ -263,19 +278,19 @@ Cerchiamo ora di ottenere dei dati statistici che ci permettano di trarre delle 
         \hline
         \textbf{img} & \texttt{.pgm} & \texttt{.zip} & \texttt{error} & \texttt{EG-coding} \\ \hline \hline
 
-        einst & 6.785  & 6.391 & 5.343 & 6.897 \\
-
-        house & 7.056  & 4.002 & 3.613 & 3.786 \\
-
-        lake & 7.484  & 6.884 & 5.656 & 7.094 \\
-
-        lena & 7.445  & 6.808 & 4.675 & 5.542 \\
-
-        peppers & 7.594  & 7.081 & 5.026 & 6.261 \\
-
-        plane & 6.704  & 5.714 & 4.675 & 5.252 \\
-
-        spring & 7.157 & 6.918 & 5.342 & 6.757 \\
+        black & 0.000 & 0.001 & 0.000 & 1.000 \\
+        
+        chessboard & 5.539 & 2.218 & 5.420 & 6.364 \\
+        
+        gaussian-noise & 7.338 & 3.254 & 7.663 & 11.454 \\
+        
+        interstellar & 6.816 & 0.274 & 2.300 & 2.332 \\
+        
+        dragon & 7.659 & 1.255 & 3.599 & 3.567 \\
+        
+        great-wave & 7.055 & 3.022 & 6.175 & 7.947 \\
+        
+        spiderman & 7.581 & 1.329 & 4.382 & 4.980 \\
         \hline
     \end{tabular}
     \caption{Dati ottenute dalle varie istanze di esecuzione dello script, con immagini diverse.}
@@ -283,9 +298,9 @@ Cerchiamo ora di ottenere dei dati statistici che ci permettano di trarre delle 
     \renewcommand{\arraystretch}{1}
 \end{table}
 
-\noindent Osservando la tebella riassuntiva si possono notare dei pattern tra i vari risultati. Prima di tutto va osservato che, ragionevolmente, l'immagine originale ha un'entropia maggiore rispetto ad una qualsisa forma di codifica o di compressione. Questo risultato suggerisce che tale ridondanza può essere sfruttata al fine di comprimere l'immagine. Osservando infatti la seconda colonna, contenete i risultati della codifica a dizionario, possiamo osservar che tali valori sono nettamente ridotti rispetto all'immagine originale; in particolare si osserva una differenza notevole nell'immagine \texttt{house}. 
+\noindent Osservando la tebella riassuntiva si possono notare valori particolarmente diversi per ciascuna immagine. Chiaramente l'immagine completamente nera ha entropia nulla e di conseguenza lo è anche l'errore di predizione; anche il tasso di codifica esponensiale di Golomb suggerisce che è  necessario solo un bit per rappresentare l'errore. Per quanto riguarda la seconda immagine, quella della scacchiera, si ha un'entropia più alta ma comunque ridotta rispetto alle altre immagini. Questo perché i due colori dominanti sono il bianco e il nero, senza altre variazioni di conseguenza il segnale non è sparsioficato come negli altri casi. Ciò nonostante il tasso di codifica è comunque abbastanza elevato. Nella terza immagine, raffigurante il rumore Gaussiano, possiamo notare che sia l'entropia, ma ancora di più l'errore di predizione sono molto elevati. Questo perchè i pixel dell'immagine sono casuali rendendolo un segnale difficile da predire. Proprio per questo motivo il suo tasso di codific è così elevato.
 
-In secondo luogo si osserva la differenza tra il bitrate dell'errore della codifica semplice e quello della compressione in zip. Si nota che il primo, in ciascuna iostanza di esecuzione è minore del secondo. Questo probabilmente è dovuto al fatto che la codifica predittiva riesce a comprimere meglio il file rispetto alla codifica generica. \todo{Sistema conclusioni codifica semplice}
+Nel caso delle altre immagini, i risultati non sono così inaspettati, a perte nel caso della \textsl{Great wave} dove l'entropia dell'errore di predizione e il tasso di codifica sono comunque particolarmente elevati rispetto alle altre immagini.
 
 
 
@@ -432,7 +447,53 @@ Per quanto il tasso di codifica sia largamente minore rispetto all'entropia dell
 
 \vspace{15px}\section{Conclusioni}
 
+\todo{inserisci discussione finale sulla differenza dei valori trovati}
 
 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width = .3\textwidth]{hw-1/report/imgs/black.png}
+    \includegraphics[width = .3\textwidth]{hw-1/report/imgs/chessboard.png}
+    \includegraphics[width = .3\textwidth]{hw-1/report/imgs/gaussian-noise.png}
+    \includegraphics[width = .3\textwidth]{hw-1/report/imgs/interstellar.png}
+    \includegraphics[width = .3\textwidth]{hw-1/report/imgs/dragon.png}
+    \includegraphics[width = .3\textwidth]{hw-1/report/imgs/great-wave.png}
+    \caption{Immagini scelte per effettuare le analisi. }
+    \label{fig:all-figures-final}
+\end{figure}
+
+
+
+
+\begin{table}[h]
+    \centering
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{| c | c c | c c |}
+        \hline
+        \multirow{2}{*}{Immagine} & \multicolumn{2}{c|}{\textbf{Entropia}} & \multicolumn{2}{c|}{\textbf{Tasso di codifica}} \\
+        & Semplice & Avanzata & Semplice & Avanzata \\\hline\hline
+
+        black & 0.000 & 0.000 & 1.000 & 1.000 \\
+        
+        chessboard & 5.420 & 5.529 & 6.364 & 6.457 \\
+        
+        gaussian-noise & 7.663 & 7.459 & 11.454 & 11.092 \\
+        
+        interstellar & 2.300 & 2.139 & 2.332 & 2.177 \\
+        
+        dragon & 3.599 & 3.412 & 3.567 & 3.338 \\
+        
+        great-wave & 6.175 & 6.056 & 7.947 & 7.801 \\
+        
+        spiderman & 4.382 & 4.195 & 4.980 & 4.684\\
+        \hline
+    \end{tabular}
+    \caption{Tabella riassuntiva.}
+    \label{tab:overall-conclusions}
+    \renewcommand{\arraystretch}{1}
+\end{table}
+
+\todo{Focalizza l'attenzion su chessboard, dove la differenza del predittore e maggiore perche si basa anmche sulle celle sopra e non solo sdu quelle a destra}
 
 \end{document}
