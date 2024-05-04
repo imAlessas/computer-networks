@@ -20,10 +20,10 @@ Il linguaggio scelto per completare le richieste dell'homework è \texttt{Python
 
 
 \section{Codifica semplice} 
-
+\todo{inserisci mini introduzione}
 
 \vspace{15px}\subsection{Caricamento dell'immagine}
-La prima richiesta dell'homework consiste nel caricare un'immagine a livelli di grigio oppure un'immagine a colori ed estrane la luminanza, approssimabile come un media tra i tre canali di colori dell'immagine. Il frammento di codice seguente incontra esattamente le richeste della prima task dove, attraverso la funzione \texttt{imread} del modulo \texttt{matplotlib.image}, l'immagine viene letta correttamente.
+La prima richiesta dell'homework consiste nel caricare un'immagine a livelli di grigio oppure un'immagine a colori ed estrarne la luminanza, approssimabile come la media tra i tre canali di colori dell'immagine (\textsl{Red}, \textsl{Green} e \textsl{Blue}). Il frammento di codice seguente incontra esattamente le richeste della prima task dove, attraverso la funzione \texttt{imread} del modulo \texttt{matplotlib.image}, l'immagine viene letta correttamente ed, eventualmente, ne viene estratta la luminanza.
 
 \begin{lstlisting}
     # Prepare to load the image
@@ -35,14 +35,14 @@ La prima richiesta dell'homework consiste nel caricare un'immagine a livelli di 
     path_to_img = os.path.join(current_dir, "multimedia", "hw-1", "script", "imgs") + "/"
 
     # loads the colored image
-    gray_img = mpimg.imread(path_to_img +  img_file_name + img_extension) 
+    gray_img = mpimg.imread(path_to_img +  img_file_name + img_extension).astype(np.int16)
 
     # extracts the luminance if RGB
     if gray_img[0][0].size > 1:
         gray_img = np.dot(gray_img[..., :3], [1, 1, 1]) / 3
 \end{lstlisting}
 
-\noindent Scegliendo un'immagine a colori, in questo caso si prende come riferimento quella di \textsl{Spiderm-Man}, è quindi possibile verificare il corretto funzionamento del codice, come mostrato nella figura \ref{fig:colored-grayscale}.
+\noindent Scegliendo un'immagine a colori è quindi possibile verificare il corretto funzionamento del codice, come mostrato nella figura \ref{fig:colored-grayscale} dove si è scelto come riferimento quella di \textsl{Spiderm-Man}.
 
 \begin{figure}[h]
     \centering
@@ -55,19 +55,19 @@ La prima richiesta dell'homework consiste nel caricare un'immagine a livelli di 
 
 
 \subsection{Entropia dell'immagine}\label{img-entropy}
-La seconda task dell'homework richiede di calcolare l'entropia dell'immagine in bianco e nero. L'entropia di una variabile aleatoria $X$ (in questo caso l'immagine) è definita come l'\textbf{informazione media} degli eventi della sorgente; l'informazione di un evento è descritta dalla funzione seguente:
+La seconda task dell'homework richiede di calcolare l'entropia dell'immagine in scala di grigi. L'entropia di una variabile aleatoria $X$ (in questo caso l'immagine) è definita come l'\textbf{informazione media} degli eventi della sorgente; l'informazione di un evento è descritta dalla funzione seguente:
 
 \begin{gather*}
     I(X) = \log_2\left( \frac{1}{p_i} \right)
 \end{gather*}
 
-\noindent Che è una variabile che diminuisce all'aumentare della probabilità dellevento $p_i$. Questo è ragionevole in quanto più un evento è imporbabile (quindi $p_i \to 0$) e più la sua informazione è alta ($I(X) \to +\infty$). Assumendo che gli eventi della sorgente siano indipendenti, l'informazione media si traduce nella seguente formula:
+\noindent L'informazione media diminuisce all'aumentare della probabilità dell'evento $p_i$. Questo è ragionevole in quanto più un evento è imporbabile (quindi $p_i \to 0$) e più la sua informazione è alta ($I(X) \to +\infty$). Assumendo che gli eventi della sorgente siano indipendenti, l'informazione media si traduce nella seguente formula:
 
 \begin{gather*}
     H(X) = E[I(X)] \, = \, \sum_{i = 1}^M p_i\log_2\left( \frac{1}{p_i} \right) \, = \, - \sum_{i = 1}^M p_i\log_2{p_i}
 \end{gather*}
 
-\noindent Dove con $M$ si indica il numero di elementi nell'insieme $X$. Questa formula si riassume nel seguente script, dove la variabile contenente l'immagine in bianco e nero viene trasposta e convertita in un vettore di pixel monodimensionale. In secondo luogo attraverso la funzione \texttt{numpy.histogram} vengono contate il numero di occorrenze per ogni valore di pixel. Successivamente, per calcolare la probabilità, si divide il numero di occorrezze per il numero totale di occorrenze, escludendo eventuali valori diversi da zero. Una volta calcolare la probabilità, attraverso le funzioni  \texttt{numpy.sum} e \texttt{numpy.log2} si ottiene il valore dell'entropia $H(X)$.
+\noindent Dove con $M$ si indica il numero di elementi nell'insieme $X$. Questa formula si riassume nel seguente script, dove la variabile contenente l'immagine in bianco e nero viene trasposta e convertita in un vettore monodimensionale. In secondo luogo attraverso la funzione \texttt{numpy.histogram} vengono contate il numero di occorrenze per ogni valore di pixel. Successivamente, per calcolare la probabilità, si divide il numero di occorrezze per il numero totale di occorrenze, escludendo eventuali valori diversi da zero. Una volta calcolare la probabilità, attraverso le funzioni  \texttt{numpy.sum} e \texttt{numpy.log2} si ottiene il valore dell'entropia $H(X)$.
 
 
 \begin{lstlisting}
@@ -83,17 +83,16 @@ La seconda task dell'homework richiede di calcolare l'entropia dell'immagine in 
     # remove zero-values of probability
     p = rel_freq[rel_freq > 0]
 
-    # compute and display the entropy
-    HX = np.sum(p * np.log2(1 / p))
-    print(f"The entropy of {img_file_name}{img_extension} is {HX:.3f} bpp")
+    # compute the entropy
+    entropy_x = - np.sum(p * np.log2(p))
 \end{lstlisting}
 
 \noindent Dopo aver eseguito lo script, l'entropia dell'immagine scelta è di \textbf{7.581 bpp}.
 
 
 
-\vspace{15px}\subsection{Codifica con dizionario}
-La terza task chiede di utilizzare una compressione a dizionario, come \texttt{zip} nel caso di \textsl{Windows} per poi calcolare il \textsl{bitrate} risultante. Lo script necessario per soddisfare la richiesta è presentato nel frammento di codice sottostante. In particolare le prime righe si occupano di "zippare" il file mentre le istruzioni seguenti estraggono la dimensione dell'immagine compressa (in bytes). Infine nelle ultime linee del frammento di codice viene computato l'effettivo \textsl{bitrate} dividendo la dimensione del file compresso con la dimensione dell'immagine originale.
+\vspace{15px}\subsection{Codifica con dizionario} \label{dictionary-coding}
+La terza task chiede di utilizzare una compressione a dizionario, come \texttt{zip} nel caso di \textsl{Windows} per poi calcolare il \textsl{bitrate} risultante. Lo script necessario per soddisfare la richiesta è presentato nel frammento di codice sottostante. In particolare le prime righe si occupano di \textsl{"zippare"} il file mentre le istruzioni seguenti estraggono la dimensione dell'immagine compressa (in bytes). Infine nelle ultime linee del frammento di codice viene computato l'effettivo \textsl{bitrate} dividendo la dimensione del file compresso con la dimensione dell'immagine originale.
 
 \begin{lstlisting}
     # change the current working directory to the directory containing the image
@@ -112,17 +111,16 @@ La terza task chiede di utilizzare una compressione a dizionario, come \texttt{z
 
     # get the birate
     zip_bitrate = zip_bytes * 8 / img_size 
-
-    print(f"The bitrate of {img_file_name}.zip is {zip_bitrate:.3f} bpp")
 \end{lstlisting}
 
-\noindent Dunque, dopo aver eseguito lo script si ottiene il valore del bitrate, corrispondente a \textbf{2.657 bpp}. 
+\noindent Dunque, dopo aver eseguito lo script si ottiene il valore del bitrate, corrispondente a \textbf{1.329 bpp}. 
 
 
 
-\vspace{15px}\subsection{Discussione risultati parziali}\todo{migliora risposta task 3}
-Il risultato trovato calcolando il bitrate della codifica con dizionario (1.340 bpp) è molto più basso rispetto al volore dell'entropia $H(X)$, calcolato nel primo punto (7.530 bpp), suggerendo che quindi la codifica con dizionario risulta efficace nel ridurre la quantità di informazione necessaria per rappresentare i dati, sfruttando le ridondanze presenti nel segnale.
+\vspace{15px}\subsection{Discussione risultati parziali}
+Osservando il valore di entropia ottenuto nel punto \ref{img-entropy} si osserva che quest'ultima è molto vicina ad 8, indicando il fatto che l'immagine trovata, in ogni pixel, contiene 7.581 bit di  informazione su un limite massimo di di 8 bpp. Il motivo per cui tale valore non è esattemente 8 può dipendere dal fatto che l'immagine (figura \ref{fig:colored-grayscale}) contiene zone molto unifoirmi rispetto ad altre, per esempio il cielo e i grattacieli, i quali sono tutti della stessa tonalità di girgio e sono più o meno uniformi rispetto al personaggio raffigurato.
 
+Il fatto che la compressione attraverso la codifica con dizionario abbia un bitrate di 1.329 bpp (punto \ref{dictionary-coding}) sta a signifcare che, nonostante l'entropia dell'immagine fosse alta, la compressione è riuscita a sfruttara in maniera ottimale la ridondanza dei dati, precedentemente puntaulizzata. Infatti si osserva che dividendo l'entropia iniziale con il bitrate ottenuto dalla codifica con dizionario si ottene un \textbf{tasso di compressione} di 5.706, che indica una compressione particolarmente efficacie, nonostante l'elevata entropia iniziale.
 
 
 
@@ -147,7 +145,7 @@ La quinta richiesta dell'homework è quella di effettuare una codifica predittiv
     \end{cases}
 \end{gather*}
 
-\noindent Tale codifica si traduce nel seguente codice Python, dove viene utilizzato il vettore \texttt{raster\_scan} contenete il vettore dell'immagine in scala di grigi.
+\noindent Tale codifica si traduce nel seguente codice Python, dove viene utilizzato il vettore \texttt{raster\_scan}, calcolato nel punto \ref{img-entropy}, contenete il vettore dell'immagine in scala di grigi.
 
 \begin{lstlisting}
     # calculate prediction error
@@ -165,12 +163,12 @@ La quinta richiesta dell'homework è quella di effettuare una codifica predittiv
     \caption{Rappresentazione del modulo dell'errore di predizione nella codifica semplice.}
     \label{fig:simple-coding}
 \end{figure}
-Dall'immagine si può notare che le zone più chiare, ovvero le zone in cui il predittore ha fatto più errori, sono le zone dei contorni, come i contorini del personaggio raffigurato. Questo perchè la differenza dei colori tra una sezione e l'altra è particolarmente accentuata. D'altro canto, le zone colorate di blu sono le zone dove i colori sono più uniformi: eccoil quindi che i palazzi e  cielo sono per lo più dello stesso colore, suggerendo una zona dove la variazione di colore - e quindi di informazione - è molto bassa.
+Dall'immagine si può notare che le zone più chiare, ovvero le zone in cui il predittore ha fatto più errori, sono le zone dei contorni, in particolare del personaggio raffigurato. Questo perchè la differenza dei colori tra una sezione e l'altra è particolarmente accentuata. D'altro canto, le zone di colore blu scuro sono quelle in cui i colori sono più uniformi: i palazzi e il cielo sono quais dello stesso colore, suggerendo una zona dove la variazione di colore - e quindi di informazione - è molto bassa.
 
 
 
 \subsection{Entropia dell'errore di predizione}
-La richiesta seguente è quella di calculare il valore dell'entropia dell'errore di predizione $y$. Utilizzando uno script del tutto simile a quello utilizzato nella task \ref{img-entropy} possiami quindi calcolare l'entropia richiesta.
+La richiesta successiva è quella di calculare il valore dell'entropia dell'errore di predizione $y(n)$. Utilizzando uno script del tutto simile a quello utilizzato nella task \ref{img-entropy} è quindi possibile calcolare l'entropia richiesta.
 
 \begin{lstlisting}
     # count the occurrences of each prediction error value
@@ -181,9 +179,7 @@ La richiesta seguente è quella di calculare il valore dell'entropia dell'errore
     p = freqRel[freqRel > 0]
 
     # calculate the entropy
-    HY = np.sum(p * np.log2(1 / p))
-    
-    print(f"The entropy of the simple prediction error of {img_file_name} is {HY:.3f} bpp")
+    entropy_y = - np.sum(p * np.log2(p))
 \end{lstlisting}
 
 \noindent Dopo l'esecuzione dello script si ottiene che l'entropia dell'errore di predizione semplice è \textbf{4.382 bpp}.
@@ -191,9 +187,9 @@ La richiesta seguente è quella di calculare il valore dell'entropia dell'errore
 
 
 \subsection{Exp Golomb}\label{exp-golomb}\todo{capisci cosa significa il valore EG-bpp}
-Seguedo le direttive della task numero 7, calcoliamo la codifica esponenziale di Golomb (detta anche \textsl{exp-Golomb}), la quale dato un numero intero ritorna la sua codifica binaria.
+Seguedo le direttive della task numero 7, calcoliamo la codifica esponenziale di Golomb (detta anche \textsl{exp-Golomb}), la quale dato un numero intero ritorna la sua codifica. Quest'ultima è più efficacie riespetto ad una normale codifica binaria in quanto durante la coidifica vengono risparmiati diversi bit, migliorando la compressione. 
 
-Tale codifica può essere spiegata prima affrontando il caso in cui tutti i numeri da codificare siano ineri positivi e poi tale concetto si può generalizzare. La codifica di Golomb per interi positivi, detta anche \textsl{exponential Golomb unsigned}, è deifnita come segue.
+Tale codifica può essere esaminata prima affrontando il caso in cui tutti i numeri da codificare siano ineri positivi e poi tale concetto si può generalizzare. La codifica di Golomb per interi positivi, detta anche \textsl{exponential Golomb unsigned}, è deifnita come segue.
 
 \begin{gather*}
     \text{\texttt{eg\_unsigned}}(n) =
@@ -203,7 +199,7 @@ Tale codifica può essere spiegata prima affrontando il caso in cui tutti i nume
     \end{cases}
 \end{gather*}
 
-\noindent A questo, dopo aver definito la codifica senza segno, la codifica con segno, detta anche \textsl{exponential Golomb signed}, è immediata:
+\noindent Dove \texttt{zeros(}$k$\texttt{)} indica una funzione che ritorna una stringa di $k$ zeri mentre la funzione \texttt{dec2bin(}$n$\texttt{)} ritorna il valore binario del numero naturale $n$. A questo, dopo aver definito la codifica senza segno, la codifica con segno, detta anche \textsl{exponential Golomb signed}, è immediata:
 
 \begin{gather*}
     \text{\texttt{eg\_signed}}(n) =
@@ -216,20 +212,17 @@ Tale codifica può essere spiegata prima affrontando il caso in cui tutti i nume
 \noindent Dopo aver definito matematicamente la codifica, è possibile tradurla in due funzioni Python molto seplici, che riassumono esattamente quanto già osservato.
 
 \begin{lstlisting}
-    def exp_golomb_signed(n):
-        """
-        Computes the Exp-Golomb code for signed integers.
-        """
-
+    def exp_golomb_signed(n: int) -> str:
+        # Computes the Exp-Golomb code for signed integers
+        
         if n > 0:
             return exp_golomb_unsigned(2 * n - 1)
             
         return exp_golomb_unsigned(-2 * n)
         
-    def exp_golomb_unsigned(n):
-        """
-        Computes the Exp-Golomb code for non-negative integers.
-        """
+
+    def exp_golomb_unsigned(n: int) -> str:
+        # Computes the Exp-Golomb code for non-negative integers
 
         # handle the case where N is zero
         if n == 0:
@@ -239,13 +232,11 @@ Tale codifica può essere spiegata prima affrontando il caso in cui tutti i nume
         return '0' * int( math.floor( math.log2(n + 1) ) ) + format(n + 1, 'b')
 \end{lstlisting}
 
-\noindent Possiamo quindi ora occuparci di calcolare quanto richiesto dalla consegna. Per calcolare il numero di bit necessari utilizzando la codifica esponenziale di Golomb, è sufficiente calcolare la codifica per ogni errore della predizione semplice. La lunghezza delle codifica di ciascun valore viene sommata ottenendo quindi il numero totale di bit necessari per codificare l'errore. Infine, per ottenere il bitrate di codifica è necessario dividere il numero totali di bit per la grandezza dell'immagine. Il seguente script ricopre esattamente queste direttive.
+\noindent Possiamo quindi occuparci di calcolare quanto richiesto dalla consegna. Per calcolare il numero di bit necessari utilizzando la codifica esponenziale di Golomb, è sufficiente calcolare la codifica per ogni errore della predizione semplice. La lunghezza delle codifica di ciascun valore viene sommata ottenendo quindi il numero totale di bit necessari per codificare l'errore. Infine, per ottenere il bitrate di codifica è necessario dividere il numero totali di bit per la grandezza dell'immagine. Il seguente script ricopre esattamente queste direttive.
 
 \begin{lstlisting}
-    def exp_golomb_count(vector):
-        """
-        Calculate the bitrate based on the exponential Golomb code for a given vector.
-        """
+    def exp_golomb_count(vector: list) -> int:
+        # Calculate the bitrate based on the exponential Golomb code for a given vector.
 
         bit_count = 0
         for symbol in vector:
@@ -256,12 +247,9 @@ Tale codifica può essere spiegata prima affrontando il caso in cui tutti i nume
     exp_golomb_bit = exp_golomb_count(simple_coding_error) 
 
     exp_golomb_bpp = exp_golomb_bit / img_size
-
-    print(f"The number of bits for the simple coding is {exp_golomb_bit}")
-    print(f"The bitrate of the simple coding is {exp_golomb_bpp:.3f}\n")
 \end{lstlisting}
 
-\noindent Dopo l'esecuzione dello script, il bitrate di codifica ha il valore di \textbf{4.980 bpp}.
+\noindent Dopo l'esecuzione dello script, il numero di bit necessari per la codifica è $41305140$ mentre il bitrate di codifica ha il valore di \textbf{4.980 bpp}.
 
 
 \subsection{Conclusioni}
@@ -271,9 +259,9 @@ Cerchiamo ora di ottenere dei dati statistici che ci permettano di trarre delle 
 \begin{table}[h]
     \centering
     \renewcommand{\arraystretch}{1.5}
-    \begin{tabular}{ | c | c c c c | }
+    \begin{tabular}{| c | c c c c |}
         \hline
-        \textbf{img} & \texttt{.pgm} & \texttt{.zip} & \texttt{error} & \texttt{EG-coding} \\\hline\hline
+        \textbf{img} & \texttt{.pgm} & \texttt{.zip} & \texttt{error} & \texttt{EG-coding} \\ \hline \hline
 
         einst & 6.785  & 6.391 & 5.343 & 6.897 \\
 
@@ -289,7 +277,6 @@ Cerchiamo ora di ottenere dei dati statistici che ci permettano di trarre delle 
 
         spring & 7.157 & 6.918 & 5.342 & 6.757 \\
         \hline
-
     \end{tabular}
     \caption{Dati ottenute dalle varie istanze di esecuzione dello script, con immagini diverse.}
     \label{tab:simple-conclusions}

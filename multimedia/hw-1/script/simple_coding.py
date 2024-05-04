@@ -54,8 +54,8 @@ if __name__ == "__main__":
     p = rel_freq[rel_freq > 0]
 
     # compute and display the entropy
-    HX = np.sum(p * np.log2(1 / p))
-    print(f"The entropy of {img_file_name}{img_extension} is {HX:.3f} bpp")
+    entropy_x = - np.sum(p * np.log2(p))
+    print(f"The entropy of {img_file_name}{img_extension} is {entropy_x:.3f} bpp")
 
 
 
@@ -81,6 +81,9 @@ if __name__ == "__main__":
     zip_bitrate = zip_bytes * 8 / img_size 
 
     print(f"The bitrate of {img_file_name}.zip is {zip_bitrate:.3f} bpp")
+
+    compression_ratio = entropy_x / zip_bitrate
+    print(f"The compression ratio of {img_file_name}.zip is {compression_ratio:.3f}")
 
 
 
@@ -109,9 +112,9 @@ if __name__ == "__main__":
     p = freqRel[freqRel > 0]
 
     # calculate the entropy
-    HY = np.sum(p * np.log2(1 / p))
+    entropy_y = - np.sum(p * np.log2(p))
     
-    print(f"The entropy of the simple prediction error of {img_file_name} is {HY:.3f} bpp")
+    print(f"The entropy of the simple prediction error of {img_file_name}{img_extension} is {entropy_y:.3f} bpp")
 
 
 
