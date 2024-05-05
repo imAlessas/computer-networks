@@ -13,18 +13,18 @@
 
 
 \section*{Introduzione}
-Il presente report dettaglia il lavoro svolto per incontrare le richieste dell'\textsl{homework 1}, focalizzandosi sull'esplorazione e il confronto di diverse tecniche di codifica lossless per la compressione di immagini in scala di grigi. L'obiettivo principale di questo studio è analizzare le prestazioni di codifiche predittive semplici e avanzate, valutando la loro efficacia nella compressione di immagini con differenti caratteristiche. Attraverso l'analisi dell'entropia delle immagini, la valutazione del tasso di compressione ottenuto tramite la codifica con dizionario e l'analisi dell'errore di predizione, si mira a comprendere l'efficienza e l'adattabilità di queste tecniche in contesti diversi.
+Il presente report dettaglia il lavoro svolto per incontrare le richieste dell'\textsl{homework 1}, focalizzandosi sull'esplorazione e il confronto di diverse tecniche di codifica lossless per la compressione d'immagini in scala di grigi. L'obiettivo principale di questo studio è analizzare le prestazioni di codifiche predittive semplici e avanzate, valutando la loro efficacia nella compressione d'immagini con differenti caratteristiche. Attraverso l'analisi dell'entropia delle immagini, la valutazione del tasso di compressione ottenuto tramite la codifica con dizionario e l'analisi dell'errore di predizione, si mira a comprendere l'efficienza e l'adattabilità di queste tecniche in contesti diversi.
 
-Il lavoro è stato svolto utilizzando il linguaggio di programmazione Python per implementare le diverse tecniche di codifica. All'interno del report non è presente tutto il codice scritto ma sono presenti solo le parti fondamentali per il calcolo dei parametri richiesti. Ciò nonstante il codice è pubblico, accessibilie al seguente \texttt{\href{https://github.com/imAlessas/computer-networks/tree/main/multimedia/hw-1/script}{link}}.
+Il lavoro è stato svolto utilizzando il linguaggio di programmazione Python per implementare le diverse tecniche di codifica. All'interno del report non è presente tutto il codice prodotto ma sono presenti solo le parti fondamentali per il calcolo dei parametri richiesti. Ciò nonostante il codice è pubblico, accessibile al seguente \texttt{\href{https://github.com/imAlessas/computer-networks/tree/main/multimedia/hw-1/script}{link}}.
 
 
 
 
 \newpage\section{Codifica semplice} 
-La prima parte dell'homework è dedicata alla codifica semplice, la quele è codifica predittiva di base per la compressione di immagini in scala di grigi. L'obiettivo principale di questa parte del report è esplorare il funzionamento della codifica predittiva semplice, valutando la sua efficacia nella riduzione dell'errore di predizione e nel tasso di compressione ottenuto.
+La prima parte dell'homework è dedicata alla codifica semplice, la quale è una codifica predittiva di base per la compressione d'immagini in scala di grigi. L'obiettivo principale di questa parte del report è esplorare il funzionamento della codifica predittiva semplice, valutando la sua efficacia nella riduzione dell'errore di predizione e nel tasso di compressione ottenuto.
 
 \vspace{15px}\subsection{Caricamento dell'immagine}
-La prima richiesta dell'homework consiste nel caricare un'immagine a livelli di grigio oppure un'immagine a colori ed estrarne la luminanza, approssimabile come la media tra i tre canali di colori dell'immagine (\textsl{Red}, \textsl{Green} e \textsl{Blue}). Il frammento di codice seguente incontra esattamente le richeste della prima task dove, attraverso la funzione \texttt{imread} del modulo \texttt{matplotlib.image}, l'immagine viene letta correttamente ed, eventualmente, ne viene estratta la luminanza.
+La prima richiesta dell'homework consiste nel caricare un'immagine a livelli di grigio oppure un'immagine a colori ed estrarne la luminanza, approssimabile come la media tra i tre canali dell'immagine (\textsl{Red}, \textsl{Green} e \textsl{Blue}). Il frammento di codice seguente incontra esattamente le richieste della prima task dove, attraverso la funzione \texttt{imread} del modulo \texttt{matplotlib.image}, l'immagine viene letta correttamente ed, eventualmente, ne viene estratta la luminanza.
 
 \begin{lstlisting}
     # Prepare to load the image
@@ -49,7 +49,7 @@ La prima richiesta dell'homework consiste nel caricare un'immagine a livelli di 
     \centering
     \includegraphics[width = .7\textwidth]{hw-1/report/imgs/colored.png}
     \includegraphics[width = .7\textwidth]{hw-1/report/imgs/grayscale.png}
-    \caption{Estrazione della luminaza da una immagine a colori.}
+    \caption{Estrazione della luminaza da un'immagine a colori.}
     \label{fig:colored-grayscale}
 \end{figure}
 
@@ -62,13 +62,13 @@ La seconda task dell'homework richiede di calcolare l'entropia dell'immagine in 
     I(X) = \log_2\left( \frac{1}{p_i} \right)
 \end{gather*}
 
-\noindent L'informazione media diminuisce all'aumentare della probabilità dell'evento $p_i$. Questo è ragionevole in quanto più un evento è imporbabile (quindi $p_i \to 0$) e più la sua informazione è alta ($I(X) \to +\infty$). Assumendo che gli eventi della sorgente siano indipendenti, l'informazione media si traduce nella seguente formula:
+\noindent L'informazione media diminuisce all'aumentare della probabilità dell'evento $p_i$. Questo è ragionevole in quanto più un evento è improbabile(quindi $p_i \to 0$) e più la sua informazione è alta ($I(X) \to +\infty$). Assumendo che gli eventi della sorgente siano indipendenti, l'informazione media si traduce nella seguente formula:
 
 \begin{gather*}
     H(X) = E[I(X)] \, = \, \sum_{i = 1}^M p_i\log_2\left( \frac{1}{p_i} \right) \, = \, - \sum_{i = 1}^M p_i\log_2{p_i}
 \end{gather*}
 
-\noindent Dove con $M$ si indica il numero di elementi nell'insieme $X$. Questa formula si riassume nel seguente script, dove la variabile contenente l'immagine in bianco e nero viene trasposta e convertita in un vettore monodimensionale. In secondo luogo attraverso la funzione \texttt{numpy.histogram} vengono contate il numero di occorrenze per ogni valore di pixel. Successivamente, per calcolare la probabilità, si divide il numero di occorrezze per il numero totale di occorrenze, escludendo eventuali valori diversi da zero. Una volta calcolare la probabilità, attraverso le funzioni  \texttt{numpy.sum} e \texttt{numpy.log2} si ottiene il valore dell'entropia $H(X)$.
+\noindent Dove con $M$ si indica il numero di elementi nell'insieme $X$. Questa formula si riassume nel seguente script, dove la variabile contenente l'immagine in bianco e nero viene trasposta e convertita in un vettore monodimensionale, detto \texttt{ratser\_scan}. In secondo luogo attraverso la funzione \texttt{numpy.histogram} vengono contate il numero di occorrenze per ogni valore di pixel. Successivamente, per calcolare la probabilità, si divide il numero di occorrenze per il numero totale di occorrenze, escludendo eventuali valori diversi da zero. Una volta calcolare la probabilità, attraverso le funzioni  \texttt{numpy.sum} e \texttt{numpy.log2} si ottiene il valore dell'entropia $H(X)$.
 
 
 \begin{lstlisting}
@@ -93,7 +93,7 @@ La seconda task dell'homework richiede di calcolare l'entropia dell'immagine in 
 
 
 \vspace{15px}\subsection{Codifica con dizionario} \label{dictionary-coding}
-La terza task chiede di utilizzare una compressione a dizionario, come \texttt{zip} nel caso di \textsl{Windows} per poi calcolare il \textsl{bitrate} risultante. Lo script necessario per soddisfare la richiesta è presentato nel frammento di codice sottostante. In particolare le prime righe si occupano di \textsl{"zippare"} il file mentre le istruzioni seguenti estraggono la dimensione dell'immagine compressa (in bytes). Infine nelle ultime linee del frammento di codice viene computato l'effettivo \textsl{bitrate} dividendo la dimensione del file compresso con la dimensione dell'immagine originale.
+La terza task chiede di utilizzare una compressione a dizionario, come \texttt{zip} nel caso di \textsl{Windows} per poi calcolare il \textsl{bitrate} risultante. Lo script necessario per soddisfare la richiesta è presentato nel frammento di codice sottostante. In particolare le prime righe si occupano di \textsl{"zippare"} il file mentre le istruzioni seguenti estraggono la dimensione dell'immagine compressa (in byte). Infine nelle ultime linee di codice viene computato l'effettivo \textsl{bitrate} dividendo la dimensione del file compresso con la dimensione dell'immagine originale.
 
 \begin{lstlisting}
     # change the current working directory to the directory containing the image
@@ -113,21 +113,20 @@ La terza task chiede di utilizzare una compressione a dizionario, come \texttt{z
     # get the birate
     zip_bitrate = zip_bytes * 8 / img_size 
 \end{lstlisting}
-
+https://www.google.it/maps/@45.4105155,11.8792821,3306m/data=!3m1!1e3?entry=ttu
 \noindent Dunque, dopo aver eseguito lo script si ottiene il valore del bitrate, corrispondente a \textbf{1.329 bpp}. 
 
 
 
 \vspace{15px}\subsection{Discussione risultati parziali}
-Osservando il valore di entropia ottenuto nel punto \ref{img-entropy} si osserva che quest'ultima è molto vicina ad 8, indicando il fatto che l'immagine trovata, in ogni pixel, contiene 7.581 bit di  informazione su un limite massimo di di 8 bpp. Il motivo per cui tale valore non è esattemente 8 può dipendere dal fatto che l'immagine (figura \ref{fig:colored-grayscale}) contiene zone molto unifoirmi rispetto ad altre, per esempio il cielo e i grattacieli, i quali sono tutti della stessa tonalità di girgio e sono più o meno uniformi rispetto al personaggio raffigurato.
+Osservando il valore di entropia ottenuto nel punto \ref{img-entropy} si osserva che quest'ultima è molto vicina ad 8, indicando che l'immagine trovata, in ogni pixel, contiene 7.581 bit di informazione su un limite massimo di di 8 bpp. Il motivo per cui tale valore non è esattamente 8 può dipendere dal fatto che l'immagine (figura \ref{fig:colored-grayscale}) contiene zone molto uniformi rispetto ad altre, per esempio il cielo e i grattacieli, i quali sono tutti della stessa tonalità di grigio e sono più o meno uniformi rispetto al personaggio raffigurato.
 
-Il fatto che la compressione attraverso la codifica con dizionario abbia un bitrate di 1.329 bpp (punto \ref{dictionary-coding}) sta a signifcare che, nonostante l'entropia dell'immagine fosse alta, la compressione è riuscita a sfruttara in maniera ottimale la ridondanza dei dati, precedentemente puntaulizzata. Infatti si osserva che dividendo l'entropia iniziale con il bitrate ottenuto dalla codifica con dizionario si ottene un \textbf{tasso di compressione} di 5.706, che indica una compressione particolarmente efficacie, nonostante l'elevata entropia iniziale.
+Il fatto che la compressione attraverso la codifica con dizionario abbia un bitrate di 1.329 bpp (punto \ref{dictionary-coding}) sta a significare che, nonostante l'entropia dell'immagine fosse alta, la compressione è riuscita a sfruttare in maniera ottimale la ridondanza dei dati, precedentemente puntualizzata. Infatti si osserva che dividendo l'entropia iniziale con il bitrate ottenuto dalla codifica con dizionario si ottene un \textbf{tasso di compressione} di 5.706, che indica una compressione particolarmente efficacie, nonostante l'elevata entropia iniziale.
 
 
 
 \vspace{15px}\subsection{Implementazione della codifica semplice}\label{simple-coding}
 La quinta richiesta dell'homework è quella di effettuare una codifica predittiva \textsl{semplice}. In particolare, data l'immagine, definita come un vettore chiamato $x(n)$, la codifica predittiva è definita come segue:
-
 \begin{gather*}
     x(n) = 
     \begin{cases}
@@ -137,7 +136,6 @@ La quinta richiesta dell'homework è quella di effettuare una codifica predittiv
 \end{gather*}
 
 \noindent Di conseguenza l'errore di predizione $y(n)$ sull'immagine $x(n)$ è dato da:
-
 \begin{gather*}
     y(n) = 
     \begin{cases}
@@ -146,7 +144,7 @@ La quinta richiesta dell'homework è quella di effettuare una codifica predittiv
     \end{cases}
 \end{gather*}
 
-\noindent Tale codifica si traduce nel seguente codice Python, dove viene utilizzato il vettore \texttt{raster\_scan}, calcolato nel punto \ref{img-entropy}, contenete il vettore dell'immagine in scala di grigi.
+\noindent Tale codifica si traduce nel seguente codice Python, dove viene utilizzato il vettore \texttt{raster\_scan}, calcolato nel punto \ref{img-entropy}, contenente il vettore dell'immagine in scala di grigi.
 
 \begin{lstlisting}
     # calculate prediction error
@@ -164,12 +162,12 @@ La quinta richiesta dell'homework è quella di effettuare una codifica predittiv
     \caption{Rappresentazione del modulo dell'errore di predizione nella codifica semplice.}
     \label{fig:simple-coding}
 \end{figure}
-Dall'immagine si può notare che le zone più chiare, ovvero le zone in cui il predittore ha fatto più errori, sono le zone dei contorni, in particolare del personaggio raffigurato. Questo perchè la differenza dei colori tra una sezione e l'altra è particolarmente accentuata. D'altro canto, le zone di colore blu scuro sono quelle in cui i colori sono più uniformi: i palazzi e il cielo sono quais dello stesso colore, suggerendo una zona dove la variazione di colore - e quindi di informazione - è molto bassa.
+Dall'immagine si può notare che le zone più chiare, ovvero le zone in cui il predittore ha fatto più errori, sono le zone dei contorni, in particolare del personaggio raffigurato. Questo perché la differenza dei colori tra una sezione e l'altra è particolarmente accentuata. D'altro canto, le zone di colore blu scuro sono quelle in cui i colori sono più uniformi: i palazzi e il cielo sono quasi dello stesso colore, suggerendo una zona dove la variazione di colore - e quindi di informazione - è molto bassa.
 
 
 
 \vspace{15px}\subsection{Entropia dell'errore di predizione}\label{simple-coding-error-entropy}
-La richiesta successiva è quella di calculare il valore dell'entropia dell'errore di predizione $y(n)$. Utilizzando uno script del tutto simile a quello utilizzato nella task \ref{img-entropy} è quindi possibile calcolare l'entropia richiesta.
+La richiesta successiva è quella di calcolare il valore dell'entropia dell'errore di predizione $y(n)$. Utilizzando uno script del tutto simile a quello utilizzato nella task \ref{img-entropy} è quindi possibile calcolare l'entropia richiesta.
 
 \begin{lstlisting}
     # count the occurrences of each prediction error value
@@ -188,19 +186,19 @@ La richiesta successiva è quella di calculare il valore dell'entropia dell'erro
 
 
 \vspace{15px}\subsection{Codifica esponenziale di Golomb}\label{exp-golomb}
-Seguedo le direttive della task numero 7, calcoliamo la codifica esponenziale di Golomb (detta anche \textsl{exp-Golomb}), la quale dato un numero intero ritorna la sua codifica. Quest'ultima è più efficacie riespetto ad una normale codifica binaria in quanto durante la coidifica vengono risparmiati diversi bit, migliorando la compressione. 
+Seguedo le direttive della task numero 7, calcoliamo la codifica esponenziale di Golomb (detta anche \textsl{exp-Golomb}), la quale dato un numero intero ritorna la sua codifica. Quest'ultima è più efficacie rispetto a una normale codifica binaria in quanto durante la codifica vengono risparmiati diversi bit, migliorando quindi la compressione. 
 
-Tale codifica può essere esaminata prima affrontando il caso in cui tutti i numeri da codificare siano ineri positivi e poi tale concetto si può generalizzare. La codifica di Golomb per interi positivi, detta anche \textsl{exponential Golomb unsigned}, è deifnita come segue.
+Tale codifica può essere esaminata prima affrontando il caso in cui tutti i numeri da codificare siano interi positivi e poi tale concetto si può generalizzare. La codifica di Golomb per interi positivi, detta anche \textsl{exponential Golomb unsigned}, è definita come segue.
 
 \begin{gather*}
     \text{\texttt{eg\_unsigned}}(n) =
     \begin{cases}
         1 \hspace{180px} \text{se } \, n = 0 \\
-        \text{zeros}\left( \left\lfloor \log_2(n + 1) \right\rfloor \right) + \text{dec2bin}(n + 1) \hspace{20px} \text{altrimenti}
+        \texttt{zeros}\left( \left\lfloor \log_2(n + 1) \right\rfloor \right) + \texttt{dec2bin}(n + 1) \hspace{20px} \text{altrimenti}
     \end{cases}
 \end{gather*}
 
-\noindent Dove \texttt{zeros(}$k$\texttt{)} indica una funzione che ritorna una stringa di $k$ zeri mentre la funzione \texttt{dec2bin(}$n$\texttt{)} ritorna il valore binario del numero naturale $n$. A questo, dopo aver definito la codifica senza segno, la codifica con segno, detta anche \textsl{exponential Golomb signed}, è immediata:
+\noindent Dove \texttt{zeros}$(k)$ indica una funzione che ritorna una stringa di $k$ zeri mentre la funzione \texttt{dec2bin}$(n)$ ritorna il valore binario del numero naturale $n$. A questo, dopo aver definito la codifica senza segno, la codifica con segno, detta anche \textsl{exponential Golomb signed}, è immediata:
 
 \begin{gather*}
     \text{\texttt{eg\_signed}}(n) =
@@ -254,7 +252,7 @@ Tale codifica può essere esaminata prima affrontando il caso in cui tutti i num
 
 
 \vspace{15px}\subsection{Conclusioni}
-Cerchiamo ora di ottenere dei dati statistici che ci permettano di trarre delle informazioni utili. Si sono scelte sei immagini, mostarte nella figura \ref{fig:all-figures}, alcune delle quali volte propri a testare le capacità della codifica semplice (e poi di quella avanzata). In peritcolare le prime tre immagini hanno peculiartà uniche: la prima, completamente nera, rappresenta l'assenza di entropia, la seconda (la scacchiera) è composta da blocchi mentre la terza rappresenta del rumore Gaussiano, con l'intendo di avere un'immagine con alta entropia. Le altre immagini invece sono normali immagini da comparare.
+Cerchiamo ora di ottenere dei dati statistici che ci permettano di trarre delle informazioni utili. Si sono scelte sei immagini, mostrate nella figura \ref{fig:all-figures}, alcune delle quali volte propri a testare le capacità della codifica semplice (e poi di quella avanzata). In paritcolare le prime tre immagini hanno peculiarità uniche: la prima, completamente nera, rappresenta l'assenza di entropia, la seconda (la scacchiera) è composta da blocchi mentre la terza rappresenta del rumore Gaussiano, con l'intendo di avere un'immagine con alta entropia. Le altre immagini invece sono normali immagini da comparare.
 
 \begin{figure}[h]
     \centering
@@ -299,16 +297,16 @@ Cerchiamo ora di ottenere dei dati statistici che ci permettano di trarre delle 
     \renewcommand{\arraystretch}{1}
 \end{table}
 
-\noindent Osservando la tebella riassuntiva si possono notare valori particolarmente diversi per ciascuna immagine. Chiaramente l'immagine completamente nera ha entropia nulla e di conseguenza lo è anche l'errore di predizione; anche il tasso di codifica esponensiale di Golomb suggerisce che è  necessario solo un bit per rappresentare l'errore. Per quanto riguarda la seconda immagine, quella della scacchiera, si ha un'entropia più alta ma comunque ridotta rispetto alle altre immagini. Questo perché i due colori dominanti sono il bianco e il nero, senza altre variazioni di conseguenza il segnale non è sparsioficato come negli altri casi. Ciò nonostante il tasso di codifica è comunque abbastanza elevato. Nella terza immagine, raffigurante il rumore Gaussiano, possiamo notare che sia l'entropia, ma ancora di più l'errore di predizione sono molto elevati. Questo perchè i pixel dell'immagine sono casuali rendendolo un segnale difficile da predire. Proprio per questo motivo il suo tasso di codific è così elevato.
+\noindent Osservando la tabella riassuntiva si possono notare valori particolarmente diversi per ciascuna immagine. Chiaramente l'immagine completamente nera ha entropia nulla e di conseguenza lo è anche l'errore di predizione; anche il tasso di codifica esponenziale di Golomb suggerisce che è  necessario solo un bit per rappresentare l'errore. Per quanto riguarda la seconda immagine, quella della scacchiera, si ha un'entropia più alta ma comunque ridotta rispetto alle altre immagini. Questo perché i due colori dominanti sono il bianco e il nero, senza altre variazioni di conseguenza il segnale non è sparsificato come negli altri casi. Ciò nonostante il tasso di codifica è comunque abbastanza elevato. Nella terza immagine, raffigurante il rumore Gaussiano, possiamo notare che sia l'entropia, ma ancora di più l'errore di predizione sono molto elevati. Questo perché i pixel dell'immagine sono casuali rendendolo un segnale difficile da predire. Proprio per questo motivo il suo tasso di codifica è così elevato.
 
-Nel caso delle altre immagini, i risultati non sono così inaspettati, a perte nel caso della \textsl{Great wave} dove l'entropia dell'errore di predizione e il tasso di codifica sono comunque particolarmente elevati rispetto alle altre immagini.
+Nel caso delle altre immagini, i risultati non sono così inaspettati, a parte nel caso della \textsl{Great wave} dove l'entropia dell'errore di predizione e il tasso di codifica sono comunque particolarmente elevati rispetto alle altre immagini.
 
 
 
 
 
 \newpage\section{Codifica avanzata}
-La seconda sezione del report, dedicata alla codifica avanzata, si concentra sull'analisi e la valutazione di un tecnica di codifica predittiva più sofisticata rispetto a quela precedentemente esaminata. Come vedremo, la codifica avanzata permette di ottenere risultati più precisi e più efficienti rispetto alla codifica semplice, in particolare per immagini con caratteristiche più complesse.
+La seconda sezione del report, dedicata alla codifica avanzata, si concentra sull'analisi e la valutazione di un tecnica di codifica predittiva più sofisticata rispetto a quella precedentemente esaminata. Come vedremo, la codifica avanzata permette di ottenere risultati più precisi e più efficienti rispetto alla codifica semplice, in particolare per immagini con caratteristiche più complesse.
 
 \vspace{15px}\subsection{Implementazione della codifica avanzata}
 
@@ -385,12 +383,12 @@ La penultima richiesta, esige di creare un nuovo tipo di codifica, detta \textsl
     \label{fig:advanced-coding}
 \end{figure}
 
-\FloatBarrier\noindent Si osserva che per quanto l'immagine \ref{fig:advanced-coding} sia simile alla figura \ref{fig:simple-coding}, è presente una differenza: è sufficente mostrare un'immagine che contenga la differenza in modulo tra le varaibili \texttt{simple\_coding\_error} e \texttt{adv\_coding\_error}. Dal risultato, mostrato nella figura \ref{fig:error-difference}, si può notare che non è di colore uniforme ma presenta diverse sfumature di blu, suggerendo quindi una differenza tra le due immagini di errore.
+\FloatBarrier\noindent Si osserva che per quanto l'immagine \ref{fig:advanced-coding} sia simile alla figura \ref{fig:simple-coding}, è presente una differenza: è sufficiente mostrare un'immagine che contenga la differenza in modulo tra le varaibili \texttt{simple\_coding\_error} e \texttt{adv\_coding\_error}. Dal risultato, mostrato nella figura \ref{fig:error-difference}, si può notare che non è di colore uniforme ma presenta diverse sfumature di blu, suggerendo quindi una differenza tra le due immagini di errore.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width = .9\textwidth]{hw-1/report/imgs/error-difference.png}
-    \caption{Rappresentazione della differenza tra l'errore della codifica semplice e della codifica avazata.}
+    \caption{Rappresentazione della differenza tra l'errore della codifica semplice e della codifica avanzata.}
     \label{fig:error-difference}
 \end{figure}
 
@@ -412,12 +410,12 @@ Dopo aver calcolato l'errore del predittore avanzato dell'immagine, è necessari
     entropy_y = - np.sum(p * np.log2(p))
 \end{lstlisting}
 
-\noindent Dopo aver eseguito lo script, si ottene il valore dell'entropia del valore di predizione avcanzata il quale corrisponde a \textbf{4.195 bpp}, che è minore rispetto a quello ottenuto nell'errore di codifica semplice, suggerendo che la codifica avanzata è stata più efficacie.
+\noindent Dopo aver eseguito lo script, si ottene il valore dell'entropia del valore di predizione avanzata il quale corrisponde a \textbf{4.195 bpp}, che è minore rispetto a quello ottenuto nell'errore di codifica semplice, suggerendo che la codifica avanzata è stata più efficace.
 
 
 
 \vspace{15px}\subsection{Codifica esponenziale di Golomb}
-Come per la codifica semplice, anche in questo caso è necessario calcaolare la codifica esponenziale di Golomb sull'errore di predizione. Il codice utilizzato è esattamente lo stesso indicato sul paragrafo \ref{exp-golomb} con l'unica differenza che la funzione viene invocata sull'errore di predizione avanzata anzichè su quella semplice.
+Come per la codifica semplice, anche in questo caso è necessario calcolare la codifica esponenziale di Golomb sull'errore di predizione. Il codice utilizzato è esattamente lo stesso indicato sul paragrafo \ref{exp-golomb} con l'unica differenza che la funzione viene invocata sull'errore di predizione avanzata anzichè su quella semplice.
 
 \begin{lstlisting}
     # calculates EG bits
@@ -432,19 +430,17 @@ Come per la codifica semplice, anche in questo caso è necessario calcaolare la 
 
 
 \vspace{15px}\subsection{Confronto con codifica semplice}
-% Confrontare l’entropia e il tasso di codifica ottenuti con l’entropia dell’immagine e con il tasso di codifica dell’applicazione zip
-
 Confrontando i valori ottenuti con la codifica avanzata con i valori della codifica semplice, si desume che le prestazioni della codifica avanzata sono migliori. In particolare, per quanto riguarda l'entropia dell'errore, si ha che nella codifica semplice l'entropia è di 4.382 bpp mentre nella codifica avanzata l'entropia corrisponde a 4.195 bpp. Questa differenza indica che la codifica avanzata ha una maggiore efficienza nella riduzione dell'errore di predizione che si traduce in una migliore rappresentazione dell'immagine originale.
 
 In secondo luogo, si nota che anche il tasso di codifica si riduce tra la codifica semplice (che è di 4.980 bpp) e la codifca avanzata (4.685) sottolineando l'efficacia di quest'ultima. La differenza dei due valori indica che con la codifica avanzata si è in grado di rappresentare lo stesso numero di informazioni attraverso un numero minore di bit (infatti $38\,854\,794 < 41\,305\,140$).
 
-Per quanto il tasso di codifica sia largamente minore rispetto all'entropia dell'immagine originale (7.581 bpp), rimane comunque molto più elevato rispetto al \textsl{bitrate} ottenuto zippando l'immagine (che corrispnde a 1.329 bpp). Questo è dovuto al fatto che la codifica avanzata implementata rimane comunque molto meno inefficiente rispetto alle tecniche ottimizzate della codifica con dizionario offerta dai sistemi operativi.
+Per quanto il tasso di codifica sia largamente minore rispetto all'entropia dell'immagine originale (7.581 bpp), rimane comunque molto più elevato rispetto al \textsl{bitrate} ottenuto zippando l'immagine (che corrisponde a 1.329 bpp). Questo è dovuto al fatto che la codifica avanzata implementata rimane comunque molto meno inefficiente rispetto alle tecniche ottimizzate della codifica con dizionario offerta dai sistemi operativi.
 
 
 
 
 \vspace{25px}\section{Conclusioni}
-Confrontiamo ora i valori ottenuti per la codifica avanzata con quelli precedentemento ottenuti nella codifica semplice nelle stesse immagini, illustrate per comodità nella figure \ref{fig:all-figures-final} sottostande.
+Confrontiamo ora i valori ottenuti per la codifica avanzata con quelli precedentemente ottenuti nella codifica semplice nelle stesse immagini, illustrate per comodità nella figure \ref{fig:all-figures-final} sottostante.
 
 \begin{figure}[h]
     \centering
@@ -498,7 +494,7 @@ Un risultato invece più interessante riguarda l'immagine della scacchiera. Ques
     \caption{Differenza di errore tra codifica semplice e avanzata dell'immagine della scacchiera.}
     \label{fig:chessboard}
 \end{figure}
-Si può notare che in diverse zone la percentuale di rosso è più elevata nella figura di sinistra. In particolare si concentrano nella zona in cui si passa in una nuova riga della scacchiera, dove i colori sopra sono l'esatto contrario dei colori sotto. Proprio per questo motivo i valori della codifica avanzata sono maggiori rispetto ai valori della codifca semplice. Quest'ultima predice il pixel basandosi solamente su quello precedente (a sinistra) mentre la codifica avanzata prende il valore mediano tra tre pixel, di cui due sono della riga superiore. Proprio per questo motivo, nel momento in cui si cambia una nuova riga della scacchiera il valore che viene preso è l'opposto del valore effettivo del pixel (quando si cambia la riga della scacchiera il valore sopra è bianco mentre quello sotto è nero o viceversa) aumentando quindi l'entropia dell'errore.
+Si può notare che in diverse zone la percentuale di rosso è più elevata nella figura di sinistra. In particolare si concentrano nella zona in cui si passa in una nuova riga della scacchiera, dove i colori sopra sono l'esatto contrario dei colori sotto. Proprio per questo motivo i valori della codifica avanzata sono maggiori rispetto ai valori della codifica semplice. Quest'ultima predice il pixel basandosi solamente su quello precedente (a sinistra) mentre la codifica avanzata prende il valore mediano tra tre pixel, di cui due sono della riga superiore. Proprio per questo motivo, nel momento in cui si cambia una nuova riga della scacchiera il valore che viene preso è l'opposto del valore effettivo del pixel (quando si cambia la riga della scacchiera il valore sopra è bianco mentre quello sotto è nero o viceversa) aumentando quindi l'entropia dell'errore.
 
 \vspace{8px}\noindent Complessivamente, i risultati ottenuti dimostrano che la codifica predittiva avanzata è in grado di sfruttare in modo più efficiente la ridondanza presente nelle immagini, portando a una migliore compressione rispetto alla codifica semplice.
 
