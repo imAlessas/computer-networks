@@ -7,20 +7,21 @@
 \maketitle\newpage
 
 \tableofcontents
+\vspace{50px}
 \listoffigures
-\vspace{20px}
 \newpage
-
-\listoftodos\newpage
 
 
 \section*{Introduzione}
-Il linguaggio scelto per completare le richieste dell'homework è \texttt{Python}; all'interno del documento saranno presenti solo i punti salienti dello script, che comunque può essere ispezionato al seguente \href{https://github.com/imAlessas/computer-networks/blob/main/multimedia/hw-1/script/lossless_coding.py}{\texttt{link}}.
-\todo{Inserisci introduzione dove spieghi l'obiettivo discuti brevemente come hai fatto il codice e dove trovarlo. Inserisci link a github etc}
+Il presente report dettaglia il lavoro svolto per incontrare le richieste dell'\textsl{homework 1}, focalizzandosi sull'esplorazione e il confronto di diverse tecniche di codifica lossless per la compressione di immagini in scala di grigi. L'obiettivo principale di questo studio è analizzare le prestazioni di codifiche predittive semplici e avanzate, valutando la loro efficacia nella compressione di immagini con differenti caratteristiche. Attraverso l'analisi dell'entropia delle immagini, la valutazione del tasso di compressione ottenuto tramite la codifica con dizionario e l'analisi dell'errore di predizione, si mira a comprendere l'efficienza e l'adattabilità di queste tecniche in contesti diversi.
+
+Il lavoro è stato svolto utilizzando il linguaggio di programmazione Python per implementare le diverse tecniche di codifica. All'interno del report non è presente tutto il codice scritto ma sono presenti solo le parti fondamentali per il calcolo dei parametri richiesti. Ciò nonstante il codice è pubblico, accessibilie al seguente \texttt{\href{https://github.com/imAlessas/computer-networks/tree/main/multimedia/hw-1/script}{link}}.
 
 
-\section{Codifica semplice} 
-\todo{inserisci mini introduzione}
+
+
+\newpage\section{Codifica semplice} 
+La prima parte dell'homework è dedicata alla codifica semplice, la quele è codifica predittiva di base per la compressione di immagini in scala di grigi. L'obiettivo principale di questa parte del report è esplorare il funzionamento della codifica predittiva semplice, valutando la sua efficacia nella riduzione dell'errore di predizione e nel tasso di compressione ottenuto.
 
 \vspace{15px}\subsection{Caricamento dell'immagine}
 La prima richiesta dell'homework consiste nel caricare un'immagine a livelli di grigio oppure un'immagine a colori ed estrarne la luminanza, approssimabile come la media tra i tre canali di colori dell'immagine (\textsl{Red}, \textsl{Green} e \textsl{Blue}). Il frammento di codice seguente incontra esattamente le richeste della prima task dove, attraverso la funzione \texttt{imread} del modulo \texttt{matplotlib.image}, l'immagine viene letta correttamente ed, eventualmente, ne viene estratta la luminanza.
@@ -124,7 +125,7 @@ Il fatto che la compressione attraverso la codifica con dizionario abbia un bitr
 
 
 
-\vspace{15px}\subsection{Codifica semplice}\label{simple-coding}
+\vspace{15px}\subsection{Implementazione della codifica semplice}\label{simple-coding}
 La quinta richiesta dell'homework è quella di effettuare una codifica predittiva \textsl{semplice}. In particolare, data l'immagine, definita come un vettore chiamato $x(n)$, la codifica predittiva è definita come segue:
 
 \begin{gather*}
@@ -167,7 +168,7 @@ Dall'immagine si può notare che le zone più chiare, ovvero le zone in cui il p
 
 
 
-\subsection{Entropia dell'errore di predizione}\label{simple-coding-error-entropy}
+\vspace{15px}\subsection{Entropia dell'errore di predizione}\label{simple-coding-error-entropy}
 La richiesta successiva è quella di calculare il valore dell'entropia dell'errore di predizione $y(n)$. Utilizzando uno script del tutto simile a quello utilizzato nella task \ref{img-entropy} è quindi possibile calcolare l'entropia richiesta.
 
 \begin{lstlisting}
@@ -186,7 +187,7 @@ La richiesta successiva è quella di calculare il valore dell'entropia dell'erro
 
 
 
-\subsection{Codifica esponenziale di Golomb}\label{exp-golomb}
+\vspace{15px}\subsection{Codifica esponenziale di Golomb}\label{exp-golomb}
 Seguedo le direttive della task numero 7, calcoliamo la codifica esponenziale di Golomb (detta anche \textsl{exp-Golomb}), la quale dato un numero intero ritorna la sua codifica. Quest'ultima è più efficacie riespetto ad una normale codifica binaria in quanto durante la coidifica vengono risparmiati diversi bit, migliorando la compressione. 
 
 Tale codifica può essere esaminata prima affrontando il caso in cui tutti i numeri da codificare siano ineri positivi e poi tale concetto si può generalizzare. La codifica di Golomb per interi positivi, detta anche \textsl{exponential Golomb unsigned}, è deifnita come segue.
@@ -252,7 +253,7 @@ Tale codifica può essere esaminata prima affrontando il caso in cui tutti i num
 \noindent Dopo l'esecuzione dello script, il numero di bit necessari per la codifica è $41\,305\,140$ mentre il bitrate di codifica ha il valore di \textbf{4.980 bpp}.
 
 
-\subsection{Conclusioni}
+\vspace{15px}\subsection{Conclusioni}
 Cerchiamo ora di ottenere dei dati statistici che ci permettano di trarre delle informazioni utili. Si sono scelte sei immagini, mostarte nella figura \ref{fig:all-figures}, alcune delle quali volte propri a testare le capacità della codifica semplice (e poi di quella avanzata). In peritcolare le prime tre immagini hanno peculiartà uniche: la prima, completamente nera, rappresenta l'assenza di entropia, la seconda (la scacchiera) è composta da blocchi mentre la terza rappresenta del rumore Gaussiano, con l'intendo di avere un'immagine con alta entropia. Le altre immagini invece sono normali immagini da comparare.
 
 \begin{figure}[h]
@@ -307,10 +308,9 @@ Nel caso delle altre immagini, i risultati non sono così inaspettati, a perte n
 
 
 \newpage\section{Codifica avanzata}
-La seconda parte dell'homewrok richiede di effettuare la modifica avanzata sull'immagine ed analizzarne i risultati. Infine viene richiesto di comprarli con quelli ottenuti nella codifica semplice.
+La seconda sezione del report, dedicata alla codifica avanzata, si concentra sull'analisi e la valutazione di un tecnica di codifica predittiva più sofisticata rispetto a quela precedentemente esaminata. Come vedremo, la codifica avanzata permette di ottenere risultati più precisi e più efficienti rispetto alla codifica semplice, in particolare per immagini con caratteristiche più complesse.
 
-
-\vspace{15px}\subsection{Codifica avanzata}
+\vspace{15px}\subsection{Implementazione della codifica avanzata}
 
 La penultima richiesta, esige di creare un nuovo tipo di codifica, detta \textsl{avanzata} definita come segue:
 
@@ -443,13 +443,8 @@ Per quanto il tasso di codifica sia largamente minore rispetto all'entropia dell
 
 
 
-
-
-\vspace{15px}\section{Conclusioni}
-
-\todo{inserisci discussione finale sulla differenza dei valori trovati}
-
-
+\vspace{25px}\section{Conclusioni}
+Confrontiamo ora i valori ottenuti per la codifica avanzata con quelli precedentemento ottenuti nella codifica semplice nelle stesse immagini, illustrate per comodità nella figure \ref{fig:all-figures-final} sottostande.
 
 \begin{figure}[h]
     \centering
@@ -463,9 +458,7 @@ Per quanto il tasso di codifica sia largamente minore rispetto all'entropia dell
     \label{fig:all-figures-final}
 \end{figure}
 
-
-
-
+\noindent Dopo aver eseguito la codifica avanzata e aver calcolato il tasso di codifica dell'errore di predizione su ciascuna immagine, i risultati ottenuti sono riassunti nella tabella \ref{tab:overall-conclusions}.
 \begin{table}[h]
     \centering
     \renewcommand{\arraystretch}{1.5}
@@ -489,11 +482,26 @@ Per quanto il tasso di codifica sia largamente minore rispetto all'entropia dell
         spiderman & 4.382 & 4.195 & 4.980 & 4.684\\
         \hline
     \end{tabular}
-    \caption{Tabella riassuntiva.}
+    \caption{Tabella di confronto riassuntiva.}
     \label{tab:overall-conclusions}
     \renewcommand{\arraystretch}{1}
 \end{table}
+Si può notare che in genere, casi isolati a parte, la codifica avanzata ha prodotto dei risultati migliori rispetto alla codifica semplice. In genere, sia l'entropia che il tasso di codifica sono minori di circa due decimi rispetto ai valori ottenuti della codifica semplice sottolineando ancora una volta che la codifica avanzata è più efficacie rispetto a quella semplice.
 
-\todo{Focalizza l'attenzion su chessboard, dove la differenza del predittore e maggiore perche si basa anmche sulle celle sopra e non solo sdu quelle a destra}
+Spostiamo l'attenzione ora sui casi isolati. In particolare si osserva che l'immagine completamente nera non ha alcuni tipo di miglioramento o peggioramento tra una codifica e l'altra. Questo risultato è più che ragionevole in quanto, essendo l'immagine di entropia nulla, anche l'errore di predizione sarà nullo.
+
+Un risultato invece più interessante riguarda l'immagine della scacchiera. Questa è l'unica istanza in cui la codifica semplice ha avuto un risultato migliore rispetto alla codifica avanzata. Osserviamo la figura \ref{fig:chessboard} dove a destra è presente l'errore nella codifica semplice mentre a sinistra l'errore nella codifica avanzata. 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width = .49\textwidth]{hw-1/report/imgs/chessboard-simple.png}
+    \includegraphics[width = .49\textwidth]{hw-1/report/imgs/chessboard-advanced.png}
+    \caption{Differenza di errore tra codifica semplice e avanzata dell'immagine della scacchiera.}
+    \label{fig:chessboard}
+\end{figure}
+Si può notare che in diverse zone la percentuale di rosso è più elevata nella figura di sinistra. In particolare si concentrano nella zona in cui si passa in una nuova riga della scacchiera, dove i colori sopra sono l'esatto contrario dei colori sotto. Proprio per questo motivo i valori della codifica avanzata sono maggiori rispetto ai valori della codifca semplice. Quest'ultima predice il pixel basandosi solamente su quello precedente (a sinistra) mentre la codifica avanzata prende il valore mediano tra tre pixel, di cui due sono della riga superiore. Proprio per questo motivo, nel momento in cui si cambia una nuova riga della scacchiera il valore che viene preso è l'opposto del valore effettivo del pixel (quando si cambia la riga della scacchiera il valore sopra è bianco mentre quello sotto è nero o viceversa) aumentando quindi l'entropia dell'errore.
+
+\vspace{8px}\noindent Complessivamente, i risultati ottenuti dimostrano che la codifica predittiva avanzata è in grado di sfruttare in modo più efficiente la ridondanza presente nelle immagini, portando a una migliore compressione rispetto alla codifica semplice.
+
+
 
 \end{document}
