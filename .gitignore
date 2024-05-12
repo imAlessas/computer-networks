@@ -1,9 +1,6 @@
 # uni lessons folder
 lessons
 
-# ignore folders
-ignore
-
 # python generated files
 __pycache__
 
@@ -17,6 +14,9 @@ __pycache__
 # VSCode files
 **/tempCodeRunnerFile.*
 .vscode
+
+# text files
+*.txt
 
 
 
