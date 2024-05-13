@@ -1,4 +1,6 @@
 import os
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def print_task(n: int, task_color: str = "white", number_color: str = "white") -> None:
@@ -15,6 +17,25 @@ def print_task(n: int, task_color: str = "white", number_color: str = "white") -
     }
 
     print(f"\n{color[task_color]}Task {color[number_color]}{n}\033[0m")
+
+
+
+
+def plot_data(x : list, y : list, edge = "none", face = "none", x_label = "",  y_label = "" ) -> None:
+
+    if edge == "random":
+        edge = np.random.rand(len(x), 3)
+    
+    if face == "random":
+        face = np.random.rand(len(x), 3)
+
+    plt.figure()
+    plt.scatter(x, y, edgecolors=edge, facecolors=face)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.grid(True)
+
+
 
 
 
@@ -56,3 +77,20 @@ def delete_file_content(filename: str) -> None:
         
     with open(f"{filename}", "w"):
         pass 
+
+
+
+def save_dictionary(d: dict, filename: str) -> None:
+    with open(filename, "w") as file:
+        file.write(f"\n - - - content of the dictionary - - - \n\n")
+
+        file.write("{\n")
+        for key, value in d.items():
+
+            s = ""
+            for item in value:
+                s += f"{item} "
+
+            file.write(f" [ {key} : {s}]\n")
+
+        file.write("}")
