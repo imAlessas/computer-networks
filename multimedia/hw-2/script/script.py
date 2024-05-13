@@ -66,8 +66,9 @@ if __name__ == "__main__":
 
     # setup for the script
     SELECTED_SERVER_CITY = "Los Angeles"
-    INSTANCES = 100
-    STEP = 100
+    INSTANCES = 10
+    STEP = 5
+    SLEEP_TIME = .05
     PAYLOAD_LENGTHS = range(10, 1471, STEP)
 
     # Definitions of constants
@@ -150,13 +151,14 @@ if __name__ == "__main__":
         for length in PAYLOAD_LENGTHS:
             future = executor.submit(ping_server, server, INSTANCES, length)
             futures.append(future)
-            time.sleep(.75)
+            time.sleep(SLEEP_TIME)
         
         for future in concurrent.futures.as_completed(futures):
             length, millisecs_vector = future.result()
             stats[length] = millisecs_vector
     
 
+    filename = f"{LOGS_PATH}{city}-RTT-stats.txt"
     save_dictionary(stats, filename)
 
     print(f"\n Processed {len(PAYLOAD_LENGTHS) * INSTANCES} pings")
@@ -167,6 +169,9 @@ if __name__ == "__main__":
     # extract payload lengths and durations
     payload_lengths = list(stats.keys())
     durations = [item for sublist in stats.values() for item in sublist]
+
+    print(len(payload_lengths * INSTANCES))
+    print(len(durations))
 
     # plot durations
     plot_data(payload_lengths * INSTANCES,
@@ -198,15 +203,9 @@ if __name__ == "__main__":
 
     plot_data(payload_lengths,
         list(v_max.values()),
-        edge="red",
+        edge="blue",
         x_label="L (pkt size) - bytes",
         y_label="RTT(k) max - ms")
-    
-    plot_data(payload_lengths,
-        list(v_min.values()),
-        edge="yellow",
-        x_label="L (pkt size) - bytes",
-        y_label="RTT(k) min - ms")
 
     plot_data(payload_lengths,
         list(v_std.values()),
@@ -216,7 +215,7 @@ if __name__ == "__main__":
 
     plot_data(payload_lengths,
         list(v_avg.values()),
-        edge="red",
+        edge="yellow",
         x_label="L (pkt size) - bytes",
         y_label="RTT(k) avg - ms")
 
@@ -230,18 +229,26 @@ if __name__ == "__main__":
     start = time.time()
 
     min_values = np.array([[v] for v in list(v_min.values())])
-    reg = LinearRegression().fit(min_values , np.array(PAYLOAD_LENGTHS))
+    reg = LinearRegression( fit_intercept = False ).fit(min_values , np.array(PAYLOAD_LENGTHS))
 
-    alpha = reg.coef_
+    alpha = reg.coef_[0]
     throughput_identical_link = 2 * tracert_links / alpha
     throughput_bottleneck = 2 / alpha
     
     print(f"alpha = {alpha}")
-    print(f"Throoughput with identical links = {throughput_identical_link}")
-    print(f"Throughpunt in a bottleneck scenario = {throughput_bottleneck}")
+    print(f"Throughput with identical links = {throughput_identical_link}")
+    print(f"Throughput in a bottleneck scenario = {throughput_bottleneck}")
     print(f"                { round(time.time() - start, 2) } sec")
     
-    
+
+    # plot min and alpha-line
+    x_line = np.linspace(min(payload_lengths), max(payload_lengths), 100)
+    y_line = alpha * x_line
+
+    plt.figure()
+    plt.scatter(payload_lengths, list(v_avg.values()), edgecolors="red")
+    plt.plot(x_line, y_line, color='blue', label='Regression Line')
+    plt.grid(True)
 
 
 
