@@ -13,7 +13,7 @@ from utilities import *
 
 def ping_server(server, instances, length):
 
-    print(f" Payload length:  {length}", end="\r")
+    print(f" Payload length:     {length}", end="\r")
 
     cmd = f"ping {server} -n {instances} -l {length}"
     
@@ -67,9 +67,8 @@ if __name__ == "__main__":
     # setup for the script
     SELECTED_SERVER_CITY = "Los Angeles"
     INSTANCES = 10
-    STEP = 5
-    SLEEP_TIME = .05
-    PAYLOAD_LENGTHS = range(10, 1471, STEP)
+    STEP = 2
+    SLEEP_TIME = .5
 
     # Definitions of constants
     LOGS_PATH = os.path.join("multimedia", "hw-2", "script", "logs") + "\\"
@@ -88,6 +87,7 @@ if __name__ == "__main__":
     # choosen options
     server = SERVERS[SELECTED_SERVER_CITY]
     city = server.split(".")[0]
+    payload_lengths = range(10, 1471, STEP)
 
 
 
@@ -102,19 +102,22 @@ if __name__ == "__main__":
 
     # count number of links
     print_task(1, number_color="red")
+    print(f" Number of links found with \033[1mtracert\033[0m:", end="")
+    
+    start = time.time()
     
     # using tracetr
-    start = time.time()
-
     filename = f"{LOGS_PATH}{city}-links-tracert.txt"
     tracert_links = get_links_from_tracert(server, filename)
    
-    print(f" Number of links found with \033[1mtracert\033[0m: {tracert_links}")
+    print(f" {tracert_links}")
     print(f"                { round(time.time() - start, 2) } sec")
 
 
     # using multiple ping
     start = time.time()
+    print(" Number of links found with muliple \033[1mping\033[0m:", end="")
+
     filename = f"{LOGS_PATH}{city}-links-ping.txt"
 
     ping_links = 0
@@ -127,7 +130,7 @@ if __name__ == "__main__":
             ping_links = ttl + 1
             break
            
-    print(f" Number of links found with muliple \033[1mping\033[0m: {ping_links}")
+    print(f" {ping_links}")
     print(f"                { round(time.time() - start, 2) } sec")
 
 
@@ -148,7 +151,7 @@ if __name__ == "__main__":
     with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
         
         futures = []
-        for length in PAYLOAD_LENGTHS:
+        for length in payload_lengths:
             future = executor.submit(ping_server, server, INSTANCES, length)
             futures.append(future)
             time.sleep(SLEEP_TIME)
@@ -161,20 +164,26 @@ if __name__ == "__main__":
     filename = f"{LOGS_PATH}{city}-RTT-stats.txt"
     save_dictionary(stats, filename)
 
-    print(f"\n Processed {len(PAYLOAD_LENGTHS) * INSTANCES} pings")
+    print(f"\n Processed {len(payload_lengths) * INSTANCES} pings")
     print(f"                { round(time.time() - start, 2) } sec")
 
 
+    exploit_lengths = []
+    durations = []
 
-    # extract payload lengths and durations
-    payload_lengths = list(stats.keys())
-    durations = [item for sublist in stats.values() for item in sublist]
+    for key, value in stats.items():
+        for item in value:
+            durations.append(item)
+            exploit_lengths.append(key)
 
-    print(len(payload_lengths * INSTANCES))
+
+    print(len(exploit_lengths))
     print(len(durations))
 
+    
+
     # plot durations
-    plot_data(payload_lengths * INSTANCES,
+    plot_data(exploit_lengths,
               durations,
               edge="random",
               x_label="L (pkt size) - bytes",
@@ -186,6 +195,8 @@ if __name__ == "__main__":
     start = time.time()
 
     # compute the min, max and avg of stats
+    print(" Computed Min, Max, Avg and StdDev")
+
     v_max = {}
     v_min = {}
     v_avg = {}
@@ -197,7 +208,6 @@ if __name__ == "__main__":
         v_avg[key] = sum(value) / len(value)
         v_std[key] = math.sqrt(sum((x - v_avg[key]) ** 2 for x in value) / len(value))
 
-    print(" Computed Min, Max, Avg and StdDev")
     print(f"                { round(time.time() - start, 2) } sec")
 
 
@@ -228,16 +238,16 @@ if __name__ == "__main__":
     print_task(3, number_color="red")
     start = time.time()
 
-    min_values = np.array([[v] for v in list(v_min.values())])
-    reg = LinearRegression( fit_intercept = False ).fit(min_values , np.array(PAYLOAD_LENGTHS))
+    min_values = np.array(list(v_min.values()))
+    reg = LinearRegression().fit(min_values.reshape(-1, 1), np.array(payload_lengths))
 
     alpha = reg.coef_[0]
     throughput_identical_link = 2 * tracert_links / alpha
     throughput_bottleneck = 2 / alpha
     
     print(f"alpha = {alpha}")
-    print(f"Throughput with identical links = {throughput_identical_link}")
-    print(f"Throughput in a bottleneck scenario = {throughput_bottleneck}")
+    print(f"Throughput with identical links = {round(throughput_identical_link, 3)}")
+    print(f"Throughput in a bottleneck scenario = {round(throughput_bottleneck, 3)}")
     print(f"                { round(time.time() - start, 2) } sec")
     
 
@@ -246,7 +256,7 @@ if __name__ == "__main__":
     y_line = alpha * x_line
 
     plt.figure()
-    plt.scatter(payload_lengths, list(v_avg.values()), edgecolors="red")
+    plt.scatter(payload_lengths, list(v_min.values()), edgecolors="red", facecolors=None)
     plt.plot(x_line, y_line, color='blue', label='Regression Line')
     plt.grid(True)
 
@@ -256,3 +266,4 @@ if __name__ == "__main__":
     plt.show()
 
     print(f"\n\n\nTotal execution time:     { round(time.time() - START, 2) } sec")
+    print(f"                          ~{ round((time.time() - START) / 60, ) } min\n")
