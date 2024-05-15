@@ -2,23 +2,46 @@ import os
 import time
 import math
 import subprocess
-import numpy as np
 import concurrent.futures
 from sklearn.linear_model import LinearRegression
-
 
 from utilities import *
 
 
 
+# setup
+SELECTED_SERVER_CITY = "Los Angeles"
+INSTANCES = 100
+STEP_BETWEEN_LENGTHS = 2
+PATH_TO_SCRIPT = os.path.join("multimedia", "hw-2", "script")
+
+
+# script settings
+SHOW_PLOTS = True
+SAVE_TO_FILE = True
+SAVE_IMAGES = True
+
+
+
+
+
 def ping_server(server, instances, length):
 
-    print(f" Payload length:     {length}", end="\r")
+    filename = f"{LOGS_PATH}{city}-RTT.txt"
+
+    if not length % (STEP_BETWEEN_LENGTHS * 5):
+        print(f" Payload length:     {length}", end="\r")
 
     cmd = f"ping {server} -n {instances} -l {length}"
     
     result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     
+    if SAVE_TO_FILE:
+        with open(f"{filename}", "a") as file:
+            file.write(result.stdout)
+            file.write("\n\n")
+
+
     millisecs_vector = []
     lines = result.stdout.split("\n")
     
@@ -31,17 +54,17 @@ def ping_server(server, instances, length):
 
 
 
+def get_links_from_tracert(server: str) -> int:
 
-
-
-def get_links_from_tracert(server: str, filename: str) -> int:
+    filename = f"{LOGS_PATH}{city}-links-tracert.txt"
 
     # get number of links from tracert
     cmd = f"tracert {server}"
     result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-    with open(f"{filename}", "a") as file:
-        file.write(result.stdout)
+    if SAVE_TO_FILE:
+        with open(f"{filename}", "a") as file:
+            file.write(result.stdout)
 
     last_link_line = result.stdout.split("\n")[-4]
 
@@ -49,11 +72,121 @@ def get_links_from_tracert(server: str, filename: str) -> int:
 
 
 
+def get_links_from_ping(server: str) -> int:
+
+    filename = f"{LOGS_PATH}{city}-links-ping.txt"
+
+    for ttl in range(20, 0, -1):
+
+        cmd = f"ping {server} -i {ttl}"
+        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+        if SAVE_TO_FILE:
+            with open(f"{filename}", "a") as file:
+                file.write(result.stdout)
+                file.write("\n\n")
+
+        if "TTL scaduto durante il passaggio" in result.stdout:
+            return (ttl + 1)
 
 
 
+def plot_all_data() -> None:
+
+    IMGS_PATH = os.path.join(PATH_TO_SCRIPT, "imgs") + "\\"
+
+    # creates directory if does not exist
+    if SAVE_IMAGES and not os.path.exists(IMGS_PATH):
+        os.makedirs(IMGS_PATH)
 
 
+    
+    ##### all latencies #####
+
+    # calculate the true number of retrived data in the case of some lost packages
+    exploit_lengths = []
+    latencies = []
+
+    for key, value in stats.items():
+        for item in value:
+            latencies.append(item)
+            exploit_lengths.append(key)
+
+
+    random_colors = np.random.rand(len(exploit_lengths), 3)
+
+    plt.figure(figsize=(10, 6))
+    plt.scatter(exploit_lengths, latencies, edgecolors=random_colors, facecolors="none")
+    plt.xlabel("Packet size - Bytes")
+    plt.ylabel("Round-Trip-Time(k) - millisecs")
+    plt.title("Total gathered latencies")
+    plt.grid(True)
+
+    if SAVE_IMAGES:
+        plt.savefig(f"{IMGS_PATH}total-latencies.png")
+
+
+
+    ##### max latencies #####
+    plt.figure(figsize=(10, 6))
+    plt.scatter(payload_lengths, list(max_values.values()), edgecolors="magenta", facecolors="none")
+    plt.xlabel("Packet size - Bytes")
+    plt.ylabel("Round-Trip-Time(k) - millisecs")
+    plt.title("Maximum latencies")
+    plt.grid(True)
+
+    if SAVE_IMAGES:
+        plt.savefig(f"{IMGS_PATH}max-latencies.png")
+
+
+
+    ##### avg latencies #####
+    plt.figure(figsize=(10, 6))
+    plt.scatter(payload_lengths, list(average_values.values()), edgecolors="lime", facecolors="none")
+    plt.xlabel("Packet size - Bytes")
+    plt.ylabel("Round-Trip-Time(k) - millisecs")
+    plt.title("Average latencies")
+    plt.grid(True)
+
+    if SAVE_IMAGES:
+        plt.savefig(f"{IMGS_PATH}avg-latencies.png")
+
+
+
+    ##### standard deviation #####
+    plt.figure(figsize=(10, 6))
+    plt.scatter(payload_lengths, list(standard_deviations.values()), edgecolors="dodgerblue", facecolors="none")
+    plt.xlabel("Packet size - Bytes")
+    plt.ylabel("Round-Trip-Time(k) - millisecs")
+    plt.title("Standard deviation")
+    plt.grid(True)
+
+    if SAVE_IMAGES:
+        plt.savefig(f"{IMGS_PATH}standard-deviation.png")
+
+
+
+    ##### min latencies and predictions #####
+    
+    # generate min and alpha-line
+    x_line = np.linspace(min(payload_lengths), max(payload_lengths), 100)
+    y_line = alpha * x_line + reg.intercept_
+
+    plt.figure(figsize=(10, 6))
+    plt.scatter(payload_lengths, list(min_values.values()), edgecolors="red", facecolors="none")
+    plt.plot(x_line, y_line, color="blue")
+    plt.title("Minimum latencies and fitting")
+    plt.xlabel("Packet size - Bytes")
+    plt.ylabel("Round-Trip-Time(k) - millisecs")
+    plt.grid(True)
+
+    if SAVE_IMAGES:
+        plt.savefig(f"{IMGS_PATH}min-latencies.png")
+
+
+
+    ### displays all plots
+    plt.show()
 
 
 
@@ -62,16 +195,12 @@ def get_links_from_tracert(server: str, filename: str) -> int:
 
 
 if __name__ == "__main__":
-    START = time.time()
+    initial = time.time()
 
-    # setup for the script
-    SELECTED_SERVER_CITY = "Los Angeles"
-    INSTANCES = 10
-    STEP = 2
-    SLEEP_TIME = .5
 
     # Definitions of constants
-    LOGS_PATH = os.path.join("multimedia", "hw-2", "script", "logs") + "\\"
+    SLEEP_TIME = 0.5
+    LOGS_PATH = os.path.join(PATH_TO_SCRIPT, "logs") + "\\"
     SERVERS = {
                 "Atlanta" : "atl.speedtest.clouvider.net",
                 "New York City" : "nyc.speedtest.clouvider.net", 
@@ -84,31 +213,36 @@ if __name__ == "__main__":
                 "Bordeaux" : "bordeaux.testdebit.info"
             }
 
-    # choosen options
+    # set choosen options
     server = SERVERS[SELECTED_SERVER_CITY]
     city = server.split(".")[0]
-    payload_lengths = range(10, 1471, STEP)
+    payload_lengths = range(10, 1471, STEP_BETWEEN_LENGTHS)
 
 
 
     print(f"\nServer:         \033[1m\033[34m{server}\033[0m\n\n")
 
 
+    # create log dir if it does not exist
+    if SAVE_TO_FILE and not os.path.exists(LOGS_PATH):
+        os.makedirs(LOGS_PATH)
 
-    # delete files in the directory
+    # delete log files in the directory
     delete_files_in_directory(LOGS_PATH, city)
 
 
 
-    # count number of links
+
+    #### count number of links
+
     print_task(1, number_color="red")
-    print(f" Number of links found with \033[1mtracert\033[0m:", end="")
     
-    start = time.time()
     
     # using tracetr
-    filename = f"{LOGS_PATH}{city}-links-tracert.txt"
-    tracert_links = get_links_from_tracert(server, filename)
+    print(f" Number of links found with \033[1mtracert\033[0m:", end="")
+    start = time.time()
+   
+    tracert_links = get_links_from_tracert(server)
    
     print(f" {tracert_links}")
     print(f"                { round(time.time() - start, 2) } sec")
@@ -118,17 +252,7 @@ if __name__ == "__main__":
     start = time.time()
     print(" Number of links found with muliple \033[1mping\033[0m:", end="")
 
-    filename = f"{LOGS_PATH}{city}-links-ping.txt"
-
-    ping_links = 0
-    for ttl in range(20, 0, -1):
-
-        cmd = f"ping {server} -i {ttl}"
-        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-        if "TTL scaduto durante il passaggio" in result.stdout:
-            ping_links = ttl + 1
-            break
+    ping_links = get_links_from_ping(server)
            
     print(f" {ping_links}")
     print(f"                { round(time.time() - start, 2) } sec")
@@ -139,15 +263,13 @@ if __name__ == "__main__":
     
 
     
-    # minimum, maximum, average RTT
+    ### Round Trip Time
     print_task(2, number_color="red")
     start = time.time()
 
     stats = {}
-
-    filename = f"{LOGS_PATH}{city}-RTT.txt"
-
     
+    # using ThreadPoolExecutor to imporve computational capabilites
     with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
         
         futures = []
@@ -160,35 +282,16 @@ if __name__ == "__main__":
             length, millisecs_vector = future.result()
             stats[length] = millisecs_vector
     
+    # order stats by length
+    stats = dict(sorted(stats.items()))
 
-    filename = f"{LOGS_PATH}{city}-RTT-stats.txt"
-    save_dictionary(stats, filename)
+    filename = f"{LOGS_PATH}{city}-RTT-total.txt"
+    if SAVE_TO_FILE:
+        save_dictionary(stats, filename)
+
 
     print(f"\n Processed {len(payload_lengths) * INSTANCES} pings")
     print(f"                { round(time.time() - start, 2) } sec")
-
-
-    exploit_lengths = []
-    durations = []
-
-    for key, value in stats.items():
-        for item in value:
-            durations.append(item)
-            exploit_lengths.append(key)
-
-
-    print(len(exploit_lengths))
-    print(len(durations))
-
-    
-
-    # plot durations
-    plot_data(exploit_lengths,
-              durations,
-              edge="random",
-              x_label="L (pkt size) - bytes",
-              y_label="RTT(k) - ms")
-
 
 
 
@@ -197,73 +300,62 @@ if __name__ == "__main__":
     # compute the min, max and avg of stats
     print(" Computed Min, Max, Avg and StdDev")
 
-    v_max = {}
-    v_min = {}
-    v_avg = {}
-    v_std = {}
+    max_values = {}
+    min_values = {}
+    average_values = {}
+    standard_deviations = {}
 
     for key, value in stats.items():
-        v_max[key] = max(value)
-        v_min[key] = min(value)
-        v_avg[key] = sum(value) / len(value)
-        v_std[key] = math.sqrt(sum((x - v_avg[key]) ** 2 for x in value) / len(value))
+        max_values[key] = max(value)
+        min_values[key] = min(value)
+        average_values[key] = sum(value) / len(value)
+        standard_deviations[key] = math.sqrt(sum((x - average_values[key]) ** 2 for x in value) / len(value))
 
     print(f"                { round(time.time() - start, 2) } sec")
 
 
-    plot_data(payload_lengths,
-        list(v_max.values()),
-        edge="blue",
-        x_label="L (pkt size) - bytes",
-        y_label="RTT(k) max - ms")
+    if SAVE_TO_FILE:
+        filename = f"{LOGS_PATH}{city}-RTT-min.txt"
+        save_dictionary(min_values, filename)
 
-    plot_data(payload_lengths,
-        list(v_std.values()),
-        edge="cyan",
-        x_label="L (pkt size) - bytes",
-        y_label="RTT(k) std - ms")
-
-    plot_data(payload_lengths,
-        list(v_avg.values()),
-        edge="yellow",
-        x_label="L (pkt size) - bytes",
-        y_label="RTT(k) avg - ms")
+        filename = f"{LOGS_PATH}{city}-RTT-max.txt"
+        save_dictionary(max_values, filename)
+        
+        filename = f"{LOGS_PATH}{city}-RTT-avg.txt"
+        save_dictionary(average_values, filename)
+        
+        filename = f"{LOGS_PATH}{city}-RTT-std.txt"
+        save_dictionary(standard_deviations, filename)
 
 
 
 
-
-
-    # alpha-coefficient and throughput
+    ### alpha-coefficient and throughput
     print_task(3, number_color="red")
     start = time.time()
 
-    min_values = np.array(list(v_min.values()))
-    reg = LinearRegression().fit(min_values.reshape(-1, 1), np.array(payload_lengths))
+    # use linear regression to retrive alpha, need to transform list into np.arrays
+    reg = LinearRegression().fit(
+        np.array(payload_lengths).reshape(-1, 1), # transpose of payload lengths
+        np.array(list(min_values.values())) 
+    )
 
     alpha = reg.coef_[0]
+
+    # compute throughput
     throughput_identical_link = 2 * tracert_links / alpha
     throughput_bottleneck = 2 / alpha
     
-    print(f"alpha = {alpha}")
-    print(f"Throughput with identical links = {round(throughput_identical_link, 3)}")
-    print(f"Throughput in a bottleneck scenario = {round(throughput_bottleneck, 3)}")
+    print(f" alpha = {round(alpha, 6)}")
+    print(f" Throughput with identical links = {round(throughput_identical_link, 3)}")
+    print(f" Throughput in a bottleneck scenario = {round(throughput_bottleneck, 3)}")
     print(f"                { round(time.time() - start, 2) } sec")
     
 
-    # plot min and alpha-line
-    x_line = np.linspace(min(payload_lengths), max(payload_lengths), 100)
-    y_line = alpha * x_line
 
-    plt.figure()
-    plt.scatter(payload_lengths, list(v_min.values()), edgecolors="red", facecolors=None)
-    plt.plot(x_line, y_line, color='blue', label='Regression Line')
-    plt.grid(True)
+    if SHOW_PLOTS:
+        plot_all_data()
 
 
-
-    
-    plt.show()
-
-    print(f"\n\n\nTotal execution time:     { round(time.time() - START, 2) } sec")
-    print(f"                          ~{ round((time.time() - START) / 60, ) } min\n")
+    print(f"\n\n\nTotal execution time:     { round(time.time() - initial, 2) } sec")
+    print(f"                          ~ { round((time.time() - initial) / 60, ) } min\n")
