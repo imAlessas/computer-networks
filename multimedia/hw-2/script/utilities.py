@@ -21,24 +21,6 @@ def print_task(n: int, task_color: str = "white", number_color: str = "white") -
 
 
 
-def plot_data(x : list, y : list, edge = "none", face = "none", x_label = "",  y_label = "" ) -> None:
-
-    if edge == "random":
-        edge = np.random.rand(len(x), 3)
-    
-    if face == "random":
-        face = np.random.rand(len(x), 3)
-
-    plt.figure()
-    plt.scatter(x, y, edgecolors=edge, facecolors=face)
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
-    plt.grid(True)
-
-
-
-
-
 def delete_files_in_directory(dir_path: str, prefix: str = "") -> None:
     """
     Function to delete files in a directory that start with a specified prefix.
@@ -86,11 +68,10 @@ def save_dictionary(d: dict, filename: str) -> None:
 
         file.write("{\n")
         for key, value in d.items():
-
-            s = ""
-            for item in value:
-                s += f"{item} "
-
-            file.write(f" [ {key} : {s}]\n")
+            if isinstance(value, str) or not hasattr(value, '__iter__'):
+                file.write(f" [ {key} : {value} ]\n")
+            else:
+                s = " ".join(str(item) for item in value)
+                file.write(f"     [ {key} : {s}]\n")
 
         file.write("}")
