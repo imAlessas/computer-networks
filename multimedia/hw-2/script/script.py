@@ -11,13 +11,13 @@ from utilities import *
 
 # setup
 SELECTED_SERVER_CITY = "Los Angeles"
-INSTANCES = 100
-STEP_BETWEEN_LENGTHS = 2
+INSTANCES = 250
+STEP_BETWEEN_LENGTHS = 1
 PATH_TO_SCRIPT = os.path.join("multimedia", "hw-2", "script")
 
 
 # script settings
-SHOW_PLOTS = True
+SHOW_PLOTS = False
 SAVE_TO_FILE = True
 SAVE_IMAGES = True
 
@@ -93,6 +93,9 @@ def get_links_from_ping(server: str) -> int:
 
 def plot_all_data() -> None:
 
+    if not SAVE_IMAGES and not SHOW_PLOTS:
+        return
+
     IMGS_PATH = os.path.join(PATH_TO_SCRIPT, "imgs") + "\\"
 
     # creates directory if does not exist
@@ -116,7 +119,7 @@ def plot_all_data() -> None:
     random_colors = np.random.rand(len(exploit_lengths), 3)
 
     plt.figure(figsize=(10, 6))
-    plt.scatter(exploit_lengths, latencies, edgecolors=random_colors, facecolors="none")
+    plt.scatter(exploit_lengths, latencies, edgecolors=random_colors, facecolors="none", s=10)
     plt.xlabel("Packet size - Bytes")
     plt.ylabel("Round-Trip-Time(k) - millisecs")
     plt.title("Total gathered latencies")
@@ -129,7 +132,7 @@ def plot_all_data() -> None:
 
     ##### max latencies #####
     plt.figure(figsize=(10, 6))
-    plt.scatter(payload_lengths, list(max_values.values()), edgecolors="magenta", facecolors="none")
+    plt.scatter(payload_lengths, list(max_values.values()), edgecolors="magenta", facecolors="none", s=20)
     plt.xlabel("Packet size - Bytes")
     plt.ylabel("Round-Trip-Time(k) - millisecs")
     plt.title("Maximum latencies")
@@ -142,7 +145,7 @@ def plot_all_data() -> None:
 
     ##### avg latencies #####
     plt.figure(figsize=(10, 6))
-    plt.scatter(payload_lengths, list(average_values.values()), edgecolors="lime", facecolors="none")
+    plt.scatter(payload_lengths, list(average_values.values()), edgecolors="lime", facecolors="none", s=20)
     plt.xlabel("Packet size - Bytes")
     plt.ylabel("Round-Trip-Time(k) - millisecs")
     plt.title("Average latencies")
@@ -155,7 +158,7 @@ def plot_all_data() -> None:
 
     ##### standard deviation #####
     plt.figure(figsize=(10, 6))
-    plt.scatter(payload_lengths, list(standard_deviations.values()), edgecolors="dodgerblue", facecolors="none")
+    plt.scatter(payload_lengths, list(standard_deviations.values()), edgecolors="dodgerblue", facecolors="none", s=20)
     plt.xlabel("Packet size - Bytes")
     plt.ylabel("Round-Trip-Time(k) - millisecs")
     plt.title("Standard deviation")
@@ -173,7 +176,7 @@ def plot_all_data() -> None:
     y_line = alpha * x_line + reg.intercept_
 
     plt.figure(figsize=(10, 6))
-    plt.scatter(payload_lengths, list(min_values.values()), edgecolors="red", facecolors="none")
+    plt.scatter(payload_lengths, list(min_values.values()), edgecolors="red", facecolors="none", s=20)
     plt.plot(x_line, y_line, color="blue")
     plt.title("Minimum latencies and fitting")
     plt.xlabel("Packet size - Bytes")
@@ -353,8 +356,7 @@ if __name__ == "__main__":
     
 
 
-    if SHOW_PLOTS:
-        plot_all_data()
+    plot_all_data()
 
 
     print(f"\n\n\nTotal execution time:     { round(time.time() - initial, 2) } sec")
