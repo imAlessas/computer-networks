@@ -9,12 +9,12 @@ from utilities import *
 
 
 
-# setup
+PATH_TO_SCRIPT = os.path.join("multimedia", "hw-2", "script")
+
+# project specification
 SELECTED_SERVER_CITY = "Los Angeles"
 INSTANCES = 250
 STEP_BETWEEN_LENGTHS = 1
-PATH_TO_SCRIPT = os.path.join("multimedia", "hw-2", "script")
-
 
 # script settings
 SHOW_PLOTS = False
@@ -32,7 +32,7 @@ def ping_server(server, instances, length):
     if not length % (STEP_BETWEEN_LENGTHS * 5):
         print(f" Payload length:     {length}", end="\r")
 
-    cmd = f"ping {server} -n {instances} -l {length}"
+    cmd = f"psping -n {instances} -l {length} -i 0 -w 0 {server}"
     
     result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     
@@ -46,9 +46,9 @@ def ping_server(server, instances, length):
     lines = result.stdout.split("\n")
     
     for line in lines:
-        if "durata=" in line:
-            duration = line.split("durata=")[1].split("ms")[0]
-            millisecs_vector.append(int(duration))
+        if "Reply from" in line:
+            duration = float(line.split(": ")[1].split("ms")[0])
+            millisecs_vector.append(duration)
     
     return length, millisecs_vector
 
@@ -96,13 +96,6 @@ def plot_all_data() -> None:
     if not SAVE_IMAGES and not SHOW_PLOTS:
         return
 
-    IMGS_PATH = os.path.join(PATH_TO_SCRIPT, "imgs") + "\\"
-
-    # creates directory if does not exist
-    if SAVE_IMAGES and not os.path.exists(IMGS_PATH):
-        os.makedirs(IMGS_PATH)
-
-
     
     ##### all latencies #####
 
@@ -112,84 +105,86 @@ def plot_all_data() -> None:
 
     for key, value in stats.items():
         for item in value:
+            # convert directly into bits whil building
+            exploit_lengths.append( 8 * (key + 28))
             latencies.append(item)
-            exploit_lengths.append(key)
 
 
     random_colors = np.random.rand(len(exploit_lengths), 3)
 
     plt.figure(figsize=(10, 6))
-    plt.scatter(exploit_lengths, latencies, edgecolors=random_colors, facecolors="none", s=10)
-    plt.xlabel("Packet size - Bytes")
+    plt.scatter(exploit_lengths, latencies, edgecolors=random_colors, facecolors="none", s=25)
+    plt.xlabel("Packet size - Bits")
     plt.ylabel("Round-Trip-Time(k) - millisecs")
     plt.title("Total gathered latencies")
     plt.grid(True)
 
     if SAVE_IMAGES:
-        plt.savefig(f"{IMGS_PATH}total-latencies.png")
+        plt.savefig(f"{IMGS_PATH}{city}-total-latencies.png")
 
 
 
     ##### max latencies #####
     plt.figure(figsize=(10, 6))
-    plt.scatter(payload_lengths, list(max_values.values()), edgecolors="magenta", facecolors="none", s=20)
-    plt.xlabel("Packet size - Bytes")
+    plt.scatter(payload_lengths_bit, list(max_values.values()), edgecolors="magenta", facecolors="none", s=25)
+    plt.xlabel("Packet size - Bits")
     plt.ylabel("Round-Trip-Time(k) - millisecs")
     plt.title("Maximum latencies")
     plt.grid(True)
 
     if SAVE_IMAGES:
-        plt.savefig(f"{IMGS_PATH}max-latencies.png")
+        plt.savefig(f"{IMGS_PATH}{city}-max-latencies.png")
 
 
 
     ##### avg latencies #####
     plt.figure(figsize=(10, 6))
-    plt.scatter(payload_lengths, list(average_values.values()), edgecolors="lime", facecolors="none", s=20)
-    plt.xlabel("Packet size - Bytes")
+    plt.scatter(payload_lengths_bit, list(average_values.values()), edgecolors="lime", facecolors="none", s=25)
+    plt.xlabel("Packet size - Bits")
     plt.ylabel("Round-Trip-Time(k) - millisecs")
     plt.title("Average latencies")
     plt.grid(True)
 
     if SAVE_IMAGES:
-        plt.savefig(f"{IMGS_PATH}avg-latencies.png")
+        plt.savefig(f"{IMGS_PATH}{city}-avg-latencies.png")
 
 
 
     ##### standard deviation #####
     plt.figure(figsize=(10, 6))
-    plt.scatter(payload_lengths, list(standard_deviations.values()), edgecolors="dodgerblue", facecolors="none", s=20)
-    plt.xlabel("Packet size - Bytes")
+    plt.scatter(payload_lengths_bit, list(standard_deviations.values()), edgecolors="dodgerblue", facecolors="none", s=25)
+    plt.xlabel("Packet size - Bits")
     plt.ylabel("Round-Trip-Time(k) - millisecs")
     plt.title("Standard deviation")
     plt.grid(True)
 
     if SAVE_IMAGES:
-        plt.savefig(f"{IMGS_PATH}standard-deviation.png")
+        plt.savefig(f"{IMGS_PATH}{city}-standard-deviation.png")
 
 
 
     ##### min latencies and predictions #####
     
     # generate min and alpha-line
-    x_line = np.linspace(min(payload_lengths), max(payload_lengths), 100)
+    x_line = np.linspace(min(payload_lengths_bit), max(payload_lengths_bit), 100)
     y_line = alpha * x_line + reg.intercept_
 
     plt.figure(figsize=(10, 6))
-    plt.scatter(payload_lengths, list(min_values.values()), edgecolors="red", facecolors="none", s=20)
+    plt.scatter(payload_lengths_bit, list(min_values.values()), edgecolors="red", facecolors="none", s=25)
     plt.plot(x_line, y_line, color="blue")
     plt.title("Minimum latencies and fitting")
-    plt.xlabel("Packet size - Bytes")
+    plt.xlabel("Packet size - Bits")
     plt.ylabel("Round-Trip-Time(k) - millisecs")
     plt.grid(True)
 
     if SAVE_IMAGES:
-        plt.savefig(f"{IMGS_PATH}min-latencies.png")
+        plt.savefig(f"{IMGS_PATH}{city}-min-latencies.png")
 
 
 
     ### displays all plots
-    plt.show()
+    if SHOW_PLOTS:
+        plt.show()
 
 
 
@@ -204,6 +199,7 @@ if __name__ == "__main__":
     # Definitions of constants
     SLEEP_TIME = 0.5
     LOGS_PATH = os.path.join(PATH_TO_SCRIPT, "logs") + "\\"
+    IMGS_PATH = os.path.join(PATH_TO_SCRIPT, "imgs") + "\\"
     SERVERS = {
                 "Atlanta" : "atl.speedtest.clouvider.net",
                 "New York City" : "nyc.speedtest.clouvider.net", 
@@ -230,9 +226,15 @@ if __name__ == "__main__":
     if SAVE_TO_FILE and not os.path.exists(LOGS_PATH):
         os.makedirs(LOGS_PATH)
 
-    # delete log files in the directory
+    # delete old log files in the directory
     delete_files_in_directory(LOGS_PATH, city)
 
+    # create img dir if does not exist
+    if SAVE_IMAGES and not os.path.exists(IMGS_PATH):
+        os.makedirs(IMGS_PATH)
+
+    # delete old img files in the directory
+    delete_files_in_directory(IMGS_PATH, city)
 
 
 
@@ -267,6 +269,7 @@ if __name__ == "__main__":
 
     
     ### Round Trip Time
+
     print_task(2, number_color="red")
     start = time.time()
 
@@ -333,13 +336,17 @@ if __name__ == "__main__":
 
 
 
+
     ### alpha-coefficient and throughput
+
     print_task(3, number_color="red")
     start = time.time()
 
+    payload_lengths_bit = [8 * (length + 28) for length in payload_lengths]
+
     # use linear regression to retrive alpha, need to transform list into np.arrays
     reg = LinearRegression().fit(
-        np.array(payload_lengths).reshape(-1, 1), # transpose of payload lengths
+        np.array(payload_lengths_bit).reshape(-1, 1), # transpose of payload lengths
         np.array(list(min_values.values())) 
     )
 
@@ -354,7 +361,14 @@ if __name__ == "__main__":
     print(f" Throughput in a bottleneck scenario = {round(throughput_bottleneck, 3)}")
     print(f"                { round(time.time() - start, 2) } sec")
     
+    filename = f"{LOGS_PATH}{city}-throughput.txt"
+    if SAVE_TO_FILE:
+        with open(f"{filename}", "a") as file:
+            file.write(f"alpha = {round(alpha, 6)}\n")
+            file.write(f"Throughput with identical links = {round(throughput_identical_link, 3)}\n")
+            file.write(f"Throughput in a bottleneck scenario = {round(throughput_bottleneck, 3)}\n")
 
+    
 
     plot_all_data()
 

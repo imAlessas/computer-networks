@@ -20,7 +20,6 @@ def print_task(n: int, task_color: str = "white", number_color: str = "white") -
 
 
 
-
 def delete_files_in_directory(dir_path: str, prefix: str = "") -> None:
     """
     Function to delete files in a directory that start with a specified prefix.
