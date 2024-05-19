@@ -11,6 +11,8 @@
 \listoffigures
 \newpage
 
+\listoftodos\newpage
+
 \section{Introduzione}
 \todo{Fai introduzione}
 
@@ -106,8 +108,18 @@ Traccia completata.
 
 \vspace{15px}\subsection{Analisi del \textsl{Round Trip Time}}
 
-La seconda parte, volta ad analizzare il \textsl{RTT}, necessita 
+La seconda parte, volta ad analizzare il \textsl{RTT}, necessita uno script Python più complesso, anche volto a migliorare le prestazioni computazionali dello script. Si è quindi scelto di utilizzare un approccio \textbf{multi-threading} ed il comando \texttt{psping}, che è più prestante rispetto al comnue ping, inoltre permetto di ottnere delle latenze più precise (fino al centesimo di millisecondo).
 
+Per permettere l'utilizzo di diversi thread, è necessario racchiudere le richieste ping in una funzione, chiamata \texttt{ping\_server}. In questa funzione la richiesta di ping ha diverse proprietà specificate:
+\vspace{-3px}
+\begin{itemize}
+    \setlength{\itemsep}{-2px}
+    \item[$\to$] \texttt{-n}, che specifica il numero di istaze per ogni richiesta ping;
+    \item[$\to$] \texttt{-l}, indica la lunghezza del \textsl{payload} di ciascuna richiesta;
+    \item[$\to$] \texttt{-i}, specifica l'intervallo di secondo tra un ping e l'altro; viene impostato a zero per aumentare la rapidità dello script;
+    \item[$\to$] \texttt{-w}, che indica il numero di \textsl{warmup request} da fare prima di iniziare la sequenza di ping.
+\end{itemize}
+\noindent Dopo aver eseguito il comando, il risultato viene analizzato e ne sono estratte le latenze, che sono aggiunte in una lista (o vettore). Infine sono ritornati due valori, la lunghezza corrente e la lista con tutte le latenze.
 
 \begin{lstlisting}
     def ping_server(server, instances, length):
@@ -126,6 +138,7 @@ La seconda parte, volta ad analizzare il \textsl{RTT}, necessita
         return length, millisecs_vector
 \end{lstlisting}
 
+\noindent La funzione descritta sopra viene utilizzata nel seguente script dove, mediante il pacchetto \texttt{ThreadPoolExecutor}, viene eseguita da ciascun thread. In questo modo molte più richieste sono mandate contemporaneamente migliorando notevolmente le prestazioni del programma. Senza l'utilizzo di un algoritmo multithreading, ottenere tempistiche di esecuzione superiori a una o due ore era inevitabile, anche con un numero limitato di istanze (ad esempio, 50 istanze con incrementi di 75). Infine, la coppia restituita dalla funzione \texttt{ping\_server}, viene aggiunta al dizionario \texttt{stats} dove sono immagazzinate tutte latenze per poi essere analizzate.
 
 \begin{lstlisting}
     stats = {}
@@ -135,9 +148,11 @@ La seconda parte, volta ad analizzare il \textsl{RTT}, necessita
         
         futures = []
         for length in payload_lengths:
+            # submit a task to the executor to ping the server with the specified parameters
             future = executor.submit(ping_server, server, INSTANCES, length)
             futures.append(future)
-        
+            
+        # iterate over completed futures as they become available
         for future in concurrent.futures.as_completed(futures):
             length, millisecs_vector = future.result()
             stats[length] = millisecs_vector
@@ -146,7 +161,7 @@ La seconda parte, volta ad analizzare il \textsl{RTT}, necessita
     stats = dict(sorted(stats.items()))
 \end{lstlisting}
 
-
+\noindent Al fine di calcolare tutti i massimi, i minimi, le medie e le varianze è sufficiente iterare lungo il dizionario creato. Lo seguente script si occupa proprio di questo, anche se in modo poco efficiente ma leggibile.
 
 \begin{lstlisting}
     max_values = {}
@@ -161,42 +176,70 @@ La seconda parte, volta ad analizzare il \textsl{RTT}, necessita
         standard_deviations[key] = math.sqrt(sum((x - average_values[key]) ** 2 for x in value) / len(value))
 \end{lstlisting}
 
-\noindent Dopo aver eseguito gli script, è quindi possibile mostrare tutte le latenze raccolte. Verranno presentati diversi plot al fine di mostrare la differenza tra i risultati nella scelta del numero di istanze e gli step tra le lunghezze. \todo{scrivi meglio sto schifo}
+\vspace{10px}\subsection*{Grafici}
 
+\noindent Dopo aver eseguito gli script, è quindi possibile mostrare tutte le latenze raccolte, i loro massimi, i minimi, le latenze medie per ciascuna lunghezza e la loro varianza. Sono presentati di seguito tre immagini contenenti i risultati delle richieste; cioascune delle tre immagini fa riferimento ad una diversa scelta di istanze e di step.
 
-
-
-\begin{figure}
+L'immagine \ref{fig:20-instances-total} di seguito rappresenta tutte le latenza raccolte durante l'esecuzione dei ping con 20 istanze per richiesta e con uno step di 10 tra una lunghezza e l'altra, per un totale di 2940 ping effettuati in circa un minuti. Si può osservare che in genere tutte le latenze sono attorno ai 170 millisecondi, con alcuni picchi tra i 750 e gli 800 bytes.
+\begin{figure}[h]
     \centering
     \includegraphics[width = .9\textwidth]{hw-2/report/imgs/20-instances/la-total-latencies.png}
+    \caption{Tutte le ottenute con 20 istanze ed uno step di 10.}
+    \label{fig:20-instances-total}
+\end{figure}
+Non a caso, nei grafici rappresentati in figura \ref{fig:20-instances-stats}, si osserva infatti che i picchi sono rispecchiati nella rappresentazione dei massimi (in alto a destra), delle media (in basso a sinistra) e delle varianze (in basso a destra). Si osserva inoltre che i minimi variano tra 168 e 170 millisecondi e che crescono al crescere della dimensione del pacchetto; questo aspetto sarà dettagliatamente esplorato nel prossimo paragrafo, dedicato al \textsl{throughput} (\ref{throughput}).
+\begin{figure}[h]
+    \centering
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/20-instances/la-min-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/20-instances/la-max-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/20-instances/la-avg-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/20-instances/la-standard-deviation.png}
+    \caption{Grafici in riferimento all'immagine\ref{fig:20-instances-total}.}
+    \label{fig:20-instances-stats}
 \end{figure}
 
-\begin{figure}
+\FloatBarrier\noindent Aumentando il numero di ping effettuati, in particolare aumentonado il numero di istanze a 100 e riducendo l'incremento delle lunghezze a 2, otteniamo un grafico come quello della figura \ref{fig:100-instances-total}, che contiene 73100 valori di latenza, ottenuti in circa 6 minuti. Anche in questo caso possiamo notare dei picchi che sono distribuiti lungo tutte le lunghezze. In particolare, i più elevati si aggirano attorno a 600 bytes di lunghezza del payload. 
+\begin{figure}[h]
     \centering
     \includegraphics[width = .9\textwidth]{hw-2/report/imgs/100-instances/la-total-latencies.png}
+    \caption{Grafici ottenuti con 100 istanze ed uno step di 2.}
+    \label{fig:100-instances-total}
+\end{figure}
+Osservando infatti i grafici nell'immagine \ref{fig:100-instances-stats}, notiamo una forte varianza (fino a 30 millisecondi) proprio in queste zone. In questa immagine si rende ancora più evidente la crescita dei minimi e anche delle medie con il crescere della lunghezza dei pacchetti.
+\begin{figure}[h]
+    \centering
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/100-instances/la-min-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/100-instances/la-max-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/100-instances/la-avg-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/100-instances/la-standard-deviation.png}
+    \caption{Grafici in riferimento all'immagine \ref{fig:100-instances-total}.}
+    \label{fig:100-instances-stats}
 \end{figure}
 
-\begin{figure}
+\FloatBarrier\noindent Infine, nell'immagine \ref{fig:250-instances-total} sono state processate un totale di 365250 richieste in circa un quarto d'ora, risultato di 250 istanze per lunghezza ed uno step di 1 tra una lunghezza e l'altra. Si può infatti notare che il numero di dati in quest'ultimo grafico è molto più elevato rispetto ai due precedenti garantendo quindi che i dati analizzati sono più simili a quelli reali.
+\begin{figure}[h]
     \centering
     \includegraphics[width = .9\textwidth]{hw-2/report/imgs/250-instances/la-total-latencies.png}
+    \caption{Grafici ottenuti con 250 istanze ed uno step di 1.}
+    \label{fig:250-instances-total}
+\end{figure}
+In questo caso è interssante osservare che sia la media che la varianza sono elevate per la maggior parte delle lunghezze per decrescere solo quando il pacchetto è di dimensione ridotta oppure molto elevata (figuar \ref{fig:250-instances-stats}). Anche il grafico che rappresenta il minimo non segue più una retta definita (a differenza di quello mostrato nei grafici \ref{fig:100-instances-stats}), ma dopo i 350 bytes si hanno minimi che arrivano fino a 178 millisecondi.
+\begin{figure}[h]
+    \centering
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/250-instances/la-min-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/250-instances/la-max-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/250-instances/la-avg-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/250-instances/la-standard-deviation.png}
+    \caption{Grafici in riferimento all'immagine \ref{fig:250-instances-total}.}
+    \label{fig:250-instances-stats}
 \end{figure}
 
+\FloatBarrier\noindent \todo{scrivi qualcosa qua}
 
 
+\vspace{15px}\subsection{Throughput} \label{throughput}
 
-\vspace{15px}\subsection{Throughput}
+Attraverso tutti i dati raccolti è quindi possibile \todo{continua qui}
 
 \begin{lstlisting}
     payload_lengths_bit = [8 * (length + 28) for length in payload_lengths]
