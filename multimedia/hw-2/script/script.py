@@ -13,8 +13,8 @@ PATH_TO_SCRIPT = os.path.join("multimedia", "hw-2", "script")
 
 # project specification
 SELECTED_SERVER_CITY = "Los Angeles"
-INSTANCES = 250
-STEP_BETWEEN_LENGTHS = 1
+INSTANCES = 25
+STEP_BETWEEN_LENGTHS = 10
 
 # script settings
 SHOW_PLOTS = False
@@ -29,7 +29,7 @@ def ping_server(server, instances, length):
 
     filename = f"{LOGS_PATH}{city}-RTT.txt"
 
-    if not length % (STEP_BETWEEN_LENGTHS * 5):
+    if not length % (STEP_BETWEEN_LENGTHS * 5) or length == payload_lengths[-1]:
         print(f" Payload length:     {length}", end="\r")
 
     cmd = f"psping -n {instances} -l {length} -i 0 -w 0 {server}"
@@ -113,7 +113,7 @@ def plot_all_data() -> None:
     random_colors = np.random.rand(len(exploit_lengths), 3)
 
     plt.figure(figsize=(10, 6))
-    plt.scatter(exploit_lengths, latencies, edgecolors=random_colors, facecolors="none", s=25)
+    plt.scatter(exploit_lengths, latencies, edgecolors=random_colors, facecolors="none", s=10)
     plt.xlabel("Packet size - Bits")
     plt.ylabel("Round-Trip-Time(k) - millisecs")
     plt.title("Total gathered latencies")
