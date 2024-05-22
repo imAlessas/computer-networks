@@ -20,12 +20,14 @@
 
 Le richieste dell'homework sono state soddisfatte attraverso uno script scritto con il linguaggio \textsl{Python} ed eseguito sul sistema operativo \textsl{Windows 10} in lingua italiana. Quest'ultima specifica è significativamente importante in quanto se la lingua del sistema operativo non è in italiano, lo script non è in grado di effettuare il \textsl{parsing} corretto una volta effettuate le richieste. Si osserva inoltre che tali richieste vengono effettuate tramite il comando \texttt{ping}, preinstallato in Windows.
 
+\todo{indica che hai usato subprocess per invocare i cmd}
+
 Prima di lanciare lo script, è necessario aprire il file \textsl{script.py} e impostare correttamente il percorso dello script modificando la costante \texttt{PATH\_TO\_SCRIPT}.
 \begin{lstlisting}
     PATH_TO_SCRIPT = os.path.join("multimedia", "hw-2", "script")
 \end{lstlisting}
 
-\noindent In secondo luogo è possibile impostare le specifiche di progetto mediante delle costanti che indicano il nome del server su cui inviare le richieste, il numero di instanze da mandare ad ogni richiesta ping e lo step che ci sarà tra la lunghezza del pacchetto durante l'iterazione \textit{i} e la successiva \textit{i + 1}. Per esempio, nell'esempio seguente, si manderanno le richieste al server in Atltanta. Si prenderanno poi tutte le lunghezze partendo da 10 e aggiungendo ogni volta il valore di \texttt{STEP\_BETWEEN\_LENGTHS} fino ad arrivare a 1470. Per ognuna di queste lunghezze si effettureanno 30 istanze di richiesta. In altre parole si faranno 30 richieste di lunghezza 10 byte al server di Atlanta, poi altre 30 di lunghezza 10 + 25 = 35 byte, poi altre 30 di lunghezza 35 + 25 = 60 bytes e così via fino ad arrivare alla lunghezza 1470.
+\noindent In secondo luogo è possibile impostare le specifiche di progetto mediante delle costanti che indicano il nome del server su cui inviare le richieste, il numero di instanze da mandare ad ogni richiesta ping e l'incremento di lunghezza (step) che ci sarà tra la lunghezza del pacchetto durante l'iterazione \textit{i} e la successiva \textit{i + 1}.
 
 \begin{lstlisting}
     # project specification
@@ -34,7 +36,29 @@ Prima di lanciare lo script, è necessario aprire il file \textsl{script.py} e i
     STEP_BETWEEN_LENGTHS = 25
 \end{lstlisting}
 
-\todo{indica che hai usato subprocess per invocare i cmd}
+\noindent Tali impostazioni verranno poi brevemente processate con il seguente codice. In particolare si osserva che la costante \texttt{SELECTED\_SERVER\_CITY} verrà utilizzata per ottenere l'effettivo dominio del server e l'abbreviazione del nome della città. In secondo luogo la costante \texttt{STEP\_BETWEEN\_LENGTHS} verrà utilizzata per generare un vettore che parta da 10 e per arrivare a 1471 incrementa il suo valore di esattamente \texttt{STEP\_BETWEEN\_LENGTHS}.
+
+\begin{lstlisting}
+    SERVERS = {
+        "Atlanta" : "atl.speedtest.clouvider.net",
+        "New York City" : "nyc.speedtest.clouvider.net", 
+        "London" : "lon.speedtest.clouvider.net", 
+        "Los Angeles" : "la.speedtest.clouvider.net", 
+        "Paris" : "paris.testdebit.info", 
+        "Lillie" : "lille.testdebit.info", 
+        "Lyon" : "lyon.testdebit.info", 
+        "Aix-Marseille" : "aix-marseille.testdebit.info", 
+        "Bordeaux" : "bordeaux.testdebit.info"
+    }
+
+    # set choosen options
+    server = SERVERS[SELECTED_SERVER_CITY]
+    city = server.split(".")[0]
+    payload_lengths = range(10, 1471, STEP_BETWEEN_LENGTHS)
+\end{lstlisting}
+
+\noindent Se si usano quindi le impostazioni mostrate nell'esempio, lo script che sarà descritto nel capitolo\,\ref{perfomrance} manderà le richieste al server di Atlanta \texttt{atl.speedtest.clouvider.net}. Lo script poi, al fine di analizzare le performance di rete di tale server, per ogni valore di lunghezza all'interno della lista \texttt{payload\_lengths}, effettureà 30 istanze di richiesta. In altre parole si faranno 30 richieste di lunghezza 10 byte al server di Atlanta, poi altre 30 di lunghezza 10 + 25 = 35 byte, poi altre 30 di lunghezza 35 + 25 = 60 bytes e così via fino ad arrivare alla lunghezza 1470 bytes, per un totale di 1770 richieste.
+
 \todo{Di che nalle task 1 hai usato ping mentre enella task 2 haiu suato psiong}
 
 
@@ -46,10 +70,11 @@ Prima di lanciare lo script, è necessario aprire il file \textsl{script.py} e i
     \item Dim = 10 $\to$ 1470, step di 1
 \end{itemize}
 
-\vspace{35px}\section{Performance di rete}
-
-\todo{fai piccolo riassunto}
 \todo{parla di come funzione il comando ping}
+
+\vspace{35px}\section{Performance di rete}\label{perfomrance}
+
+Dopo aver introdotto i parametri di progetto adottati, andremo ora ad analizzare le perfomrance di rete. In particolare ci occupiamo di analizzare il numero di connessione che debbono essere attraversate al fine di raggiungere il server a Los Angeles \texttt{la.speedtest.clouvider.net}. In secondo luogo, attraverso una massiccia fase di richieste ICMP al server analizzeremo i tempi di latenza, estraendone i minimi, i massimi, la media e la devizione standard. Infine utilizzeremo i dati raccolti per stimare ed analizzare il throughput verso il server scelto.
 
 \vspace{15px}\subsection{Numero di link attraversati}
 
@@ -161,7 +186,7 @@ Per permettere l'utilizzo di diversi thread, è necessario racchiudere le richie
     stats = dict(sorted(stats.items()))
 \end{lstlisting}
 
-\noindent Al fine di calcolare tutti i massimi, i minimi, le medie e le varianze è sufficiente iterare lungo il dizionario creato. Lo seguente script si occupa proprio di questo, anche se in modo poco efficiente ma leggibile.
+\noindent Al fine di calcolare tutti i massimi, i minimi, le medie e le varianze è sufficiente iterare lungo il dizionario creato. Lo seguente script si occupa proprio di questo, anche se in modo poco efficiente ma perlomeno leggibile.
 
 \begin{lstlisting}
     max_values = {}
@@ -180,66 +205,65 @@ Per permettere l'utilizzo di diversi thread, è necessario racchiudere le richie
 
 \noindent Dopo aver eseguito gli script, è quindi possibile mostrare tutte le latenze raccolte, i loro massimi, i minimi, le latenze medie per ciascuna lunghezza e la loro varianza. Sono presentati di seguito tre immagini contenenti i risultati delle richieste; cioascune delle tre immagini fa riferimento ad una diversa scelta di istanze e di step.
 
-L'immagine \ref{fig:20-instances-total} di seguito rappresenta tutte le latenza raccolte durante l'esecuzione dei ping con 20 istanze per richiesta e con uno step di 10 tra una lunghezza e l'altra, per un totale di 2940 ping effettuati in circa un minuti. Si può osservare che in genere tutte le latenze sono attorno ai 170 millisecondi, con alcuni picchi tra i 750 e gli 800 bytes.
+L'immagine\,\ref{fig:20-instances-total} di seguito rappresenta tutte le latenza raccolte durante l'esecuzione dei ping con 20 istanze per richiesta e con uno step di 10 tra una lunghezza e l'altra, per un totale di 2940 ping effettuati in circa un minuti. Si può osservare che in genere tutte le latenze sono attorno ai 170 millisecondi, con alcuni picchi tra i 750 e gli 800 bytes.
 \begin{figure}[h]
     \centering
     \includegraphics[width = .9\textwidth]{hw-2/report/imgs/20-instances/la-total-latencies.png}
     \caption{Tutte le ottenute con 20 istanze ed uno step di 10.}
     \label{fig:20-instances-total}
 \end{figure}
-Non a caso, nei grafici rappresentati in figura \ref{fig:20-instances-stats}, si osserva infatti che i picchi sono rispecchiati nella rappresentazione dei massimi (in alto a destra), delle media (in basso a sinistra) e delle varianze (in basso a destra). Si osserva inoltre che i minimi variano tra 168 e 170 millisecondi e che crescono al crescere della dimensione del pacchetto; questo aspetto sarà dettagliatamente esplorato nel prossimo paragrafo, dedicato al \textsl{throughput} (\ref{throughput}).
+Non a caso, nei grafici rappresentati in figura\,\ref{fig:20-instances-stats}, si osserva infatti che i picchi sono rispecchiati nella rappresentazione dei massimi (in alto a destra), delle media (in basso a sinistra) e delle varianze (in basso a destra). Si osserva inoltre che i minimi variano tra 168 e 170 millisecondi e che crescono al crescere della dimensione del pacchetto; questo aspetto sarà dettagliatamente esplorato nel prossimo paragrafo, dedicato al \textsl{throughput} (\ref{throughput}).
 \begin{figure}[h]
     \centering
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/20-instances/la-min-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/20-instances/la-max-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/20-instances/la-avg-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/20-instances/la-standard-deviation.png}
-    \caption{Grafici in riferimento all'immagine\ref{fig:20-instances-total}.}
+    \caption{Grafici in riferimento all'immagine\,\ref{fig:20-instances-total}.}
     \label{fig:20-instances-stats}
 \end{figure}
 
-\FloatBarrier\noindent Aumentando il numero di ping effettuati, in particolare aumentonado il numero di istanze a 100 e riducendo l'incremento delle lunghezze a 2, otteniamo un grafico come quello della figura \ref{fig:100-instances-total}, che contiene 73100 valori di latenza, ottenuti in circa 6 minuti. Anche in questo caso possiamo notare dei picchi che sono distribuiti lungo tutte le lunghezze. In particolare, i più elevati si aggirano attorno a 600 bytes di lunghezza del payload. 
+\FloatBarrier\noindent Aumentando il numero di ping effettuati, in particolare aumentonado il numero di istanze a 100 e riducendo l'incremento delle lunghezze a 2, otteniamo un grafico come quello della figura\,\ref{fig:100-instances-total}, che contiene 73100 valori di latenza, ottenuti in circa 6 minuti. Anche in questo caso possiamo notare dei picchi che sono distribuiti lungo tutte le lunghezze. In particolare, i più elevati si aggirano attorno a 600 bytes di lunghezza del payload. 
 \begin{figure}[h]
     \centering
     \includegraphics[width = .9\textwidth]{hw-2/report/imgs/100-instances/la-total-latencies.png}
     \caption{Grafici ottenuti con 100 istanze ed uno step di 2.}
     \label{fig:100-instances-total}
 \end{figure}
-Osservando infatti i grafici nell'immagine \ref{fig:100-instances-stats}, notiamo una forte varianza (fino a 30 millisecondi) proprio in queste zone. In questa immagine si rende ancora più evidente la crescita dei minimi e anche delle medie con il crescere della lunghezza dei pacchetti.
+Osservando infatti i grafici nell'immagine\,\ref{fig:100-instances-stats}, notiamo una forte varianza (fino a 30 millisecondi) proprio in queste zone. In questa immagine si rende ancora più evidente la crescita dei minimi e anche delle medie con il crescere della lunghezza dei pacchetti.
 \begin{figure}[h]
     \centering
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/100-instances/la-min-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/100-instances/la-max-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/100-instances/la-avg-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/100-instances/la-standard-deviation.png}
-    \caption{Grafici in riferimento all'immagine \ref{fig:100-instances-total}.}
+    \caption{Grafici in riferimento all'immagine\,\ref{fig:100-instances-total}.}
     \label{fig:100-instances-stats}
 \end{figure}
 
-\FloatBarrier\noindent Infine, nell'immagine \ref{fig:250-instances-total} sono state processate un totale di 365250 richieste in circa un quarto d'ora, risultato di 250 istanze per lunghezza ed uno step di 1 tra una lunghezza e l'altra. Si può infatti notare che il numero di dati in quest'ultimo grafico è molto più elevato rispetto ai due precedenti garantendo quindi che i dati analizzati sono più simili a quelli reali.
+\FloatBarrier\noindent Infine, nell'immagine\,\ref{fig:250-instances-total} sono state processate un totale di 365250 richieste in circa un quarto d'ora, risultato di 250 istanze per lunghezza ed uno step di 1 tra una lunghezza e l'altra. Si può infatti notare che il numero di dati in quest'ultimo grafico è molto più elevato rispetto ai due precedenti garantendo quindi che i dati analizzati sono più simili a quelli reali.
 \begin{figure}[h]
     \centering
     \includegraphics[width = .9\textwidth]{hw-2/report/imgs/250-instances/la-total-latencies.png}
     \caption{Grafici ottenuti con 250 istanze ed uno step di 1.}
     \label{fig:250-instances-total}
 \end{figure}
-In questo caso è interssante osservare che sia la media che la varianza sono elevate per la maggior parte delle lunghezze per decrescere solo quando il pacchetto è di dimensione ridotta oppure molto elevata (figuar \ref{fig:250-instances-stats}). Anche il grafico che rappresenta il minimo non segue più una retta definita (a differenza di quello mostrato nei grafici \ref{fig:100-instances-stats}), ma dopo i 350 bytes si hanno minimi che arrivano fino a 178 millisecondi.
+In questo caso è interssante osservare che sia la media che la varianza sono elevate per la maggior parte delle lunghezze per decrescere solo quando il pacchetto è di dimensione ridotta oppure molto elevata (figura\,\ref{fig:250-instances-stats}). Anche il grafico che rappresenta il minimo non segue più una retta definita (a differenza di quello mostrato nei grafici\,\ref{fig:100-instances-stats}), ma dopo i 350 bytes si hanno minimi che arrivano fino a 178 millisecondi.
 \begin{figure}[h]
     \centering
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/250-instances/la-min-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/250-instances/la-max-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/250-instances/la-avg-latencies.png}
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/250-instances/la-standard-deviation.png}
-    \caption{Grafici in riferimento all'immagine \ref{fig:250-instances-total}.}
+    \caption{Grafici in riferimento all'immagine\,\ref{fig:250-instances-total}.}
     \label{fig:250-instances-stats}
 \end{figure}
 
-\FloatBarrier\noindent \todo{scrivi qualcosa qua}
+\FloatBarrier\noindent Osservando e comparando i tre grafici mostrati nelle figure si nota che, ragionevolemnte, maggiore è la mole di dati che viene analizzata e maggiori sono la varianza e la media in quanto si migliora l'accuratezza delle misure, avvicinandosi sempre di più ad un valore simile alla realtà.
 
+\vspace{15px}\subsection{Throughput}\label{throughput}
 
-\vspace{15px}\subsection{Throughput} \label{throughput}
-
-Attraverso tutti i dati raccolti è quindi possibile \todo{continua qui}
+Attraverso tutti i dati raccolti è quindi possibile effettuare una regressione lineare al fine di ottenere \todo{Continua, capisci le formule di throughput}
 
 \begin{lstlisting}
     payload_lengths_bit = [8 * (length + 28) for length in payload_lengths]
@@ -262,6 +286,7 @@ Attraverso tutti i dati raccolti è quindi possibile \todo{continua qui}
 
 
 \vspace{35px}\section{Conclusioni}
+\todo{Fai le conclusioni}
 
 
 
