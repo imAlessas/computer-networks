@@ -18,9 +18,7 @@
 
 \vspace{15px}\subsection{Utilizzo dello script}
 
-Le richieste dell'homework sono state soddisfatte attraverso uno script scritto con il linguaggio \textsl{Python} ed eseguito sul sistema operativo \textsl{Windows 10} in lingua italiana. Quest'ultima specifica è significativamente importante in quanto se la lingua del sistema operativo non è in italiano, lo script non è in grado di effettuare il \textsl{parsing} corretto una volta effettuate le richieste. Si osserva inoltre che tali richieste vengono effettuate tramite il comando \texttt{ping}, preinstallato in Windows.
-
-\todo{indica che hai usato subprocess per invocare i cmd}
+Le richieste dell'homework sono state soddisfatte attraverso uno script scritto con il linguaggio \textsl{Python} ed eseguito sul sistema operativo \textsl{Windows 10} in lingua italiana. Tutte le richieste sono state soddisfatte attraverso l'utilizzo del comando \texttt{ping} che si occupa di inviare delle richieste ICMP\footnote{} ad una determinata destinazione. La risposta del suddetto comando diagnostico è il periodo impiegato dalla destinazione per rispondere, ovvero la \textbf{latenza}.
 
 Prima di lanciare lo script, è necessario aprire il file \textsl{script.py} e impostare correttamente il percorso dello script modificando la costante \texttt{PATH\_TO\_SCRIPT}.
 \begin{lstlisting}
@@ -57,12 +55,15 @@ Prima di lanciare lo script, è necessario aprire il file \textsl{script.py} e i
     payload_lengths = range(10, 1471, STEP_BETWEEN_LENGTHS)
 \end{lstlisting}
 
-\noindent Se si usano quindi le impostazioni mostrate nell'esempio, lo script che sarà descritto nel capitolo\,\ref{perfomrance} manderà le richieste al server di Atlanta \texttt{atl.speedtest.clouvider.net}. Lo script poi, al fine di analizzare le performance di rete di tale server, per ogni valore di lunghezza all'interno della lista \texttt{payload\_lengths}, effettureà 30 istanze di richiesta. In altre parole si faranno 30 richieste di lunghezza 10 byte al server di Atlanta, poi altre 30 di lunghezza 10 + 25 = 35 byte, poi altre 30 di lunghezza 35 + 25 = 60 bytes e così via fino ad arrivare alla lunghezza 1470 bytes, per un totale di 1770 richieste.
+\noindent Se si usano quindi le impostazioni mostrate nell'esempio, lo script che sarà descritto nel capitolo\,\ref{performance} manderà le richieste al server di Atlanta \texttt{atl.speedtest.clouvider.net}. Lo script poi, al fine di analizzare le performance di rete di tale server, per ogni valore di lunghezza all'interno della lista \texttt{payload\_lengths}, effettureà 30 istanze di richiesta. In altre parole si faranno 30 richieste di lunghezza 10 byte al server di Atlanta, poi altre 30 di lunghezza 10 + 25 = 35 byte, poi altre 30 di lunghezza 35 + 25 = 60 bytes e così via fino ad arrivare alla lunghezza 1470 bytes, per un totale di 1770 richieste.
 
-\todo{Di che nalle task 1 hai usato ping mentre enella task 2 haiu suato psiong}
 
 
 \vspace{15px}\subsection{Parametri di progetto}
+
+All'interno dello script vegono utilizzati due tipi di comando \texttt{ping}. Il primo, utilizzato nella prima task, descritta nel paragrafo\,\ref{links}, è il comando ping di default di Windows: lo script funziona solo e soltanto se la lingua di Windows è in italiano altrimenti non è possibile analizzare correttamente le risposte del comando. Nella seconda task, esplorata nel paragrafo\,\ref{RTT}, viene utilizzato invece il comando \texttt{psping}, che è in lingua inglese. Al fine di riuscre ad utilizzare lo script è necessari avere l'eseguibile \texttt{psping.exe} all'interno della cartella da cui poi viene eseguito lo script (ovvero la cartella che, attraverso il percorso all'interno di \texttt{PATH\_TO\_SCRIPT}, permette di arrivare al file \texttt{script.py}). Si è scelto di utilizzare psping in quanto è più prestante del comando ping di default. Inoltre non primo punto non si è utilizzato psping in quanto non è presente l'impostazione che permette di ridurre il Time-To-Live del pacchetto.
+\todo{indica che hai usato subprocess per invocare i cmd}
+
 
 \begin{itemize}
     \item Los Angeles
@@ -70,13 +71,13 @@ Prima di lanciare lo script, è necessario aprire il file \textsl{script.py} e i
     \item Dim = 10 $\to$ 1470, step di 1
 \end{itemize}
 
-\todo{parla di come funzione il comando ping}
+\todo{Di che nalle task 1 hai usato ping mentre enella task 2 haiu suato psiong}
 
-\vspace{35px}\section{Performance di rete}\label{perfomrance}
+\vspace{35px}\section{Performance di rete}\label{performance}
 
 Dopo aver introdotto i parametri di progetto adottati, andremo ora ad analizzare le perfomrance di rete. In particolare ci occupiamo di analizzare il numero di connessione che debbono essere attraversate al fine di raggiungere il server a Los Angeles \texttt{la.speedtest.clouvider.net}. In secondo luogo, attraverso una massiccia fase di richieste ICMP al server analizzeremo i tempi di latenza, estraendone i minimi, i massimi, la media e la devizione standard. Infine utilizzeremo i dati raccolti per stimare ed analizzare il throughput verso il server scelto.
 
-\vspace{15px}\subsection{Numero di link attraversati}
+\vspace{15px}\subsection{Numero di link attraversati}\label{links}
 
 Il primo valore che andremo a calcolare è il numero di connessioni — dette anche \textsl{links} — che ci separa dal server di Los Angeles. In particolare ci occuperemo di recuperare tale valore in due modi diversi. Il primo modo per farlo è tramite l'utilizzo del comando Windows \texttt{tracert} che permetti di tracciare interamente il percorso che un pacchetto IP\footnote{IP è l'acronimo di \textsl{Internet Protocol}} compie al fine di raggiungere la destinazione, che in questo caso è il server di Los Angeles \texttt{la.speedtest.clouvider.net}. Una volta esguito il comando si ottiene sul terminale la lista numerata di tutti i link attraversati, come mostrato nel frammento di codice seguente. \todo{Se vuoi inserisci come funzione comando tracert: una serie di ping con ttl incrementale fino a che non raghgiungi il server}
 
@@ -131,7 +132,7 @@ Traccia completata.
 \noindent Tramite questa funzione il numero di link ottenuti coincide con quello in precedenza, che è 12.
 
 
-\vspace{15px}\subsection{Analisi del \textsl{Round Trip Time}}
+\vspace{15px}\subsection{Analisi del \textsl{Round Trip Time}}\label{RTT}
 
 La seconda parte, volta ad analizzare il \textsl{RTT}, necessita uno script Python più complesso, anche volto a migliorare le prestazioni computazionali dello script. Si è quindi scelto di utilizzare un approccio \textbf{multi-threading} ed il comando \texttt{psping}, che è più prestante rispetto al comnue ping, inoltre permetto di ottnere delle latenze più precise (fino al centesimo di millisecondo).
 
