@@ -79,7 +79,7 @@ Dopo aver introdotto i parametri di progetto adottati, andremo ora ad analizzare
 
 \vspace{15px}\subsection{Numero di link attraversati}\label{links}
 
-Il primo valore che andremo a calcolare è il numero di connessioni — dette anche \textsl{links} — che ci separa dal server di Los Angeles. In particolare ci occuperemo di recuperare tale valore in due modi diversi. Il primo modo per farlo è tramite l'utilizzo del comando Windows \texttt{tracert} che permetti di tracciare interamente il percorso che un pacchetto IP\footnote{IP è l'acronimo di \textsl{Internet Protocol}} compie al fine di raggiungere la destinazione, che in questo caso è il server di Los Angeles \texttt{la.speedtest.clouvider.net}. Una volta esguito il comando si ottiene sul terminale la lista numerata di tutti i link attraversati, come mostrato nel frammento di codice seguente. \todo{Se vuoi inserisci come funzione comando tracert: una serie di ping con ttl incrementale fino a che non raghgiungi il server}
+Il primo valore che andremo a calcolare è il numero di connessioni — dette anche \textsl{links} — che ci separa dal server di Los Angeles. In particolare ci occuperemo di recuperare tale valore in due modi diversi. Il primo modo per farlo è tramite l'utilizzo del comando Windows \texttt{tracert} che permette di tracciare interamente il percorso che un pacchetto IP\footnote{IP è l'acronimo di \textsl{Internet Protocol}} compie al fine di raggiungere la destinazione.Il conamdo \texttt{tracert} si basa su una serie contigua di ping che sono inviati impostando il Time-To-Live a 1 e incrementandolo man mano. In questo modo, nel momento in cui il comando ping non scade, il TTL dello specifico messaggio ICMP corrisponde al numero di link che separa il sorgente dal destinatario. Invocando il comando \texttt{tarcert} sul server di Los Angeles \texttt{la.speedtest.clouvider.net}, si ottiene sul terminale la lista numerata di tutti i link attraversati, come mostrato nel frammento di codice seguente. 
 
 \begin{lstlisting}[style = bash]
 Traccia instradamento verso la.speedtest.clouvider.net [77.247.126.223]
@@ -115,7 +115,7 @@ Traccia completata.
         return int(last_link_line.split(" ")[1])
 \end{lstlisting}
 
-\noindent Per contare il numero di connessioni, oltre all'utilizzo del comando \texttt{tracert}, è possibile impiegare direttamente il comando \texttt{ping}. In particolare, è sufficiente iterare attraverso una serie di ping, diminuendo ad ogni iterazione il parametro TTL (Time-To-Live), che rappresenta il numero massimo di link che il pacchetto può attraversare prima di essere eliminato. La seguente funzione in Python itera sui valori di TTL da 20 a 0. Ad ogni iterazione viene inviata una richiesta ping predefinita, con 4 pacchetti di dimensione di 32 byte. Quando il ping non ottiene una risposta, significa che il valore di TTL è diminuito al punto da non essere più sufficiente per raggiungere la destinazione finale. Pertanto, viene restituito il valore di TTL incrementato di 1, che è il minimo TTL necessario per raggiungere il server.
+\noindent Per contare il numero di connessioni, oltre all'utilizzo del comando \texttt{tracert}, è possibile impiegare direttamente il comando \texttt{ping}. In particolare, è sufficiente iterare attraverso una serie di ping, diminuendo ad ogni iterazione il parametro TTL (Time-To-Live), che rappresenta il numero massimo di link che il pacchetto può attraversare prima di essere eliminato. La seguente funzione in Python itera sui valori di TTL da 20 a 0. Ad ogni iterazione viene inviata una richiesta ping predefinita, con 4 pacchetti di dimensione di 32 byte. Quando il ping non ottiene una risposta, significa che il valore di TTL è diminuito al punto da non essere più sufficiente per raggiungere la destinazione finale. Pertanto, viene restituito il valore di TTL incrementato di 1, che è il minimo TTL necessario per raggiungere il server. Di fatto questo appriccio è l'esatto opposto dell'approccio che adotta \texttt{tarcert}: in questo caso infatti al posto di incrementare il TTL fino a che non si riceve una risposta, lo si decrementa fino a che il messaggio ICMP scade, non riuscendo quindi a raggiungere la destinazione.
 
 \begin{lstlisting}
     def get_links_from_ping(server: str) -> int:
@@ -129,7 +129,7 @@ Traccia completata.
                 return (ttl + 1)
 \end{lstlisting}
 
-\noindent Tramite questa funzione il numero di link ottenuti coincide con quello in precedenza, che è 12.
+\noindent In tutti e due i casi, come risultato, il numero di connessioni che separa il sorgente dal server di Los Angeles \texttt{la.speedtest.clouvider.net} è 12.
 
 
 \vspace{15px}\subsection{Analisi del \textsl{Round Trip Time}}\label{RTT}
