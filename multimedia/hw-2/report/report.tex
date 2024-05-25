@@ -18,7 +18,7 @@
 
 \vspace{15px}\subsection{Utilizzo dello script}
 
-Le richieste dell'homework sono state soddisfatte attraverso uno script scritto con il linguaggio \textsl{Python} ed eseguito sul sistema operativo \textsl{Windows 10} in lingua italiana. Tutte le richieste sono state soddisfatte attraverso l'utilizzo del comando \texttt{ping} che si occupa di inviare delle richieste ICMP\footnote{} ad una determinata destinazione. La risposta del suddetto comando diagnostico è il periodo impiegato dalla destinazione per rispondere, ovvero la \textbf{latenza}.
+Le richieste dell'homework sono state soddisfatte attraverso uno script scritto con il linguaggio \textsl{Python} ed eseguito sul sistema operativo \textsl{Windows 10} in lingua italiana. Tutte le richieste sono state soddisfatte attraverso l'utilizzo del comando \texttt{ping} che si occupa di inviare delle richieste ICMP\footnote{ICMP sta per \textsl{Internet Control Message Protocol} è un protocollo utilizzato dai dispositivi di una rete per comunicare la presenza di problemi riguardanti la trasmissione dei dati} ad una determinata destinazione. La risposta del suddetto comando diagnostico è il periodo impiegato dalla destinazione per rispondere, ovvero la \textbf{latenza}.
 
 Prima di lanciare lo script, è necessario aprire il file \textsl{script.py} e impostare correttamente il percorso dello script modificando la costante \texttt{PATH\_TO\_SCRIPT}.
 \begin{lstlisting}
@@ -61,9 +61,13 @@ Prima di lanciare lo script, è necessario aprire il file \textsl{script.py} e i
 
 \vspace{15px}\subsection{Parametri di progetto}
 
-All'interno dello script vegono utilizzati due tipi di comando \texttt{ping}. Il primo, utilizzato nella prima task, descritta nel paragrafo\,\ref{links}, è il comando ping di default di Windows: lo script funziona solo e soltanto se la lingua di Windows è in italiano altrimenti non è possibile analizzare correttamente le risposte del comando. Nella seconda task, esplorata nel paragrafo\,\ref{RTT}, viene utilizzato invece il comando \texttt{psping}, che è in lingua inglese. Al fine di riuscre ad utilizzare lo script è necessari avere l'eseguibile \texttt{psping.exe} all'interno della cartella da cui poi viene eseguito lo script (ovvero la cartella che, attraverso il percorso all'interno di \texttt{PATH\_TO\_SCRIPT}, permette di arrivare al file \texttt{script.py}). Si è scelto di utilizzare psping in quanto è più prestante del comando ping di default. Inoltre non primo punto non si è utilizzato psping in quanto non è presente l'impostazione che permette di ridurre il Time-To-Live del pacchetto.
-\todo{indica che hai usato subprocess per invocare i cmd}
+All'interno dello script vegono utilizzati due tipi di comando \texttt{ping}. Il primo, utilizzato nella prima task, descritta nel paragrafo\,\ref{links}, è il comando ping di default di Windows: lo script funziona solo e soltanto se la lingua di Windows è in italiano altrimenti non è possibile analizzare correttamente le risposte del comando. Nella seconda task, esplorata nel paragrafo\,\ref{RTT}, viene utilizzato invece il comando \texttt{psping}, che è in lingua inglese. Al fine di riuscre ad utilizzare lo script è necessari avere l'eseguibile \texttt{psping.exe} all'interno della cartella da cui poi viene eseguito lo script (ovvero la cartella che, attraverso il percorso all'interno di \texttt{PATH\_TO\_SCRIPT}, permette di arrivare al file \texttt{script.py}). Si è scelto di utilizzare psping in quanto è più prestante del comando ping di default. Inoltre nel primo punto non si è utilizzato psping in quanto non è presente l'impostazione che permette di ridurre il Time-To-Live del pacchetto.
 
+In secondo luogo, al fine di eseguire i comandi nel terminale, non si è utilizzata la funzione \texttt{os.system}, bensì la libreria \texttt{subprocess}, 
+che permette di ottenere il risultato direttemane in una stringa senza avere la necessità di scriverlo sul file per poi accedere al file per leggerlo. Questo migliora le prestazioni computazionali dello script, in particolare nella seconda parte dove in genere viene inviata una mole elevata di pacchetti ICMP. È comunque possible scrivere su files i risultati dell'esecuziuone del comando, è sufficiente impostare a \texttt{True} la \textsl{flag} che si chiama \texttt{SAVE\_TO\_FILE}.
+
+
+\todo{Specifica dettagliatamente i parametri utilizzati}
 
 \begin{itemize}
     \item Los Angeles
@@ -71,7 +75,6 @@ All'interno dello script vegono utilizzati due tipi di comando \texttt{ping}. Il
     \item Dim = 10 $\to$ 1470, step di 1
 \end{itemize}
 
-\todo{Di che nalle task 1 hai usato ping mentre enella task 2 haiu suato psiong}
 
 \vspace{35px}\section{Performance di rete}\label{performance}
 
@@ -134,7 +137,7 @@ Traccia completata.
 
 \vspace{15px}\subsection{Analisi del \textsl{Round Trip Time}}\label{RTT}
 
-La seconda parte, volta ad analizzare il \textsl{RTT}, necessita uno script Python più complesso, anche volto a migliorare le prestazioni computazionali dello script. Si è quindi scelto di utilizzare un approccio \textbf{multi-threading} ed il comando \texttt{psping}, che è più prestante rispetto al comnue ping, inoltre permetto di ottnere delle latenze più precise (fino al centesimo di millisecondo).
+La seconda parte, volta ad analizzare il \textsl{RTT}, necessita uno script Python più complesso, anche volto a migliorare le prestazioni computazionali dello script. Si è quindi scelto di utilizzare un approccio \textbf{multi-threading} ed il comando \texttt{psping}, che è più prestante rispetto al comnue ping, inoltre permetto di ottenere delle latenze più precise (fino al centesimo di millisecondo).
 
 Per permettere l'utilizzo di diversi thread, è necessario racchiudere le richieste ping in una funzione, chiamata \texttt{ping\_server}. In questa funzione la richiesta di ping ha diverse proprietà specificate:
 \vspace{-3px}
