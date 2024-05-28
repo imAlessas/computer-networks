@@ -55,7 +55,7 @@ Prima di lanciare lo script, è necessario aprire il file \textsl{script.py} e i
     payload_lengths = range(10, 1471, STEP_BETWEEN_LENGTHS)
 \end{lstlisting}
 
-\noindent Se si usano quindi le impostazioni mostrate nell'esempio, lo script che sarà descritto nel capitolo\,\ref{performance} manderà le richieste al server di Atlanta \texttt{atl.speedtest.clouvider.net}. Lo script poi, al fine di analizzare le performance di rete di tale server, per ogni valore di lunghezza all'interno della lista \texttt{payload\_lengths}, effettureà 30 istanze di richiesta. In altre parole si faranno 30 richieste di lunghezza 10 byte al server di Atlanta, poi altre 30 di lunghezza 10 + 25 = 35 byte, poi altre 30 di lunghezza 35 + 25 = 60 bytes e così via fino ad arrivare alla lunghezza 1470 bytes, per un totale di 1770 richieste.
+\noindent Usando le impostazioni dell'esempio, lo script — che sarà descritto nel capitolo\,\ref{performance} — manderà le richieste al server di Atlanta \texttt{atl.speedtest.clouvider.net}. Lo script poi, al fine di analizzare le performance di rete di tale server, per ogni valore di lunghezza all'interno della lista \texttt{payload\_lengths}, effettureà 30 istanze di richiesta. In altre parole si faranno 30 richieste di lunghezza 10 byte al server di Atlanta, poi altre 30 di lunghezza 10 + 25 = 35 byte, poi altre 30 di lunghezza 35 + 25 = 60 bytes e così via fino ad arrivare alla lunghezza 1470 bytes, per un totale di 1770 richieste.
 
 
 
@@ -143,10 +143,10 @@ Per permettere l'utilizzo di diversi thread, è necessario racchiudere le richie
 \vspace{-3px}
 \begin{itemize}
     \setlength{\itemsep}{-2px}
-    \item[$\to$] \texttt{-n}, che specifica il numero di istaze per ogni richiesta ping;
-    \item[$\to$] \texttt{-l}, indica la lunghezza del \textsl{payload} di ciascuna richiesta;
-    \item[$\to$] \texttt{-i}, specifica l'intervallo di secondo tra un ping e l'altro; viene impostato a zero per aumentare la rapidità dello script;
-    \item[$\to$] \texttt{-w}, che indica il numero di \textsl{warmup request} da fare prima di iniziare la sequenza di ping.
+    \item[$\diamond$] \texttt{-n}, che specifica il numero di istaze per ogni richiesta ping;
+    \item[$\diamond$] \texttt{-l}, indica la lunghezza del \textsl{payload} di ciascuna richiesta;
+    \item[$\diamond$] \texttt{-i}, specifica l'intervallo di secondo tra un ping e l'altro; viene impostato a zero per aumentare la rapidità dello script;
+    \item[$\diamond$] \texttt{-w}, che indica il numero di \textsl{warmup request} da fare prima di iniziare la sequenza di ping.
 \end{itemize}
 \noindent Dopo aver eseguito il comando, il risultato viene analizzato e ne sono estratte le latenze, che sono aggiunte in una lista (o vettore). Infine sono ritornati due valori, la lunghezza corrente e la lista con tutte le latenze.
 
@@ -205,7 +205,7 @@ Per permettere l'utilizzo di diversi thread, è necessario racchiudere le richie
         standard_deviations[key] = math.sqrt(sum((x - average_values[key]) ** 2 for x in value) / len(value))
 \end{lstlisting}
 
-\vspace{10px}\subsection*{Grafici}
+\vspace{10px}\subsubsection*{Risultati}
 
 \noindent Dopo aver eseguito gli script, è quindi possibile mostrare tutte le latenze raccolte, i loro massimi, i minimi, le latenze medie per ciascuna lunghezza e la loro varianza. Sono presentati di seguito tre immagini contenenti i risultati delle richieste; cioascune delle tre immagini fa riferimento ad una diversa scelta di istanze e di step.
 
@@ -267,7 +267,73 @@ In questo caso è interssante osservare che sia la media che la varianza sono el
 
 \vspace{15px}\subsection{Throughput}\label{throughput}
 
-Attraverso tutti i dati raccolti è quindi possibile effettuare una regressione lineare al fine di ottenere \todo{Continua, capisci le formule di throughput}
+Attraverso tutti i dati raccolti è possibile riuscire a stimare il throughput. Si fornisce una breve spiegazione del ragionamento matematico che le supporta le scelte di calcolo del valore \textsl{throughput} $\mathcal{R}$.
+
+\todo{Spiega througput e indica l = ojfenowefowefn}
+
+Il RTT di un pacchetto $k$ di lunghezza $L$ (RTT$(L, k)$) è definito come la somma dei ritardi $d_i$ causati dei collegamenti \textit{i}-esimi ($i \in [1, n]$); tale latenza è a sua volta definita come la somma di 4 valori di latenza $d$:
+
+\begin{gather*}
+    d_i = d_{i, \text{processing}} + d_{i, \text{queue}} + d_{i, \text{transmission}} + d_{i, \text{propagation}}
+\end{gather*}
+
+\noindent Dove tali latenze indicano rispettivamente:
+
+\vspace{-3px}
+\begin{itemize}
+    \setlength{\itemsep}{-2px}
+    \item[$\diamond$] $d_{i, \text{processing}}$, che indica il ritardo impiegato per controllare gli errori e calcolare l'instradamente del pacchetto — in genere è un ritardo trascurabile;
+    \item[$\diamond$] $d_{i, \text{queue}}$, ovvero il tempo trascorso del pacchetto $k$ all'interno di un buffer prima di essere elaborato — tale valore varia nel tempo, a seconda di quanto sia pieno il buffer, e verrà indicato con la notazione $q_i(k)$;
+    \item[$\diamond$] $d_{i, \text{transmission}}$, è la durata del segnale che rappresenta il pacchetto — può essere matematicamente modellato come il rapporto tra la dimensione $L$ del pacchetto $k$ e dal throughput $R_i$ del link $i$;
+    \item[$\diamond$] $d_{i, \text{propagation}}$, rappresentato con $\tau_i$, indica il tempo fisico di trasmissione del segnale lungo il medium.
+\end{itemize}
+
+\noindent Dunque il valore di $d_i$ diventa:
+
+\begin{gather*}
+    d_i = q_i(k) + \frac{L}{R_i} + \tau_i
+\end{gather*}
+
+\noindent e il calcolo del Round Trip Tipe totale risulta quindi essere:
+
+\begin{gather*}
+    \text{RTT}(L, k) = \sum_{i = 1}^n d_i = \sum_{i = 1}^n\left[q_i(k) + \frac{L}{R_i} + \tau_i\right] \\
+    = \sum_{i = 1}^n q_i(k) + L\sum_{i = 1}^n\frac{1}{R_i} + \sum_{i = 1}^n\tau_i
+\end{gather*}
+
+\noindent A questo punto cerchiamo di riassumere le tre sommatorie come segue:
+
+\begin{gather*}
+    Q(k) = \sum_{i = 1}^n q_i(k) \hspace{30px} \alpha = \sum_{i = 1}^n\frac{1}{R_i} \hspace{30px} T = \sum_{i = 1}^n\tau_i
+\end{gather*}
+
+\noindent E conseguentemente il calcolo del Round Trip Time diventa:
+
+\begin{gather*}
+    \text{RTT}(L, k) = Q(k) + \alpha L + T
+\end{gather*}
+
+\noindent Per riuscire a ridurre completamente il Rounde Trip Time ad una retta, è necessario gestire la varibilità del ritardo di coda del pacchetto $Q(k)$. Si osserva che, con un elevato numero di istanze $K$ — come quelle scelte in questo caso, dove $K = 250$ — la probabilità che almeno una volta i buffer dei link siano liberi aumenta. Di conseguenza, di tutti gli RTT, prendere la minima latenza per ogni pacchetto $k \in \{1, \dots, K\}$, garantirebbe che $Q(k) = 0$. Si ottiene quindi un'approssimazione lineare del RTT\@:
+
+\begin{gather*}
+    RTT_{\text{min}}(L) = \min_{k \in \{1, \dots, K\}} \text{RTT}(L, k) \approx \alpha L + T
+\end{gather*}
+
+\noindent A questo punto si hanno tutte le informazioni necessarie per ricavare il throughput $\mathcal{R}$ in quanto, attraverso tutti i dati ottenuti nel paragrafo\,\ref{RTT}, è possibile prendere il minimi RTT per ciascuna lunghezza $L \in \{1,\dots, 1470\}$ e, attraverso una regressione lineare (detto anche interpolazione o \textsl{fitting}), è possibile ottenere sia il coefficiente $\alpha$ che la somma dei ritardi di trasmissione $T$. Una volta recuperato il coefficiente $\alpha$, è sufficiente invertire la formula definita in precedenza per calcolare il throughput come segue:
+
+\begin{gather*}
+    \alpha = \sum_{i = 1}^n\frac{1}{R_i} = \frac{n}{\mathcal{R}} \hspace{20px} \longrightarrow \hspace{20px} \mathcal{R} = \frac{n}{\alpha}
+\end{gather*}
+
+\noindent Si osserva che la relazione soprastante prende come ipotesi quella in cui tutti i link abbiano throughput uguali. Nell'eventualità in cui sia presente un link con throughput nettamente minore rispetto agli altri, si ha un effetto di collo di bottiglia — \textsl{bottleneck}. In questo caso, si ha una riduzione del throughput sia durante l'andata del pacchetto ping che al ritorno, ciò determina una riduzione del throughput globale, approssimabile con il calcolo del throughput nell'ipotesi in cui $n = 2$:
+
+\begin{gather*}
+    \mathcal{R}_{\text{bottleneck}} = \left.\frac{n}{\alpha}\right|_{n = 2} = \frac{2}{\alpha} 
+\end{gather*}
+
+\vspace{20px}
+
+\noindent I risultati matematici ottenuti si traducono in un numero estremamente ridotto di linee di codice. Prima di tutto è necessario creare la lista di lunghezza trasformata in bit, come menzionato all'inizio del paragrafo. In secondo luogo, tramite una regressione lineare, fornita dalla libreria \texttt{sklearn.linear\_model}, è possibile recuperare il coefficiente $\alpha$ e quindi calcolare i due throughput: $\mathcal{R}$ ed $\mathcal{R}_{\text{bottleneck}}$.
 
 \begin{lstlisting}
     payload_lengths_bit = [8 * (length + 28) for length in payload_lengths]
@@ -285,13 +351,68 @@ Attraverso tutti i dati raccolti è quindi possibile effettuare una regressione 
     throughput_bottleneck = 2 / alpha
 \end{lstlisting}
 
+\vspace{10px}\subsubsection*{Risultati}
+
+Eseguendo il codice descritto con le tre diverse istanze di esecuzione, è possibile calcolare i due casi di througput e analizzare meglio il \textsl{fit} sui minimi ottenuti per ciascuna lunghezza $L$. Iniziando dall'esecuzione con 20 istanze ed uno step di 10, mediante l'interpolazione lineare si ottiene che $\alpha \approx 7.5 \cdot 10^{-5}$ (figura\,\ref{fig:20-instances-min}) e quindi:
+
+\begin{gather*}
+    \mathcal{R} = 318511\,\text{bps} \approx  319\,\text{Kbps}  \hspace{40px} \mathcal{R}_{\text{bottleneck}} = 26542\,\text{bps} \approx  27\,\text{Kbps}
+\end{gather*}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width = .8\textwidth]{hw-2/report/imgs/20-instances/la-min-latencies.png}
+    \caption{Regressione lineare del \textsl{RTT} minimo, in riferimento all'immagine\,\ref{fig:20-instances-stats}.}
+    \label{fig:20-instances-min}
+\end{figure}
+
+\FloatBarrier\noindent Eseguendo lo script impostando $K = 100$ e lo step a 2 si giunge ad un coefficiente $\alpha \approx 1.12 \cdot 10^{-4}$ (immagine\,\ref{fig:100-instances-min}), maggiore rispetto a quello precedente che quindi riduce il valore del throughput a:
+
+\begin{gather*}
+    \mathcal{R} = 213508\,\text{bps} \approx  214\,\text{Kbps}  \hspace{40px} \mathcal{R}_{\text{bottleneck}} = 17792\,\text{bps} \approx  18\,\text{Kbps}
+\end{gather*}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width = .8\textwidth]{hw-2/report/imgs/100-instances/la-min-latencies.png}
+    \caption{Regressione lineare del \textsl{RTT} minimo, in riferimento all'immagine\,\ref{fig:100-instances-stats}.}
+    \label{fig:100-instances-min}
+\end{figure}
+
+\FloatBarrier\noindent Infine impostando le istanze ad un massimo di 250 e lo step minimo di 1, si ottiene che il valore del coefficiente $\alpha \approx 1.61 \cdot 10^{-4}$ è ancora maggiore (grafico\,\ref{fig:250-instances-min}), diminuendo ancora di più il valore del throughput:
+
+\begin{gather*}
+    \mathcal{R} = 149382\,\text{bps} \approx  149\,\text{Kbps}  \hspace{40px} \mathcal{R}_{\text{bottleneck}} = 12448\,\text{bps} \approx  12\,\text{Kbps}
+\end{gather*}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width = .8\textwidth]{hw-2/report/imgs/250-instances/la-min-latencies.png}
+    \caption{Regressione lineare del \textsl{RTT} minimo, in riferimento all'immagine\,\ref{fig:250-instances-stats}.}
+    \label{fig:250-instances-min}
+\end{figure}
 
 
 
 
-\vspace{35px}\section{Conclusioni}
+\FloatBarrier\vspace{35px}\section{Conclusioni}
 \todo{Fai le conclusioni}
+% si osserva che i risultati dei throughput sono molto diversi
 
+\begin{table}
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \begin{tabular}{| c | c c |}
+        \hline
+        $K$ & $\mathcal{R}$ & $\mathcal{R}_{\text{bottleneck}}$ \\\hline\hline
+        20  & 319\,Kbps & 27\,Kbps \\
+        100 & 214\,Kbps & 18\,Kbps \\
+        250 & 149\,Kbps & 12\,Kbps \\
+        \hline
+
+    \end{tabular}
+    \renewcommand{\arraystretch}{1}
+\end{table}
 
 
 \end{document}
