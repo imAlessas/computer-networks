@@ -100,20 +100,20 @@ def plot_all_data() -> None:
     ##### all latencies #####
 
     # calculate the true number of retrived data in the case of some lost packages
-    exploit_lengths = []
+    exploit_lengths_bits = []
     latencies = []
 
     for key, value in stats.items():
         for item in value:
             # convert directly into bits whil building
-            exploit_lengths.append( 8 * (key + 28))
+            exploit_lengths_bits.append( 8 * (key + 28))
             latencies.append(item)
 
 
-    random_colors = np.random.rand(len(exploit_lengths), 3)
+    random_colors = np.random.rand(len(exploit_lengths_bits), 3)
 
     plt.figure(figsize=(10, 6))
-    plt.scatter(exploit_lengths, latencies, edgecolors=random_colors, facecolors="none", s=10)
+    plt.scatter(exploit_lengths_bits, latencies, edgecolors=random_colors, facecolors="none", s=10)
     plt.xlabel("Packet size - Bits")
     plt.ylabel("Round-Trip-Time(k) - millisecs")
     plt.title("Total gathered latencies")
