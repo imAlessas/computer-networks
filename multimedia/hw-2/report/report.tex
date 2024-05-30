@@ -20,14 +20,14 @@ In particolare, l'analisi si divide in tre principali parti. La prima ha l'obiet
 
 \vspace{10px}\subsection{Utilizzo dello script}
 
-Le richieste dell'homework sono state soddisfatte attraverso uno script scritto con il linguaggio \textsl{Python} ed eseguito sul sistema operativo \textsl{Windows 10} in lingua italiana. Tutte le richieste sono state soddisfatte attraverso l'utilizzo del comando \texttt{ping} che si occupa di inviare delle richieste ICMP\footnote{ICMP sta per \textsl{Internet Control Message Protocol} è un protocollo utilizzato dai dispositivi di una rete per comunicare la presenza di problemi riguardanti la trasmissione dei dati} ad una determinata destinazione. La risposta del suddetto comando diagnostico è il periodo impiegato dalla destinazione per rispondere, ovvero la \textbf{latenza}.
+Le richieste dell'homework sono state soddisfatte attraverso uno script scritto con il linguaggio \textsl{Python} ed eseguito sul sistema operativo \textsl{Windows 10} in lingua italiana. Tutte le richieste sono state soddisfatte attraverso l'utilizzo del comando \texttt{ping} che si occupa di inviare delle richieste ICMP\footnote{ICMP sta per \textsl{Internet Control Message Protocol} è un protocollo utilizzato dai dispositivi di una rete per comunicare la presenza di problemi riguardanti la trasmissione dei dati} a una determinata destinazione. La risposta del suddetto comando diagnostico è il periodo impiegato dalla destinazione per rispondere, ovvero la \textbf{latenza}.
 
 Prima di lanciare lo script, è necessario aprire il file \textsl{script.py} e impostare correttamente il percorso dello script modificando la costante \texttt{PATH\_TO\_SCRIPT}.
 \begin{lstlisting}
     PATH_TO_SCRIPT = os.path.join("multimedia", "hw-2", "script")
 \end{lstlisting}
 
-\noindent In secondo luogo è possibile impostare le specifiche di progetto mediante delle costanti che indicano il nome del server su cui inviare le richieste, il numero di instanze da mandare ad ogni richiesta ping e l'incremento di lunghezza (step) che ci sarà tra la lunghezza del pacchetto durante l'iterazione \textit{i} e la successiva \textit{i + 1}.
+\noindent In secondo luogo è possibile impostare le specifiche di progetto mediante delle costanti che indicano il nome del server su cui inviare le richieste, il numero di istanze da mandare a ogni richiesta ping e l'incremento di lunghezza (step) che ci sarà tra la lunghezza del pacchetto durante l'iterazione \textit{i} e la successiva \textit{i + 1}.
 
 \begin{lstlisting}
     # project specification
@@ -63,18 +63,18 @@ Prima di lanciare lo script, è necessario aprire il file \textsl{script.py} e i
 
 \vspace{10px}\subsection{Parametri di progetto}
 
-All'interno dello script vegono utilizzati due tipi di comando \texttt{ping}. Il primo, utilizzato nella prima task, descritta nel paragrafo\,\ref{links}, è il comando ping di default di Windows: lo script funziona solo e soltanto se la lingua di Windows è in italiano altrimenti non è possibile analizzare correttamente le risposte del comando. Nella seconda task, esplorata nel paragrafo\,\ref{RTT}, viene utilizzato invece il comando \texttt{psping}, che è in lingua inglese. Al fine di riuscre ad utilizzare lo script è necessari avere l'eseguibile \texttt{psping.exe} all'interno della cartella da cui poi viene eseguito lo script (ovvero la cartella che, attraverso il percorso all'interno di \texttt{PATH\_TO\_SCRIPT}, permette di arrivare al file \texttt{script.py}). Si è scelto di utilizzare psping in quanto è più prestante del comando ping di default. Inoltre nel primo punto non si è utilizzato psping in quanto non è presente l'impostazione che permette di ridurre il Time-To-Live del pacchetto.
+All'interno dello script vegono utilizzati due tipi di comando \texttt{ping}. Il primo, utilizzato nella prima task, descritta nel paragrafo\,\ref{links}, è il comando ping di default di Windows: lo script funziona solo e soltanto se la lingua di Windows è in italiano altrimenti non è possibile analizzare correttamente le risposte del comando. Nella seconda task, esplorata nel paragrafo\,\ref{RTT}, viene utilizzato invece il comando \texttt{psping}, che è in lingua inglese. Al fine di riuscire ad utilizzare lo script è necessari avere l'eseguibile \texttt{psping.exe} all'interno della cartella da cui poi viene eseguito lo script (ovvero la cartella che, attraverso il percorso all'interno di \texttt{PATH\_TO\_SCRIPT}, permette di arrivare al file \texttt{script.py}). Si è scelto di utilizzare psping in quanto è più prestante del comando ping di default. Inoltre nel primo punto non si è utilizzato psping in quanto non è presente l'impostazione che permette di ridurre il Time-To-Live del pacchetto.
 
 In secondo luogo, al fine di eseguire i comandi nel terminale, non si è utilizzata la funzione \texttt{os.system}, bensì la libreria \texttt{subprocess}, 
-che permette di ottenere il risultato direttemane in una stringa senza avere la necessità di scriverlo sul file per poi accedere al file per leggerlo. Questo migliora le prestazioni computazionali dello script, in particolare nella seconda parte dove in genere viene inviata una mole elevata di pacchetti ICMP. È comunque possible scrivere su files i risultati dell'esecuziuone del comando, è sufficiente impostare a \texttt{True} la \textsl{flag} che si chiama \texttt{SAVE\_TO\_FILE}.
+che permette di ottenere il risultato direttamente in una stringa senza avere la necessità di scriverlo sul file per poi accedere al file per leggerlo. Questo migliora le prestazioni computazionali dello script, in particolare nella seconda parte dove in genere viene inviata una mole elevata di pacchetti ICMP. È comunque possibile scrivere su file i risultati dell'esecuziuone del comando, è sufficiente impostare a \texttt{True} la \textsl{flag} che si chiama \texttt{SAVE\_TO\_FILE}.
 
-Le analisi che seguiranno saranno effettutate sul server di Los Angeles il cui dominio è \texttt{la.speedtest.clouvider.net}. In particolare verranno prese in considerazione tre diverse istanze di esecuzione dello script, le quali avranno un numero crescente di pacchetti da mandare:
+Le analisi che seguiranno saranno effettuate sul server di Los Angeles il cui dominio è \texttt{la.speedtest.clouvider.net}. In particolare verranno prese in considerazione tre diverse istanze di esecuzione dello script, le quali avranno un numero crescente di pacchetti da mandare:
 
 \begin{enumerate}
     \setlength{\itemsep}{4px}
-    \item 20 messaggi ed uno step di 10, quindi un totale di 2940 pacchetti (figure\,\ref{fig:20-instances-total},\,\ref{fig:20-instances-stats},\,\ref{fig:20-instances-min});
-    \item 100 instanze ed uno step di 2, ammontando a 73100 blocchi (figure\,\ref{fig:100-instances-total},\,\ref{fig:100-instances-stats},\,\ref{fig:100-instances-min});
-    \item 250 pacchetti ed uno step di 1, per un totale di 365250 messaggi (figure\,\ref{fig:250-instances-total},\,\ref{fig:250-instances-stats},\,\ref{fig:250-instances-min}).
+    \item 20 messaggi ed uno step di 10, quindi un totale di 2\,940 pacchetti (figure\,\ref{fig:20-instances-total},\,\ref{fig:20-instances-stats},\,\ref{fig:20-instances-min});
+    \item 100 istanze ed uno step di 2, ammontando a 73\,100 blocchi (figure\,\ref{fig:100-instances-total},\,\ref{fig:100-instances-stats},\,\ref{fig:100-instances-min});
+    \item 250 pacchetti ed uno step di 1, per un totale di 365\,250 messaggi (figure\,\ref{fig:250-instances-total},\,\ref{fig:250-instances-stats},\,\ref{fig:250-instances-min}).
 \end{enumerate}
 
 
@@ -121,7 +121,7 @@ Traccia completata.
         return int(last_link_line.split(" ")[1])
 \end{lstlisting}
 
-\noindent Per contare il numero di connessioni, oltre all'utilizzo del comando \texttt{tracert}, è possibile impiegare direttamente il comando \texttt{ping}. In particolare, è sufficiente iterare attraverso una serie di ping, diminuendo ad ogni iterazione il parametro TTL (Time-To-Live), che rappresenta il numero massimo di link che il pacchetto può attraversare prima di essere eliminato. La seguente funzione in Python itera sui valori di TTL da 20 a 0. Ad ogni iterazione viene inviata una richiesta ping predefinita, con 4 pacchetti di dimensione di 32 byte. Quando il ping non ottiene una risposta, significa che il valore di TTL è diminuito al punto da non essere più sufficiente per raggiungere la destinazione finale. Pertanto, viene restituito il valore di TTL incrementato di 1, che è il minimo TTL necessario per raggiungere il server. Di fatto questo appriccio è l'esatto opposto dell'approccio che adotta \texttt{tarcert}: in questo caso infatti al posto di incrementare il TTL fino a che non si riceve una risposta, lo si decrementa fino a che il messaggio ICMP scade, non riuscendo quindi a raggiungere la destinazione.
+\noindent Per contare il numero di connessioni, oltre all'utilizzo del comando \texttt{tracert}, è possibile impiegare direttamente il comando \texttt{ping}. In particolare, è sufficiente iterare attraverso una serie di ping, diminuendo a ogni iterazione il parametro TTL (Time-To-Live), che rappresenta il numero massimo di link che il pacchetto può attraversare prima di essere eliminato. La seguente funzione in Python itera sui valori di TTL da 20 a 0. a ogni iterazione viene inviata una richiesta ping predefinita, con 4 pacchetti di dimensione di 32 byte. Quando il ping non ottiene una risposta, significa che il valore di TTL è diminuito al punto da non essere più sufficiente per raggiungere la destinazione finale. Pertanto, viene restituito il valore di TTL incrementato di 1, che è il minimo TTL necessario per raggiungere il server. Di fatto questo appriccio è l'esatto opposto dell'approccio che adotta \texttt{tarcert}: in questo caso infatti al posto di incrementare il TTL fino a che non si riceve una risposta, lo si decrementa fino a che il messaggio ICMP scade, non riuscendo quindi a raggiungere la destinazione.
 
 \begin{lstlisting}
     def get_links_from_ping(server: str) -> int:
@@ -210,20 +210,20 @@ Per permettere l'utilizzo di diversi thread, è necessario racchiudere le richie
 
 \vspace{10px}\subsubsection*{Risultati}
 
-\noindent Dopo aver eseguito gli script, è quindi possibile mostrare tutte le latenze raccolte, i loro massimi, i minimi, le latenze medie per ciascuna lunghezza e la loro varianza. Sono presentati di seguito tre immagini contenenti i risultati delle richieste; cioascune delle tre immagini fa riferimento ad una diversa scelta di istanze e di step. Infine, si osserva che nei grafici seguenti la lunghezza $L$ dei pacchetti è espressa in bit attraverso la seguente formula di traduzione:
+\noindent Dopo aver eseguito gli script, è quindi possibile mostrare tutte le latenze raccolte, i loro massimi, i minimi, le latenze medie per ciascuna lunghezza e la loro varianza. Sono presentati di seguito tre immagini contenenti i risultati delle richieste; ciascuna delle tre immagini fa riferimento a una diversa scelta di istanze e di step. Infine, si osserva che nei grafici seguenti la lunghezza $L$ dei pacchetti è espressa in bit attraverso la seguente formula di traduzione:
 \begin{gather*}
     L = 8 \cdot (L_{\text{byte}} + 28)
 \end{gather*}
 
 
-\noindent L'immagine\,\ref{fig:20-instances-total} di seguito rappresenta tutte le latenza raccolte durante l'esecuzione dei ping con 20 istanze per richiesta e con uno step di 10 tra una lunghezza e l'altra, per un totale di 2940 ping effettuati in circa un minuti. Si può osservare che in genere tutte le latenze sono attorno ai 170 millisecondi, con alcuni picchi tra i 750 e gli 800 bytes.
+\noindent L'immagine\,\ref{fig:20-instances-total} di seguito rappresenta tutte le latenza raccolte durante l'esecuzione dei ping con 20 istanze per richiesta e con uno step di 10 tra una lunghezza e l'altra, per un totale di 2\,940 ping effettuati in circa un minuti. Si può osservare che in genere tutte le latenze sono attorno ai 170 millisecondi, con alcuni picchi tra i 750 e gli 800 bytes.
 \begin{figure}[h]
     \centering
     \includegraphics[width = .9\textwidth]{hw-2/report/imgs/20-instances/la-total-latencies.png}
     \caption{Tutte le ottenute con 20 istanze ed uno step di 10.}
     \label{fig:20-instances-total}
 \end{figure}
-Non a caso, nei grafici rappresentati in figura\,\ref{fig:20-instances-stats}, si osserva infatti che i picchi sono rispecchiati nella rappresentazione dei massimi (in alto a destra), delle media (in basso a sinistra) e delle varianze (in basso a destra). Si osserva inoltre che i minimi variano tra 168 e 170 millisecondi e che crescono al crescere della dimensione del pacchetto; questo aspetto sarà dettagliatamente esplorato nel prossimo paragrafo, dedicato al \textsl{throughput} (\ref{throughput}).
+Non a caso, nei grafici rappresentati in figura\,\ref{fig:20-instances-stats}, si osserva infatti che i picchi sono rispecchiati nella rappresentazione dei massimi (in alto a destra), delle medie (in basso a sinistra) e delle varianze (in basso a destra). Si osserva inoltre che i minimi variano tra 168 e 170 millisecondi e che crescono al crescere della dimensione del pacchetto; questo aspetto sarà dettagliatamente esplorato nel prossimo paragrafo, dedicato al \textsl{throughput} (\ref{throughput}).
 \begin{figure}[h]
     \centering
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/20-instances/la-min-latencies.png}
@@ -234,7 +234,7 @@ Non a caso, nei grafici rappresentati in figura\,\ref{fig:20-instances-stats}, s
     \label{fig:20-instances-stats}
 \end{figure}
 
-\FloatBarrier\noindent Aumentando il numero di ping effettuati, in particolare aumentonado il numero di istanze a 100 e riducendo l'incremento delle lunghezze a 2, otteniamo un grafico come quello della figura\,\ref{fig:100-instances-total}, che contiene 73100 valori di latenza, ottenuti in circa 6 minuti. Anche in questo caso possiamo notare dei picchi che sono distribuiti lungo tutte le lunghezze. In particolare, i più elevati si aggirano attorno a 600 bytes di lunghezza del payload. 
+\FloatBarrier\noindent Aumentando il numero di ping effettuati, in particolare aumentando il numero di istanze a 100 e riducendo l'incremento delle lunghezze a 2, otteniamo un grafico come quello della figura\,\ref{fig:100-instances-total}, che contiene 73\,100 valori di latenza, ottenuti in circa 6 minuti. Anche in questo caso possiamo notare dei picchi che sono distribuiti lungo tutte le lunghezze. In particolare, i più elevati si aggirano attorno a 600 bytes di lunghezza del payload. 
 \begin{figure}[h]
     \centering
     \includegraphics[width = .9\textwidth]{hw-2/report/imgs/100-instances/la-total-latencies.png}
@@ -252,14 +252,14 @@ Osservando infatti i grafici nell'immagine\,\ref{fig:100-instances-stats}, notia
     \label{fig:100-instances-stats}
 \end{figure}
 
-\FloatBarrier\noindent Infine, nell'immagine\,\ref{fig:250-instances-total} sono state processate un totale di 365250 richieste in circa un quarto d'ora, risultato di 250 istanze per lunghezza ed uno step di 1 tra una lunghezza e l'altra. Si può infatti notare che il numero di dati in quest'ultimo grafico è molto più elevato rispetto ai due precedenti garantendo quindi che i dati analizzati sono più simili a quelli reali.
+\FloatBarrier\noindent Infine, nell'immagine\,\ref{fig:250-instances-total} sono state processate un totale di 365\,250 richieste in circa un quarto d'ora, risultato di 250 istanze per lunghezza ed uno step di 1 tra una lunghezza e l'altra. Si può infatti notare che il numero di dati in quest'ultimo grafico è molto più elevato rispetto ai due precedenti garantendo quindi che i dati analizzati sono più simili a quelli reali.
 \begin{figure}[h]
     \centering
     \includegraphics[width = .9\textwidth]{hw-2/report/imgs/250-instances/la-total-latencies.png}
     \caption{Grafici ottenuti con 250 istanze ed uno step di 1.}
     \label{fig:250-instances-total}
 \end{figure}
-In questo caso è interssante osservare che sia la media che la varianza sono elevate per la maggior parte delle lunghezze per decrescere solo quando il pacchetto è di dimensione ridotta oppure molto elevata (figura\,\ref{fig:250-instances-stats}). Anche il grafico che rappresenta il minimo non segue più una retta definita (a differenza di quello mostrato nei grafici\,\ref{fig:100-instances-stats}), ma dopo i 350 bytes si hanno minimi che arrivano fino a 178 millisecondi.
+In questo caso è interessante osservare che sia la media che la varianza sono elevate per la maggior parte delle lunghezze per decrescere solo quando il pacchetto è di dimensione ridotta oppure molto elevata (figura\,\ref{fig:250-instances-stats}). Anche il grafico che rappresenta il minimo non segue più una retta definita (a differenza di quello mostrato nei grafici\,\ref{fig:100-instances-stats}), ma dopo i 350 bytes si hanno minimi che arrivano fino a 178 millisecondi.
 \begin{figure}[h]
     \centering
     \includegraphics[width = .49\textwidth]{hw-2/report/imgs/250-instances/la-min-latencies.png}
@@ -270,7 +270,7 @@ In questo caso è interssante osservare che sia la media che la varianza sono el
     \label{fig:250-instances-stats}
 \end{figure}
 
-\FloatBarrier\noindent Osservando e comparando i tre grafici mostrati nelle figure si nota che, ragionevolemnte, maggiore è la mole di dati che viene analizzata e maggiori sono la varianza e la media in quanto si migliora l'accuratezza delle misure, avvicinandosi sempre di più ad un valore simile alla realtà.
+\FloatBarrier\noindent Le analisi relativi ai grafici mostrati, in particolare in riferimento alla drastica crescita di latenza (minima e media) all'inizio dell'invio dei messaggi ping e la drastica decrescita verso la fine dei dati in figura\,\ref{fig:250-instances-stats} saranno discusse in maniera dettagliata nel capitolo\,\ref{conclusions}.
 
 \vspace{20px}\subsection{Throughput}\label{throughput}
 
@@ -313,7 +313,7 @@ Si fornisce una breve spiegazione del ragionamento matematico che le supporta le
     \text{RTT}(L, k) = Q(k) + \alpha L + T
 \end{gather*}
 
-\noindent Per riuscire a ridurre completamente il Rounde Trip Time ad una retta, è necessario gestire la varibilità del ritardo di coda del pacchetto $Q(k)$. Si osserva che, con un elevato numero di istanze $K$ — come quelle scelte in questo caso, dove $K = 250$ — la probabilità che almeno una volta i buffer dei link siano liberi aumenta. Di conseguenza, di tutti gli RTT, prendere la minima latenza per ogni pacchetto $k \in \{1, \dots, K\}$, garantirebbe che $Q(k) = 0$. Si ottiene quindi un'approssimazione lineare del RTT\@:
+\noindent Per riuscire a ridurre completamente il Rounde Trip Time a una retta, è necessario gestire la variabilità del ritardo di coda del pacchetto $Q(k)$. Si osserva che, con un elevato numero di istanze $K$ — come quelle scelte in questo caso, dove $K = 250$ — la probabilità che almeno una volta i buffer dei link siano liberi aumenta. Di conseguenza, di tutti gli RTT, prendere la minima latenza per ogni pacchetto $k \in \{1, \dots, K\}$, garantirebbe che $Q(k) = 0$. Si ottiene quindi un'approssimazione lineare del RTT\@:
 \begin{gather*}
     RTT_{\text{min}}(L) = \min_{k \in \{1, \dots, K\}} \text{RTT}(L, k) \approx \alpha L + T
 \end{gather*}
@@ -385,13 +385,13 @@ Eseguendo il codice descritto con le tre diverse istanze di esecuzione, è possi
     \label{fig:250-instances-min}
 \end{figure}
 
-\FloatBarrier\noindent Analizzando i risultati ottenuti si osserva che man mano che il numero di instanze di pacchetti inviati aumento, il valore deh throughput dimunisce: questa descrescita è ragionevole dal momento in cui avendo più dati a disposizione da processare è possible avvicinarsi meglio a quelli che sono i numeri reali. Si osserva inoltre la grande differenza tra i valori di $\mathcal{S}$ e di $\mathcal{S}_{\text{bottleneck}}$ dove si riesce a precepire maggiormente l'impatto che un link poco prestante ha sull'intero flusso di telecomunicazione. 
+\FloatBarrier\noindent Analizzando i risultati ottenuti si osserva che man mano che il numero di istanze di pacchetti inviati aumento, il valore deh throughput dimunisce: questo aspetto verrà discusso ed analizzato in maniera dettagliata nel paragrafo seguente (\ref{conclusions})
 
-\newpage\section{Conclusioni}
+\newpage\section{Conclusioni}\label{conclusions}
 La tabella\,\ref{tab:summary} riassume i valori ottenuti analizzando le latenze otteunute inviando una elevata mole di pacchetto al server di Los Angeles. La tabella in particolare si concentra sul mostrare la netta differenza tra il througput con link di pari prestazioni $\mathcal{S}$ e il throughput nel caso in cui sia presente un link molto poco prestante che fa da collo di bottiglia $\mathcal{S}_{\text{bottleneck}}$. Si osserva inoltre la curva discendente dei throughput rispoetto all'incrementare delle istanze $K$.
 \begin{table}[h]
     \centering
-    \caption{Risultati finali}\vspace{5px}
+    \caption{Risultati finali}\vspace{7.5px}
     \renewcommand{\arraystretch}{1.5}
     \begin{tabular}{| c | c c |}
         \hline
@@ -404,6 +404,8 @@ La tabella\,\ref{tab:summary} riassume i valori ottenuti analizzando le latenze 
     \renewcommand{\arraystretch}{1}
     \label{tab:summary}
 \end{table}
-Come già osservato nel paragrafo\,\ref{throughput} questo è dovuto al fatto che nel momento in cui i dati totali raccolti aumentano, il valore si avvicina sempre di più a quello reale e, di conseguenza, riducendosi. \todo{capisci se sta cosa ha senso}
+La decrescita del throughput $\mathcal{S}$ in virtù dell'aumento del numero delle istanze può essere dovuta a diversi motivi. Il primo è relativo a una possibile generazione di \textbf{congestione} dovuta all'elevato numero di pacchetti inviati in un breve periodo di tempo. In particolare, prendendo come riferimento $K = 250$ — osservando le figure\,\ref{fig:250-instances-stats},\,\ref{fig:250-instances-min} — si nota che quando l'invio dei pacchetti è a regime, ovvero nel momento in cui tutti i thread sono in esecuzione e stanno invocando il comando \texttt{psping}, sia il ritardo minimo che la latenza media aumentano drasticamente se comparati con la fase iniziale e finale. Si osserva che questa drastica crescita nel momento in cui il codice è a regime non accade nel momento in cui $K = 20$ o $K = 100$, come mostrato nelle figure\,\ref{fig:20-instances-stats},\,\ref{fig:100-instances-stats}. Ciò nonostante il valore del throughput $\mathcal{S}$ decresce comunque tra le due casistiche dove non ci sono indizi di possibili congestioni.
+
+Pertanto, oltre alla possibile congestione generata dall'elevato numero di pacchetti inviati, un altro fattore che contribuisce alla decrescita del throughput calcolato all'aumentare del numero di messaggi ping è di natura statistica. Infatti, inviando un numero maggiore di messaggi, si raccoglie un \textsl{dataset} più ampio, che può fornire una stima migliore del throughput medio. I risultati ottenuti con 365\,250 pacchetti sono probabilmente più rappresentativi rispetto a quelli ottenuti con soli 2\,940 messaggi. Inoltre, inviando un numero maggiore di ping, si minimizza l'impatto di valori anomali nei dati. Eventuali problemi occasionali di rete o ritardi del server possono avere un effetto più significativo sul calcolo del throughput quando si utilizza un campione di dimensioni ridotte.
 
 \end{document}
