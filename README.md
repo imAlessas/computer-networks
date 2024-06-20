@@ -12,4 +12,8 @@ All'interno del modulo multimedia sono presenti gli script ``.py`` e i report ``
 
 ### Homework 1
 
-Il primo homework riguarda la __codifica lossless__ di immagini, in particolare si occupa esplorare due tipi di codifiche implementate attraverso due script. La [codifica semplice](https://github.com/imAlessas/computer-networks/blob/main/multimedia/hw-1/script/simple_coding.py) si basa su un semplice predittore del pixel successivo mentre la [codifica avanzata](https://github.com/imAlessas/computer-networks/blob/main/multimedia/hw-1/script/advanced_coding.py) si basa su un modello predittivo più complesso, focolazzandosi su più pixel attorno a quello da predire. Lo studio e l'analisi delle prestazioni di tali codifiche sono descritte nel [report](https://github.com/imAlessas/computer-networks/blob/main/multimedia/hw-1/main.pdf).
+Il primo homework riguarda la __codifica lossless__ di immagini, in particolare si occupa esplorare due tipi di codifiche implementate attraverso due script. La [codifica semplice](./multimedia/hw-1/script/simple_coding.py) si basa su un semplice predittore del pixel successivo mentre la [codifica avanzata](./multimedia/hw-1/script/advanced_coding.py) si basa su un modello predittivo più complesso, focolazzandosi su più pixel attorno a quello da predire. Lo studio e l'analisi delle prestazioni di tali codifiche sono descritte nel [report](./multimedia/hw-1/main.pdf).
+
+### Homework 2
+
+Il secondo homework studia la __latenza di rete__: si è implementato uno [script](./multimedia/hw-2/script/script.py) che analizza le prestazioni di rete inviando pacchetti ad un determinato server. In particolare viene studiato il _numero di link_, il Round Trip Time (_RTT_) per poi calcolare il __throughput__. Il [report](./multimedia/hw-2/main.pdf) contiene tutto ciò che è necessario sapere per poter eseguire il codice e discute i risultati ottenuti.
