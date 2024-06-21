@@ -10,15 +10,31 @@
 
 
 
+struct sockaddr_in server_addr;     // struct per definire l'indrizzo del server
+struct sockaddr_in client_addr;     // struct per definire l'indrizzo del client remoto
+
+
+
+// definisco il buffer che conterrà i campi dell'header così come arrivano, da cui leggiamo i caratteri
+char hbuf[10000];
+
+// è un array di 'coppie' (una mappa) che puntano ciascuna ad il nome di un campo e al suo valore nell'header presente in hbuf 
+struct headers{
+    char * n;   // nome
+    char * v;   // valore
+} h[100];       // definisco la tabella di indicizzazione
+
+
+
 int main(){
 
     // definizione di variabili locali
-    int s, s_double;                          // socket
-    struct sockaddr_in server_addr;     // struct per definire l'indrizzo del server
-    struct sockaddr_in client_addr;     // struct per definire l'indrizzo del client remoto
+    int s, s_double;                    // socket
     int t;                              // variabile temporanea
     int len;                            // lunghezza 
     char request_buffer[3001];          // buffer per consumare request
+    int i, j;
+    char * commandline;
 
 
 
@@ -111,6 +127,7 @@ int main(){
 
         /* da qui in poi ci sono solo processi figli */
 
+
         // terminazione nel caso di errori
         if(s_double == -1){
             printf("ERRNO = %d (%d)\n", errno, EAFNOSUPPORT);
@@ -118,7 +135,47 @@ int main(){
             return 1;
         }
 
+
+
+        // consumo la richiesta in maniera conforme alla grammatica
+        // codice molto simile al consume della response web-client/HTTP-1.1.c
+
+        commandline = h[0].n = hbuf;
+        j = 0;
+
+        // leggo un carattere alla volta dell'header
+        for(i = 0; read(s_double, hbuf + i, 1); i++){
+
+            // fine campo header
+            if( hbuf[i - 1] == '\r' && hbuf[i] == '\n' ){
+                
+                hbuf[i - 1] = 0;            // terminatore su \r
+            
+                if( !( h[j].n[0] ) )        // entro se sono alla fine dell'header
+                    break;
+                
+                h[++j].n = &hbuf[i + 1];    // imposto il nome della nuova riga della tabella
+            }
+
+            // fine nome campo header
+            if( (hbuf[i] == ':') && (h[j].v == NULL) ){
+
+                h[j].v = &hbuf[i + 1];      // imposto il valore della tabella
+                hbuf[i] = 0;                // terminatore
+            }
+        }
+
+
+
+
+
+
+        // creo la response
+        char response[2000000];
+        printf(response, "HTTP/1.1 200 OK\r\nConnection:close\r\n\r\n<html><h1>Hello World!</h1></html>");
         
+        // invio la response al client mediante la write()
+        write(s_double, response, strlen(response));
 
         // chiudo il socket
         close(s_double);
@@ -126,6 +183,8 @@ int main(){
         // evito creazione di processi zombie
         exit(1);
     }
+
+
 
 
 
