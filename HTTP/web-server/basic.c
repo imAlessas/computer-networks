@@ -19,11 +19,13 @@ char hbuf[10000];           // conterrà i campi dell'header così come arrivano
 char response[2000];        // contiene la response
 char entity[1000];          // contiene l'entity della response spezzettato
 
-// è un array di 'coppie' (una mappa) che puntano ciascuna ad il nome di un campo e al suo valore nell'header presente in hbuf 
+
+// array di 'coppie' (una mappa) che puntano ciascuna ad il nome di un campo e al suo valore nell'header presente in hbuf 
 struct headers{
     char * n;   // nome
     char * v;   // valore
 } h[100];       // definisco la tabella di indicizzazione
+
 
 
 
@@ -40,12 +42,11 @@ int main(){
 
     // crea il socket
     s = socket( AF_INET, SOCK_STREAM, 0 );
-    // printf("Socket: %d\n", s);
 
     // terminazione nel caso di errori
     if(s == -1){
-        perror("Socket fallita");
-        printf("ERRNO = %d (%d)\n", errno, EAFNOSUPPORT);
+        perror("socket() failed");
+        printf("errno: %d\n", errno);
         return 1;
     }
 
@@ -61,7 +62,6 @@ int main(){
     server_addr.sin_family      = AF_INET;
     server_addr.sin_port        = htons(31415);
     server_addr.sin_addr.s_addr = 0;
-
 
     /*
         Una connessione è univocamente definita da 4 valori: indirizzo sorgente, port sorgente, indirizzo destinazione, port destinazione. Proprio per questo motivo, un port, all'interno della stessa macchina, può essere associato a più indirizzi.
@@ -79,8 +79,8 @@ int main(){
 
     // terminazione nel caso di errori
     if(t == -1){
-        perror("Bind fallita");
-        printf("ERRNO = %d (%d)\n", errno, EAFNOSUPPORT);
+        perror("bind() failed");
+        printf("errno: %d\n", errno);
         return 1;
     }
 
@@ -97,8 +97,8 @@ int main(){
 
     // terminazione nel caso di errori
     if(t == -1){
-        perror("Listen fallita");
-        printf("ERRNO = %d (%d)\n", errno, EAFNOSUPPORT);
+        perror("listen() failed");
+        printf("errno: %d\n", errno);
         return 1;
     }
 
@@ -131,8 +131,8 @@ int main(){
 
         // terminazione nel caso di errori
         if(s_double == -1){
-            perror("Accept fallita");
-            printf("ERRNO = %d (%d)\n", errno, EAFNOSUPPORT);
+            perror("accept() failed");
+            printf("errno: %d\n", errno);
             return 1;
         }
 
@@ -165,6 +165,15 @@ int main(){
                 hbuf[i] = 0;                // terminatore
             }
         }
+
+
+        /*
+            Parsando la request si pone l'attenzione su alcuni campi interessanti.
+            • Il campo 'User-Agent' specifica con quale browser si è collegati al server per poter eventualmente adattare il contenuto al tipo di browser: questo è alla base della responsiveness dei sistemi.
+            • Il campo 'Referer' è ancora più importante. Se in una pagina web viene premuto un link ad un'altra pagina, il protocollo HTTP richiede di specificare da quale pagina si arriva. Questo meccanismo è fondamentale per l'aspetto economico: l'interesse di pubblicare pagine web è stato dovuto a ragioni principalmente commerciali. Di conseguenza capire come ha fatto un Client a trovare la mia pagina è fondamentale: in un motore di ricerca, quando una query da cercare, non tutti i risultati appaiono in quanto soddisfano meglio la richiesta effettuata ma perchè qualcuno ha pagato per apparire (advertisement). Il referer è ciò che garantisce che davvero chi è arrivato alla mia pagina è arrivato grazie ad un determinato motore di ricerca oppure una pagina di riferimento. Questo header dal punto di vista tecnico non serve assulutamente a niente, ha però un valore immenso.
+            • L'header 'Accept' elenca i tipi di file che il browser è in rado di elaborare e fa parte del livello di 'Presentation'. È una informazione importantissima, basti pensare al fatto che un Client elenchi tutti i formati in grado di gestire; l'entity body, di conseguenza, non è più un file, ma diventa un oggetto con un tipo.
+            • Il campo 'Accept-Language', che fa parte anch'esso del Presentation layer, contiene una lista con priorità delle lingue preferite dal Client.
+        */
 
         // stampo la tabella di indicizzazione, j contiene il numero di righe della tabella
         for(i = 0; i < j; i++)
@@ -281,10 +290,6 @@ int main(){
         // evito creazione di processi zombie
         exit(1);
     }
-
-
-
-
 
 
     return 0;
