@@ -18,8 +18,8 @@ __pycache__
 # text files
 *.txt
 
-psping.exe
-
+# C compiled files
+*.exe
 
 
 ### LaTeX .gitignore ###
