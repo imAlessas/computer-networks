@@ -15,8 +15,9 @@ struct sockaddr_in client_addr;     // struct per definire l'indrizzo del client
 
 
 
-// definisco il buffer che conterrà i campi dell'header così come arrivano, da cui leggiamo i caratteri
-char hbuf[10000];
+char hbuf[10000];           // conterrà i campi dell'header così come arrivano
+char response[2000];        // contiene la response
+char entity[1000];          // contiene l'entity della response spezzettato
 
 // è un array di 'coppie' (una mappa) che puntano ciascuna ad il nome di un campo e al suo valore nell'header presente in hbuf 
 struct headers{
@@ -29,13 +30,12 @@ struct headers{
 int main(){
 
     // definizione di variabili locali
-    int s, s_double;                    // socket
-    int t;                              // variabile temporanea
-    int len;                            // lunghezza 
-    char request_buffer[3001];          // buffer per consumare request
-    int i, j;
-    char * commandline;
-
+    int s, s_double;                        // socket
+    char * command_line;                    // prima riga della request i.e.  GET /index.html HTTP/1.1
+    char * method, * file_name, * version;  // token che voglio estrarre da command_line
+    FILE * file;                            // file richiesto dal Client
+    int i, j;                               // indici multifunzione
+    int t;                                  // variabile temporanea
 
 
     // crea il socket
@@ -44,8 +44,8 @@ int main(){
 
     // terminazione nel caso di errori
     if(s == -1){
+        perror("Socket fallita");
         printf("ERRNO = %d (%d)\n", errno, EAFNOSUPPORT);
-        perror("Socket fallita\n");
         return 1;
     }
 
@@ -79,8 +79,8 @@ int main(){
 
     // terminazione nel caso di errori
     if(t == -1){
+        perror("Bind fallita");
         printf("ERRNO = %d (%d)\n", errno, EAFNOSUPPORT);
-        perror("Bind fallita\n");
         return 1;
     }
 
@@ -97,8 +97,8 @@ int main(){
 
     // terminazione nel caso di errori
     if(t == -1){
+        perror("Listen fallita");
         printf("ERRNO = %d (%d)\n", errno, EAFNOSUPPORT);
-        perror("Listen fallita\n");
         return 1;
     }
 
@@ -114,10 +114,12 @@ int main(){
         Inserendo un controllo di ritorno sulla fork(), il padre e il figlio hanno lo stesso codice, ma grazie al controllo seguono un flusso diverso.
     */
 
-    len = sizeof(struct sockaddr);
+    int len = sizeof(struct sockaddr);
 
     while(1){
         
+        close(s_double);
+
         // accetto la prima richiesta di connessione della coda
         s_double = accept(s, (struct sockaddr *) &client_addr, &len);
 
@@ -125,13 +127,12 @@ int main(){
         if(fork()) continue;
 
 
-        /* da qui in poi ci sono solo processi figli */
-
+        /* - - da qui in poi ci sono solo processi figli - - */
 
         // terminazione nel caso di errori
         if(s_double == -1){
+            perror("Accept fallita");
             printf("ERRNO = %d (%d)\n", errno, EAFNOSUPPORT);
-            perror("Accept fallita\n");
             return 1;
         }
 
@@ -140,7 +141,7 @@ int main(){
         // consumo la richiesta in maniera conforme alla grammatica
         // codice molto simile al consume della response web-client/HTTP-1.1.c
 
-        commandline = h[0].n = hbuf;
+        command_line = h[0].n = hbuf;
         j = 0;
 
         // leggo un carattere alla volta dell'header
@@ -165,18 +166,115 @@ int main(){
             }
         }
 
+        // stampo la tabella di indicizzazione, j contiene il numero di righe della tabella
+        for(i = 0; i < j; i++)
+            printf("%s —————> %s\n", h[i].n, h[i].v);
+        printf("\n");
 
 
 
+        /*
+            È necessario ora tokenizzare la richiesta. Dopo averla salvata in memoria, dobbiamo estrarre le informazioni che ci servono dalla command line:
+                GET /index.html HTTP/1.1
+            Di conseguenza le informazioni necessarie sono:
+                - il metodo di richiesta, come GET o POST (char * method)
+                - la risorsa - il file - richiesto, ovvero l'URI (char * file_name)
+                - la versiona HTTP della richiesta (char * version)
+            L'idea risolutiva è molto semplice in quanto sappiamo che la command line avrà sempre la stessa struttura. La prima cosa che dobbiamo estrarre è il metodo. Inizializziamo quindi il puntatore *method uguale al puntatore *command_line: in uuesto modo *method punta al primo carattere della richiesta. In secondo luogo iniziamo un loop che scorre *command_line e si ferma quando si trova uno spazio. In questo modo sappiamo che abbiamo terminato il valore di *method. Terminato il ciclo for, null-terminiamo *method e incrementiamo la variabile i, che verrà utilizzata per estrarre *file_name e *version.
+        */
 
-
-        // creo la response
-        char response[2000000];
-        printf(response, "HTTP/1.1 200 OK\r\nConnection:close\r\n\r\n<html><h1>Hello World!</h1></html>");
+        // inizializzo metodo che punta al'inizio della command_line
+        method = command_line;      // = command_line[0]
         
-        // invio la response al client mediante la write()
+        // inizializzo i
+        i = 0;
+
+        // mi fermo quando trovo uno spazio 
+        while( command_line[i] != ' ' )
+            i++;
+
+        // null-termino method
+        command_line[i++] = 0;
+
+        /* estraggo file_name nello stesso modo */
+        file_name = command_line + i;   
+
+        while( command_line[i] != ' ' )
+            i++;
+
+        command_line[i++] = 0;
+
+
+        /* estraggo anche version */
+        version = command_line + i;     
+        
+        // cambio da ' ' a 0 per il fine riga (abbiamo messo il terminatore nel parsing precedente)
+        while( command_line[i] != 0 )
+            i++;
+
+        command_line[i++] = 0;
+
+        printf("Method = %s\nURI = %s\nVersion = %s\n\n\n", method, file_name, version);
+
+
+
+        /*
+            Ora che abbiamo tokenizzato la richiesta, sappiamo quale file prendere e restituirne il contenuto tramite la response.
+            Per aprire il file si usa la funzione fopen(). In particolare vogliamo far si che non sia possible accedere ai file che stanno sopra nel percorso assoluto. A questo proposito inseriamo uno spazio: filename + 1. In secondo luogo inseriamo anche le modalità di accesso al file: "rt", ovvero Read Text file.
+            Se il file non esiste la funzione ritorna NULL, è quindi necessario notificare il Client del fatto che la risorsa è inesistente: si crea quindi una response indicando le problematiche trovate (404 NOT FOUND) e la si manda al cliente tramite una write().  In seguito si chiude sia il socket tramite close() e si uccide il processo. Non è necessario fare un fclose() perchè in questo caso il file nemmeno si apre.
+        */
+        
+        file = fopen(file_name + 1, "rw");
+
+        if(file == NULL){
+            // creo messaggio di errore
+            sprintf(response, "HTTP/1.1 404 NOT FOUND\r\nConnection: close\r\n\r\n"
+                            "<html><head><title>404 Not Found</title><style>"
+                            "body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }"
+                            "h1 { font-size: 50px; color: #ff0000; }"
+                            "p { font-size: 20px; color: #333; }"
+                            "</style></head><body>"
+                            "<h1>404 Not Found</h1>"
+                            "<p>Sorry, the file <strong>%s</strong> was not found on this server.</p>"
+                            "</body></html>", file_name);
+
+            // invio la response al client mediante la write()
+            write(s_double, response, strlen(response));
+
+            // chiudo il socket
+            close(s_double);
+
+            // evito creazione di processi zombie chiudendo il thread
+            exit(1);
+        }
+
+
+        /*
+            Se il file esiste è ovviamente necessario mandare il file richiesto. Inviamo prima l'header della response indicando che il file esiste.
+            In secondo luogo iteriamo sul file finchè non arriviamo alla fine tramite un while loop. Per ciascuna itrazione, tramite la funzione fread(), leggiamo 1000 bytes dal file e li inseriamo all'interno del buffer entity[] il quale verrà immediatamente utilizzato per essere mandato al
+        */
+
+        // creo l'header della response e lo mando con write()
+        sprintf(response, "HTTP/1.1 200 OK\r\nConnection:close\r\n\r\n");
         write(s_double, response, strlen(response));
 
+        // finchè non finisce il file
+        while( !feof(file) ) {
+            // leggo il file
+            fread(
+                entity,      // buffer dove inserire le informazioni lette
+                1,           // dimensione di informazione prelevata = 1 byte
+                1000,        // numero di informazioni per lettura, 1000 * 1 = 1000 bytes
+                file         // da dove leggere informazioni
+            );
+
+            // mando entity-body spezzettato
+            write(s_double, entity, strlen(entity));
+        }
+
+        // chiudo il file
+        fclose(file);
+    
         // chiudo il socket
         close(s_double);
 
