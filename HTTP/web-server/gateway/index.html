@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorem Ipsum</title>
+    <style>
+
+        :root {
+            --cube-side: 500px;
+            --cube-color: rgba(0, 225, 255, 0.4);
+            --cube-border-color: rgba(0, 225, 255, 0.5);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            color: white;
+            background-color: #333;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding-top: 10%;
+        }
+
+        .title {
+            font-size: 4em;
+            margin-bottom: 0.5em;
+        }
+
+        .content {
+            font-size: 1.5em;
+            margin: 0 auto;
+            max-width: 600px;
+        }
+
+        ul {
+            font-size: 1.25em;
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul li {
+            margin: 0.5em 0;
+        }
+
+        ul li a {
+            color: #ffe100;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* 3D Animation */
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            perspective: 1000px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cube {
+            width: var(--cube-side);
+            height: var(--cube-side);
+            transform-style: preserve-3d;
+            animation: rotate 10s infinite ease-in-out;
+        }
+
+        .cube div {
+            position: absolute;
+            width: var(--cube-side);
+            height: var(--cube-side);
+            background: var(--cube-color);
+            border: 2px solid var(--cube-border-color)
+        }
+
+        .front  { transform: translateZ(calc(var(--cube-side) / 2)); }
+        .back   { transform: rotateY(180deg) translateZ(calc(var(--cube-side) / 2)); }
+        .right  { transform: rotateY(90deg) translateZ(calc(var(--cube-side) / 2)); }
+        .left   { transform: rotateY(-90deg) translateZ(calc(var(--cube-side) / 2)); }
+        .top    { transform: rotateX(90deg) translateZ(calc(var(--cube-side) / 2)); }
+        .bottom { transform: rotateX(-90deg) translateZ(calc(var(--cube-side) / 2)); }
+
+        @keyframes rotate {
+            from { transform: rotateX(0deg) rotateY(0deg); }
+            to { transform: rotateX(360deg) rotateY(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="background">
+        <div class="cube">
+            <div class="front"></div>
+            <div class="back"></div>
+            <div class="right"></div>
+            <div class="left"></div>
+            <div class="top"></div>
+            <div class="bottom"></div>
+        </div>
+    </div>
+    <div class="container">
+        <h1 class="title">Lorem Ipsum</h1>
+        <p class="content">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla.</p>
+        <ul>
+            <li><a href="file:///C:/Users">File</a></li>
+            <li><a href="geo:45.48996,97.41922">Geo</a></li>
+        </ul>
+    </div>
+</body>
+</html>
