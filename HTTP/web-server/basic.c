@@ -31,6 +31,8 @@ struct headers{
 
 int main(){
 
+    const int PORT = 31415;                 // numero della porta
+
     // definizione di variabili locali
     int s, s_double;                        // socket
     char * command_line;                    // prima riga della request i.e.  GET /index.html HTTP/1.1
@@ -60,7 +62,7 @@ int main(){
     */
    
     server_addr.sin_family      = AF_INET;
-    server_addr.sin_port        = htons(31415);
+    server_addr.sin_port        = htons(PORT);
     server_addr.sin_addr.s_addr = 0;
 
     /*
