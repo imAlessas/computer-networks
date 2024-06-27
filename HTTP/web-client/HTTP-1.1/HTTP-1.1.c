@@ -84,7 +84,7 @@ int main(){
     j = 0;
 
     // leggo un carattere alla volta dell'header
-    for(i = 0; read(s, hbuf + i, 1); i++ ){
+    for( i = 0; read(s, hbuf + i, 1); i++ ){
 
         // fine campo header
         if( hbuf[i - 1] == '\r' && hbuf[i] == '\n'){
@@ -119,7 +119,7 @@ int main(){
         Quando la connessione dopo un po' di tempo di inattività scade, la read() ritorna 0, il ciclo termina e il body viene printato. È quindi necessario modificare il ciclo for per gestire questa situazione.
 
         La soluzione non è del tutto banale. Nel caso in cui la richiesta abbia un errore, per esempio richiediamo una risorsa inesistente (come ppp.html), nell'header sarà presente un campo chiamato "Content-Length" che indica esattamente la lunghezza del file che verrà streamato. In questo caso l'idea è quella di trovare questo campo mentre stampiamo a video l'header, per chiarezza si sceglierà di creare un altro for loop ad-hoc per trovare il suddetto valore.
-        Cosa succede però se la richiesta è ben formata e va a buon fine? Si sserva che poco prima dell'inizio documento HTML è presente un numero esadecimale (i.e. 493c). Si osserva inoltre che l'ultimo campo dell'Header ha valore "Transfer-Encoding —————>  chunked" che, come vedremo, suggerisce il tipo della codifica di trasferimento. Il valore esadecimale indica ESATTAMENTE il numero di byte contenuti all'interno dello stream che andremo a leggere.
+        Cosa succede però se la richiesta è ben formata e va a buon fine? Si sserva che poco prima dell'inizio documento HTML è presente un numero esadecimale (i.e. 493c). Si osserva inoltre che l'ultimo campo dell'Header ha valore "Transfer-Encoding —————>  chunked" che, come vedremo,  isuggeriscel tipo della codifica di trasferimento. Il valore esadecimale indica ESATTAMENTE il numero di byte contenuti all'interno dello stream che andremo a leggere.
     */
 
     int content_length;
@@ -133,22 +133,70 @@ int main(){
         if( !strcmp( h[i].n , "Content-Length" ))
             content_length = atoi(h[i].v);
     }
-    printf("content-length: %d\n", content_length);
 
     // preparo a leggere l'Entity-Body
     char response[2000000];           // buffer per la consumare il Body
     
+    if ( !content_length ){
 
-    /*
-        Al fine di supportare questo protocollo, si modifica il limite della read() a content_length che è esattamente la lunghezza in byte - ovvero il numero di caratteri - del file streammato.
-    */
-    for ( i = 0; t = read(s, response + i, content_length - i); i += t ) {}
+        // leggo la risposta di errore
+        for ( i = 0; t = read(s, response + i, content_length - i); i += t ) {}
 
-    response[i] = 0;    // inserisco il terminatore alla fine del body
+        // null-termino
+        response[i] = 0;
+        printf("%s\n\n", response);
+
+        // termino il programma
+        return 0;
+
+   
+    }
+        
+
+    long chunk_size;
+    char chunk_buffer[8];
+
+    // will contain all the read bytes
+    j = 0;
+
+    do {    // esco quando chunk_size == 0
+
+        // consumo chunk_buffer e nel mentre lo converto in decimale
+        for(chunk_size = 0, i = 0;
+            read(s, chunk_buffer + i, 1)  &&  !(chunk_buffer[i - 1] == '\r' && chunk_buffer[i] == '\n');
+            i++) {
+            
+            // converto in minuscole
+            if( chunk_buffer[i] >= 'A' && chunk_buffer[i] <= 'F')
+                chunk_buffer[i] = chunk_buffer[i] - ('a' - 'A');
+
+            
+            // valorizzo le lettere
+            if( chunk_buffer[i] >= 'a' && chunk_buffer[i] <= 'f')
+                chunk_size = chunk_size * 16 + chunk_buffer[i] - 'a' + 10;
+            
+            // valorizzo i numeri
+            if( chunk_buffer[i] >= '0' && chunk_buffer[i] <= '9')
+                chunk_size = chunk_size * 16 + chunk_buffer[i] - '0';
+        
+        }
+
+        // leggo i chunk e li metto dentro alla response
+        for( i = 0;                                         // inizializzo l'iteratore
+            t = read(s, response + j, chunk_size - i);      // partendo dal byte 'response + j', appendo 'chunk_size - i' bytes ulteriori
+            i += t, j += t);                                // incremento l'iteratore e il numero di bytes letti
+
+        // consumo ultimi due caratteri (CRLF) e sono pronto a ricevere gli altri chunk
+        read(s, chunk_buffer, 2);
+
+
+    } while( chunk_size );
+
+
+    // null-termino la response
+    response[j] = 0;
 
     printf("%s\n\n", response);
-
-
 
 
     return 0;
