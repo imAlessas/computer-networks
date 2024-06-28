@@ -33,6 +33,7 @@ int main() {
     char * command_line;                // contains the first line of the request
     int i;                              // generic index
     int n;                              // generic variable, changes its meaning along the script
+    int trans;
     char * method, * uri, * version;    // information to retrive from the command_line
     FILE * file;                        // will contain the requested URI
 
@@ -85,6 +86,8 @@ int main() {
         // close if is still open
         close(s_double);
 
+        // set transaction to 0
+        trans = 0;
 
         // dequeue requests from backlog
         s_double = accept(s, (struct sockaddr *) &client_address, &size_sockaddr);
@@ -101,8 +104,6 @@ int main() {
             perror("accept() failed");
             return 1;
         }
-
-        printf("Dealing with a request\n");
 
 
         /* process the request */
@@ -141,12 +142,9 @@ int main() {
 
             }
 
-        } // for
+        }
 
 
-        for( i = 0; i < n; i++)
-            printf("%s ----> %s\n", headers[i].key, headers[i].value);
-        printf("\n");
 
         // from command_line retrive method, uri, version
         method = command_line;
@@ -161,8 +159,10 @@ int main() {
         for(; command_line[i] != 0; i++);
         command_line[i++] = 0;
 
-        printf("Method:  %s\nURI:     %s\nVersion: %s\n\n\n", method, uri, version);
+        for(int i = 0; i < n; i++)
+            printf("%s ----> %s\n", headers[i].key, headers[i].value);
 
+        printf("%s     Socket %d     Trans %d\n\n\n", uri, s_double, trans++);
 
 
         // opens URI
@@ -172,45 +172,39 @@ int main() {
         if( file == NULL) {
             
             // create response
-            sprintf(buffer, "HTTP/1.1 404 NOT FOUND\r\nConnection: close\r\n\r\n"
-                            "<html><head><title>404 Not Found</title><style>"
-                            "body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }"
-                            "h1 { font-size: 50px; color: #ff0000; }"
-                            "p { font-size: 20px; color: #333; }"
-                            "</style></head><body>"
-                            "<h1>404 Not Found</h1>"
-                            "<p>Sorry, the file <strong>%s</strong> was not found on this server.</p>"
-                            "</body></html>", uri);
+            sprintf(buffer, "HTTP/1.1 404 NOT FOUND\r\n\r\n"
+                            "<html><h1>Could not find %s.<h1></html>", uri);
             
             // send response
             write(s_double, buffer, strlen(buffer));
 
-            // close socket
-            close(s_double);
+        } else {
             
-            // close the thread
-            exit(1);
+            // create response header
+            sprintf(buffer, "HTTP/1.1 200 OK\r\n\r\n");
 
-        }
-        
-
-        // if file exists
-        sprintf(buffer, "HTTP/1.1 200 OK\r\n\r\n");
-        write(s_double, buffer, strlen(buffer));
-
-        while( !feof(file) ){
-            fread(buffer, 1, 1024, file);
+            // send response header
             write(s_double, buffer, strlen(buffer));
+
+            // read and send the file
+            while( !feof(file) ){
+                
+                // read 1024 * 1 bytes from the file and put inside the buffer
+                fread(buffer, 1, 1024, file);
+                
+                // send the respons (partial)
+                write(s_double, buffer, strlen(buffer));
+
+            }
+
         }
-        
+
+        // close socket and kill process
         close(s_double);
         exit(1);
 
     }
 
-
-
-    printf("\n\n\nOK!\n\n\n");
 
     return 0;
 
