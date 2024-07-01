@@ -1,10 +1,10 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/socket.h>             // socket
-#include <errno.h>                  // errno
-#include <arpa/inet.h>              // htons
-#include <unistd.h>                 // read, write, fork
-#include <string.h>                 // strlen
+#include <stdio.h>  // printf, perror, fopen, fread, feof, fclose
+#include <string.h> // strlen
+#include <stdlib.h> // exit
+#include <stdlib.h> // errno
+#include <unistd.h> // read, write, fork
+#include <sys/socket.h> // socket, bind, listen, accept
+#include <arpa/inet.h>  // htons, sockaddr, sockaddr_in
 
 
 
