@@ -50,14 +50,14 @@ int main(char * argc, char * argv[], char * env[]){
     // lettura dell'entity-body della request dal socket 0, ovvero lo standard input
     for(i = 0; i < length && (t = read(0, buffer + i, length - i)); i += t)
 
-    printf("Body received\n");
+    printf("Body received\n\n");
 
     // scrittura dell'entity-body della response nel socket 1, ovvero lo standard output
     for(i = 0; i < length && (t = write(1, buffer + i, length - i)); i += t)
 
     // stampa variabili di environment
     for(i = 0; env[i]; i++)
-        printf("%s —————> %s", env[i], env[i] + strlen(env[i]) + 1);
+        printf("%s —————> %s\n", env[i], env[i] + strlen(env[i]) + 1);
 
 
     return 0;

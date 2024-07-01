@@ -172,8 +172,8 @@ int main() {
         if( file == NULL) {
             
             // create response
-            sprintf(buffer, "HTTP/1.1 404 NOT FOUND\r\n\r\n"
-                            "<html><h1>Could not find %s.<h1></html>", uri);
+            sprintf(buffer, "HTTP/1.1 404 NOT FOUND\r\nConnection: close\r\n\r\n"
+                            "<html><h1>Could not find %s.</h1></html>", uri);
             
             // send response
             write(s_double, buffer, strlen(buffer));
