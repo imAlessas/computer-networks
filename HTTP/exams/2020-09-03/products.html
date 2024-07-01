@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Products</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            margin: 0;
+            padding: 0;
+            color: #fff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 20px 0;
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .product {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        .product h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .product p {
+            font-size: 1.2em;
+            line-height: 1.6;
+        }
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        footer p {
+            font-size: 1.2em;
+        }
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            text-decoration: none;
+            color: #fff;
+            font-size: 1.2em;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <header>
+            <h1>Our Products</h1>
+            <div class="links">
+                <a href="index.html">Home</a>
+                <a href="contact.html">Contact</a>
+            </div>
+        </header>
+
+        <section class="products">
+            <div class="product">
+                <h2>Product 1</h2>
+                <p>Description of Product 1.</p>
+            </div>
+            <div class="product">
+                <h2>Product 2</h2>
+                <p>Description of Product 2.</p>
+            </div>
+            <div class="product">
+                <h2>Product 3</h2>
+                <p>Description of Product 3.</p>
+            </div>
+            <div class="product">
+                <h2>Product 4</h2>
+                <p>Description of Product 4.</p>
+            </div>
+            <div class="product">
+                <h2>Product 5</h2>
+                <p>Description of Product 5.</p>
+            </div>
+            <div class="product">
+                <h2>Product 6</h2>
+                <p>Description of Product 6.</p>
+            </div>
+        </section>
+
+        <footer>
+            <p>&copy; 2024 Your Company. All rights reserved.</p>
+            <a href="index.html" class="back-link">Back to Home</a>
+        </footer>
+
+    </div>
+
+</body>
+</html>
