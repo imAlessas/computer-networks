@@ -15,10 +15,12 @@ struct char_map{
 
 
 
+
 int main() {
     
     const int PORT = 9278;
     const char CRLF[] = "\r\n";
+    const int BUFFER_SIZE = 10 * 1024;
 
     
     // local variable definition
@@ -26,7 +28,7 @@ int main() {
     int t;                                  // temporary variable
     struct sockaddr_in server_address;
     struct sockaddr_in client_address;
-    char buffer[10 * 1024];                 // generic buffer
+    char buffer[BUFFER_SIZE];                 // generic buffer
     struct char_map headers[100];           // will contain the parsed headers
     char * command_line;                    // first line of the request
     int i;                                  // generic index
@@ -55,7 +57,7 @@ int main() {
 
     // terminate if error
     if(t == -1){
-        perror("bind() fallita");
+        perror("bind() failed");
         return 1;
     }
 
@@ -65,14 +67,13 @@ int main() {
 
     // terminate if error
     if(t == -1){
-        perror("listen() fallita");
+        perror("listen() failed");
         return 1;
     }
 
 
     // start server
     int address_length = sizeof(struct sockaddr);
-
 
     while(1) {
         
@@ -83,7 +84,7 @@ int main() {
 
         // terminate if error
         if(s_double == -1) {
-            perror("socket() failed");
+            perror("accept() failed");
             return 1;
         }
 
@@ -98,7 +99,7 @@ int main() {
                 // null-terminate
                 buffer[i - 1] = 0;
 
-                if( headers[lines].key == NULL )
+                if( !headers[lines].key[0] )
                     break;
 
                 // set-up new line
@@ -110,11 +111,11 @@ int main() {
             // endo fo the name, start of the value
             if( buffer[i] == ':' && headers[lines].value == NULL) {
                 
-                // null-terminate
-                buffer[i] = 0;
-
                 // set header value
                 headers[lines].value = &buffer[i + 1];
+
+                // null-terminate
+                buffer[i] = 0;
 
             }
 
@@ -144,14 +145,25 @@ int main() {
         // display the requested file
         FILE * file = fopen(uri + 1, "rw");
 
+        for(int i = 0; i < BUFFER_SIZE; i++)
+            buffer[i] = 0;
+
         if(file == NULL) {
             
             // create response
-            sprintf(buffer, "HTTP/1.1 404 NOT FOUND\r\n\r\n"
-                            "<html><h1>Could not find %s.<h1></html>", uri);
+            sprintf(buffer, "HTTP/1.1 404 NOT FOUND\r\nConnection: close\r\n\r\n"
+                            "<html><body>"
+                            "<h1>404 Not Found</h1>"
+                            "<p>Sorry, the file <strong>%s</strong> was not found on this server.</p>"
+                            "</body></html>", uri);
+            
+            printf("%s\n", buffer);
             
             // write response
-            write(s_double, buffer, strlen(buffer));
+            if( write(s_double, buffer, strlen(buffer)) == -1 ) {
+                perror("write() failed");
+                return 1;
+            }
 
         } else {
             
@@ -159,7 +171,10 @@ int main() {
             sprintf(buffer, "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
             
             // write response
-            write(s_double, buffer, strlen(buffer));
+            if( write(s_double, buffer, strlen(buffer)) == -1 ) {
+                perror("write() failed");
+                return 1;
+            }
 
             char chunk_size[20];
 
@@ -172,13 +187,22 @@ int main() {
                 sprintf(chunk_size, "%x\r\n", strlen(buffer));
 
                 // write the first line
-                write(s_double, chunk_size, strlen(chunk_size));
+                if( write(s_double, chunk_size, strlen(chunk_size)) == -1 ) {
+                    perror("write() failed");
+                    return 1;
+                }
 
                 // write the chunk
-                write(s_double, buffer, strlen(buffer));
+                if( write(s_double, buffer, strlen(buffer)) == -1 ) {
+                    perror("write() failed");
+                    return 1;
+                }
 
                 // end of the chunk
-                write(s_double, CRLF, strlen(CRLF));
+                if( write(s_double, CRLF, strlen(CRLF)) == -1 ) {
+                    perror("write() failed");
+                    return 1;
+                }
 
             }
 
@@ -186,7 +210,10 @@ int main() {
             sprintf(buffer, "0\r\n");
 
             // write last chunk
-            write(s_double, buffer, strlen(buffer));
+            if( write(s_double, buffer, strlen(buffer)) == -1 ) {
+                    perror("write() failed");
+                    return 1;
+            }
 
 
         }
