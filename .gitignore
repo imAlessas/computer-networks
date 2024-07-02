@@ -17,6 +17,7 @@ __pycache__
 
 # text files
 *.txt
+!blacklist.txt
 
 # C compiled files
 *.exe
