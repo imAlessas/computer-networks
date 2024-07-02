@@ -28,7 +28,6 @@ int main() {
     char response_buffer[BUFFER_SIZE];  // response buffer, will be used to temporarily store the response
     char * method, * uri, * version;    // parsed values from command_line
     int i;                              // generic index
-    char * auth_value, * base64_cred;
 
     // define address
     struct sockaddr_in server_address;
@@ -111,7 +110,7 @@ int main() {
             if( header_buffer[i] == ':' && (headers[lines].value == NULL)) {
                 
                 // start value
-                headers[lines].value = &header_buffer[i + 1];
+                headers[lines].value = &header_buffer[i + 1] + 1;
 
                 // null-terminate
                 header_buffer[i] = 0;
@@ -179,7 +178,7 @@ int main() {
                     return 1;
                 }
 
-                for(i = 0, i < BUFFER_SIZE; i++) response_buffer[i] = 0;
+                for(i = 0; i < BUFFER_SIZE; i++) response_buffer[i] = 0;
 
             }
 

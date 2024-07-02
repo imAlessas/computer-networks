@@ -1,6 +1,6 @@
 # Esame di Reti di Calcolatori
 
-> 3 Settembre 2020
+> _3 Settembre 2020_
 
 Si modifichi il programma `web-server.c` sviluppato durante il corso in modo tale che vieti, tramite opportuno codice di errore (cfr. `RFC2616`, cap. 10.4 ), ad un user agent (browser) convenzionale di accedere alla risorsa `/contact.html` se prima il medesimo user agent non abbia precedentemente avuto accesso alla risorsa `/index.html`.
 
