@@ -19,7 +19,7 @@ int main() {
     // constants
     const short PORT = 5686;
     const int BUFFER_SIZE = 1024;
-    const char COOKIE_NAME[] = "contact=";
+    const char COOKIE_NAME[] = "contact";
 
     // local variables
     int s, s_double;                    // sockets
@@ -123,28 +123,29 @@ int main() {
             }
         }
 
+        // print headers
+        for(i = 0; i < lines; i++)
+            printf("%s —————> %s\n", headers[i].key, headers[i].value);
+        
+        
+        
         // retrieve cookie value
         for(i = 0; i < lines; i++)
             if( !strcmp(headers[i].key, "Cookie") )
                 client_cookie_string = headers[i].value;
         
-        // extract name and value of the Cookie
-        client_cookie_name = client_cookie_string;
-        for(i = 0; client_cookie_string[i] != '='; i++);
-        client_cookie_string[i++] = 0;
-        
-        char * ccv = client_cookie_string + i;
-        for(; client_cookie_string[i] != 0; i++);
-        client_cookie_string[i++] = 0;
+        // if is not null
+        if( client_cookie_string ) {
 
-        if(client_cookie_name)
-            client_cookie_value = atoi(ccv);
-        
-
-
-        // print headers
-        for(i = 0; i < lines; i++)
-            printf("%s —————> %s\n", headers[i].key, headers[i].value);
+            // extract name and value of the Cookie
+            client_cookie_name = client_cookie_string;
+            for(i = 0; client_cookie_string[i] != '='; i++);
+            client_cookie_string[i++] = 0;
+            
+            if(client_cookie_name)
+                client_cookie_value = atoi(client_cookie_string + i);
+        }
+            
         
 
         // parse method, uri, version
@@ -179,11 +180,9 @@ int main() {
             }
 
         } else {
-            
+            // if the client goes in the contact.html AND (does not have cookie OR the cookie name is incorrect OR the cookie value is incorrect)
             if( !strcmp(uri, "/contact.html") && ( !client_cookie_name || strcmp(client_cookie_name, COOKIE_NAME) || client_cookie_value != 1)) {
                 
-                printf("client_cookie_string = %s\n", client_cookie_string);
-
                 snprintf(response_buffer, BUFFER_SIZE, "HTTP/1.1 403 Forbidden\r\nConnection:close\r\n\r\n<html><h1>You need to access <a href=\"/index.html\">/index.html</a> before entering this page.</h1></html>");
 
                 write(s_double, response_buffer, strlen(response_buffer));
@@ -197,11 +196,12 @@ int main() {
             }
 
 
+            // if client is in index.html AND (does not have cookie OR the cookie name is incorrect OR the cookie value is incorrect)
             if( !strcmp(uri, "/index.html") && (!client_cookie_name || strcmp(client_cookie_name, COOKIE_NAME) || client_cookie_value != 1)) {
 
                 sprintf(response_buffer, "HTTP/1.1 200 OK\r\nSet-Cookie:%s=%d\r\n\r\n", COOKIE_NAME, 1);
 
-            } else if (!strcmp(uri, "/contact.html") && !strcmp(client_cookie_name, COOKIE_NAME) && !client_cookie_value == 1) {
+            } else if (!strcmp(uri, "/contact.html") && !strcmp(client_cookie_name, COOKIE_NAME) && client_cookie_value == 1) {
                 
                 sprintf(response_buffer, "HTTP/1.1 200 OK\r\nSet-Cookie:%s=%d\r\n\r\n", COOKIE_NAME, 0);
             
