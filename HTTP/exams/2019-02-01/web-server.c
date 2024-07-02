@@ -5,6 +5,10 @@
 #include <sys/socket.h> // socket, bind, listen, accept
 #include <arpa/inet.h>  // htons, sockaddr, sockaddr_in
 
+// constants
+#define PORT 33209
+#define BUFFER_SIZE 1024
+#define BLACKLIST "blacklist.txt"
 
 
 struct char_map {
@@ -16,22 +20,17 @@ struct char_map {
 
 int main() {
 
-    // constants
-    const short PORT = 33205;
-    const int BUFFER_SIZE = 1024;
-    // const char BLACKLIST[] = "blacklist.txt";
-
     // local variables
     int s, s_double;                    // sockets
     char * command_line;                // first line of request
     struct char_map headers[100];       // headers
     char header_buffer[BUFFER_SIZE];    // header buffer, here there will be all the info from the header
     char response_buffer[BUFFER_SIZE];  // response buffer, will be used to temporarily store the response
-    // char blacklist_buffer[BUFFER_SIZE]; // blacklist buffer, will be used to temporarily store the blacklist
+    char blacklist_buffer[BUFFER_SIZE]; // blacklist buffer, will be used to temporarily store the blacklist
     char * method, * uri, * version;    // parsed values from command_line
     int i;                              // generic index
     char * host, * referer; // parsed values
-    // char link[200];
+    char link[200];
 
 
     // define address
@@ -127,13 +126,16 @@ int main() {
         for(i = 0; i < lines; i++)
             printf("%s —————> %s\n", headers[i].key, headers[i].value);
         
-        // retrieve host and referer
-        for (i = 0; i < lines; i++) {
-            if (strcmp(headers[i].key, "Host") == 0)
+        // retrieve host
+        for (i = 0; i < lines; i++)
+            if (!strcmp(headers[i].key, "Host"))
                 host = headers[i].value;
-            else if (strcmp(headers[i].key, "Referer") == 0)
+        
+        // retrieve referer
+        for (i = 0; i < lines; i++)
+            if (!strcmp(headers[i].key, "Referer"))
                 referer = headers[i].value;
-        }
+
 
         // parse method, uri, version
         method = command_line;
@@ -168,29 +170,46 @@ int main() {
 
         } else {
             
-            // // create link
-            // sprintf(link, "http://%s%s", host, uri);
+            // create link
+            sprintf(link, "%s%s", host, uri);
 
-            // // open blacklist
-            // FILE * blacklist = fopen(BLACKLIST, "r");
-            // char * blacklist_item;
+            // open blacklist
+            FILE * blacklist = fopen(BLACKLIST, "r");
+            char * blacklist_item;
 
-            // // retrive link from blacklist.txt if exists
-            // while (fgets(blacklist_buffer, BUFFER_SIZE, blacklist)) {
+            // retrive link from blacklist.txt if exists
+            while (fgets(blacklist_buffer, BUFFER_SIZE, blacklist)) {
 
-            //     // null terminate
-            //     blacklist_buffer[strlen(blacklist_buffer) - 1] = 0;
+                // null terminate
+                blacklist_buffer[strlen(blacklist_buffer) - 1] = 0;
 
-            //     printf("%s\n", blacklist_buffer);
+                // if uri is in the blacklist
+                if ( !strncmp(blacklist_buffer, link, strlen(link)) ) {
 
-            //     // if uri is in the blacklist
-            //     if (strncmp(blacklist_buffer, link, strlen(link)) == 0) {
-            //         printf("Link is in the blacklist.\n");
-            //     }
 
-            //     for(i = 0; i < BUFFER_SIZE; i++) blacklist_buffer[i] = 0;
 
-            // }
+                    snprintf(response_buffer, BUFFER_SIZE, "HTTP/1.1 403 Forbidden\r\nConnection:close\r\n\r\n"
+                                                            "<html>"
+                                                            "<head><meta http-equiv=\"refresh\" content=\"2;URL=%s\"></head>"
+                                                            "<h1>You are not allowed to access in this page because it is blacklisted</h1></html>",
+                                                            referer ? referer : "index.html");
+
+                    if( -1 == write(s_double, response_buffer, strlen(response_buffer)) ){
+                        perror("write() failed");
+                        return 1;
+                    }
+
+                    for(i = 0; i < BUFFER_SIZE; i++) response_buffer[i] = 0;
+
+                    // close socket and kill process
+                    close(s_double);
+                    exit(1);
+
+                }
+
+                for(i = 0; i < BUFFER_SIZE; i++) blacklist_buffer[i] = 0;
+
+            }
 
             // send accept header
             sprintf(response_buffer, "HTTP/1.1 200 OK\r\n\r\n");
