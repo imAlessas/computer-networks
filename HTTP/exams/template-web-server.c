@@ -6,6 +6,11 @@
 #include <arpa/inet.h>  // htons, sockaddr, sockaddr_in
 
 
+// constants
+#define PORT 31415
+#define BUFFER_SIZE 1024
+
+
 
 struct char_map {
     char * key;
@@ -15,10 +20,6 @@ struct char_map {
 
 
 int main() {
-
-    // constants
-    const short PORT = 5684;
-    const int BUFFER_SIZE = 1024;
 
     // local variables
     int s, s_double;                    // sockets
