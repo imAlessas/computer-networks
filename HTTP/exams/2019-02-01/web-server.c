@@ -6,7 +6,7 @@
 #include <arpa/inet.h>  // htons, sockaddr, sockaddr_in
 
 // constants
-#define PORT 33209
+#define PORT 33208
 #define BUFFER_SIZE 1024
 #define BLACKLIST "blacklist.txt"
 
@@ -21,16 +21,17 @@ struct char_map {
 int main() {
 
     // local variables
-    int s, s_double;                    // sockets
-    char * command_line;                // first line of request
-    struct char_map headers[100];       // headers
-    char header_buffer[BUFFER_SIZE];    // header buffer, here there will be all the info from the header
-    char response_buffer[BUFFER_SIZE];  // response buffer, will be used to temporarily store the response
-    char blacklist_buffer[BUFFER_SIZE]; // blacklist buffer, will be used to temporarily store the blacklist
-    char * method, * uri, * version;    // parsed values from command_line
-    int i;                              // generic index
-    char * host, * referer; // parsed values
-    char link[200];
+    int s, s_double;                                    // sockets
+    char * command_line;                                // first line of request
+    struct char_map headers[100] = {{NULL, NULL}};      // headers
+    char header_buffer[BUFFER_SIZE] = {0};              // header buffer, here there will be all the info from the header
+    char response_buffer[BUFFER_SIZE] = {0};            // response buffer, will be used to temporarily store the response
+    char blacklist_buffer[BUFFER_SIZE] = {0};           // blacklist buffer, will be used to temporarily store the blacklist
+    char * method, * uri, * version;                    // parsed values from command_line
+    int i;                                              // generic index
+    char * host, * referer;                             // parsed values
+    char link[200] = {0};
+    int yes = 1;
 
 
     // define address
@@ -50,6 +51,10 @@ int main() {
         return 1;
     }
 
+    if ( -1 == setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) ) {
+        perror("setsockopt() failed");
+        return 1;
+    }
     
     // define address
     server_address.sin_family      = AF_INET;
@@ -173,6 +178,8 @@ int main() {
             // create link
             sprintf(link, "%s%s", host, uri);
 
+            printf("%s\n", link);
+
             // open blacklist
             FILE * blacklist = fopen(BLACKLIST, "r");
             char * blacklist_item;
@@ -186,13 +193,26 @@ int main() {
                 // if uri is in the blacklist
                 if ( !strncmp(blacklist_buffer, link, strlen(link)) ) {
 
+                    if( referer ) {
+                        printf("NOT NULL: %s\n", referer);
+                        // parse the referer
+                        for(i = 0; referer[i] != '/'; i++);
+                        for(++i; referer[i] != ':'; i++);
+                        for(++i; referer[i] != '/'; i++);
 
+                        snprintf(response_buffer, BUFFER_SIZE, "HTTP/1.1 307 Temporary Redirect\r\nLocation: %s\r\nConnection: close\r\n\r\n", referer + i + 1);
 
-                    snprintf(response_buffer, BUFFER_SIZE, "HTTP/1.1 403 Forbidden\r\nConnection:close\r\n\r\n"
-                                                            "<html>"
-                                                            "<head><meta http-equiv=\"refresh\" content=\"2;URL=%s\"></head>"
-                                                            "<h1>You are not allowed to access in this page because it is blacklisted</h1></html>",
-                                                            referer ? referer : "index.html");
+                    } else {
+                        
+                        printf("NULL: %s\n", referer);
+
+                        snprintf(response_buffer, BUFFER_SIZE, "HTTP/1.1 403 Forbidden\r\nConnection:close\r\n\r\n"
+                                                                "<html>"
+                                                                "<h1>You are not allowed to access in this page because it is blacklisted</h1>"
+                                                                "</html>");
+
+                    }
+
 
                     if( -1 == write(s_double, response_buffer, strlen(response_buffer)) ){
                         perror("write() failed");

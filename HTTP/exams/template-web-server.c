@@ -22,13 +22,13 @@ struct char_map {
 int main() {
 
     // local variables
-    int s, s_double;                    // sockets
-    char * command_line;                // first line of request
-    struct char_map headers[100];       // headers
-    char header_buffer[BUFFER_SIZE];    // header buffer, here there will be all the info from the header
-    char response_buffer[BUFFER_SIZE];  // response buffer, will be used to temporarily store the response
-    char * method, * uri, * version;    // parsed values from command_line
-    int i;                              // generic index
+    int s, s_double;                                    // sockets
+    char * command_line;                                // first line of request
+    struct char_map headers[100] =  {{NULL, NULL}};     // headers
+    char header_buffer[BUFFER_SIZE] = {0};              // header buffer, here there will be all the info from the header
+    char response_buffer[BUFFER_SIZE] = {0};            // response buffer, will be used to temporarily store the response
+    char * method, * uri, * version;                    // parsed values from command_line
+    int i, yes = 1;                                              // generic index
 
     // define address
     struct sockaddr_in server_address;
