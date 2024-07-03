@@ -47,6 +47,11 @@ int main() {
         return 1;
     }
 
+
+    if ( -1 == setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) ) {
+        perror("setsockopt() failed");
+        return 1;
+    }
     
     // define address
     server_address.sin_family      = AF_INET;

@@ -25,11 +25,12 @@ int main() {
     int s, s_double;                    // sockets
     char * command_line;                // first line of request
     struct char_map headers[100];       // headers
-    char header_buffer[BUFFER_SIZE];    // header buffer, here there will be all the info from the header
+    char header_buffer[5 * BUFFER_SIZE];    // header buffer, here there will be all the info from the header
     char response_buffer[BUFFER_SIZE];  // response buffer, will be used to temporarily store the response
     char * method, * uri, * version;    // parsed values from command_line
     int i;                              // generic index
     int content_length;
+    int yes = 1;
 
     // define address
     struct sockaddr_in server_address;
@@ -48,7 +49,14 @@ int main() {
         return 1;
     }
 
-    
+
+    if ( -1 == setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) ) {
+        perror("setsockopt() failed");
+        return 1;
+    }
+
+
+
     // define address
     server_address.sin_family      = AF_INET;
     server_address.sin_port        = htons(PORT);
@@ -112,7 +120,7 @@ int main() {
             if( header_buffer[i] == ':' && (headers[lines].value == NULL)) {
                 
                 // start value
-                headers[lines].value = &header_buffer[i + 1] + 1;
+                headers[lines].value = &header_buffer[i + 1];
 
                 // null-terminate
                 header_buffer[i] = 0;
