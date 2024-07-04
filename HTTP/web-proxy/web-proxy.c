@@ -23,19 +23,19 @@ struct char_map {
 int main() {
 
     // local variables
-    int i, t;                           // generic index, generic variable
-    int s, s_double, s_remote;          // sockets
-    char * command_line;                // first line of request
-    struct char_map headers[100];       // headers
-    char header_buffer[BUFFER_SIZE];    // header buffer, here there will be all the info from the header
-    char request_buffer[BUFFER_SIZE];   // request buffer, will be used to store and send the request
-    char response_buffer[BUFFER_SIZE];  // response buffer, will be used to temporarily store the response
-    char * method, * uri, * version;    // parsed values from command_line
-    char * host, * resoruce, * port;    // parsed values from GET or CONNECT
+    int i, t;                                        // generic index, generic variable
+    int s, s_double, s_remote;                       // sockets
+    char * command_line;                             // first line of request
+    struct char_map headers[100] = {{NULL, NULL}};   // headers
+    char header_buffer[BUFFER_SIZE] = {0};           // header buffer, here there will be all the info from the header
+    char request_buffer[BUFFER_SIZE] = {0};          // request buffer, will be used to store and send the request
+    char response_buffer[BUFFER_SIZE] = {0};         // response buffer, will be used to temporarily store the response
+    char * method, * uri, * version;                 // parsed values from command_line
+    char * scheme, * host, * filename, * port;       // parsed values from GET or CONNECT
 
     // define address
     struct sockaddr_in local_address;
-    struct sockaddr_in client_address;
+    struct sockaddr_in remote_address;
     struct sockaddr_in server_address;
 
 
@@ -57,6 +57,11 @@ int main() {
     local_address.sin_port        = htons(PORT);
     local_address.sin_addr.s_addr = 0;
 
+    if ( -1 == setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) ) {
+        perror("setsockopt() failed");
+        return 1;
+    }
+
     // bind
     if( -1 == bind(s, (struct sockaddr *) &local_address, sizeof(struct sockaddr_in)) ) {
         perror("bind() failed");
@@ -64,10 +69,15 @@ int main() {
     }
 
     // listen
-    if( -1 == listen(s, 5) ) {
+    if( -1 == listen(s, 10) ) {
         perror("listen() failed");
         return 1;
     }
+
+    // initialize remote (client) address
+    remote_address.sin_family       = AF_INET;
+    remote_address.sin_port         = htons(0);
+    remote_address.sin_addr.s_addr  = 0;
 
 
     int sockaddr_size = sizeof(struct sockaddr);
@@ -75,7 +85,7 @@ int main() {
     while(1) {
         
         // accept
-        s_double = accept(s, (struct sockaddr *) &client_address, &sockaddr_size);
+        s_double = accept(s, (struct sockaddr *) &remote_address, &sockaddr_size);
 
 
         // create sub-process
@@ -146,18 +156,26 @@ int main() {
 
 
 
-        if( !strcmp(method, "GET") ) { // GET /index.html HTTP/1.1
+        if( !strcmp(method, "GET") ) { // GET http://www.example.com/dir/file
+
+            scheme = uri;
 
             // parse the URI addredd, by getting the host and the resource
             for(i = 0; uri[i] != ':' && uri[i]; i++)
 
-            // check correctness
-            if ( uri[++i] != '/' && uri[++i] != '/') {
-                printf("Parsing error.\n");
-
-                close(s_double);
+            if (uri[i] == ':')      // null terminate
+                uri[i++] = 0;
+            else {                  // check correctness
+                printf("Parsing error (expected ':').\n");
                 exit(1);
             }
+
+            if (uri[i] != '/' || uri[i + 1] != '/') {
+                printf("Parsing error (expected '//').\n");
+                exit(1);
+            }
+
+            i = i + 2;
 
             // save host
             host = uri + (++i);
@@ -165,17 +183,21 @@ int main() {
             // find position where host finishes
             for(; uri[i] && uri[i] != '/'; i++);
 
-            // null terminate
-            uri[i++] = 0;
+
+            if (uri[i] == '/')      // null terminate
+                uri[i++] = 0;
+            else {                  // check correctness
+                printf("Parsing error (expected '/').\n");
+                exit(1);
+            }
 
             // initialize filename
-            resoruce = uri + i;
+            filename = uri + i;
 
 
             // resolve host name
             printf("GET host=%s\n", host);
             struct hostent * remote = gethostbyname(host);
-
 
             // create socket to connect to the remote
             s_remote = socket( AF_INET, SOCK_STREAM, 0);
@@ -199,7 +221,7 @@ int main() {
             }
 
             // create request
-            snprintf(request_buffer, BUFFER_SIZE, "GET /%s HTTP/1.1\r\nHost:%s\r\nConnection:close\r\n\r\n", resoruce, host);
+            snprintf(request_buffer, BUFFER_SIZE, "GET /%s HTTP/1.1\r\nHost:%s\r\nConnection:close\r\n\r\n", filename, host);
 
             // write request
             write(s_remote, request_buffer, strlen(request_buffer));
@@ -208,15 +230,11 @@ int main() {
             for(i = 0; i < BUFFER_SIZE; i++) request_buffer[i] = 0;
 
             // receive response
-            for(i = 0; t = read(s_remote, response_buffer + i, BUFFER_SIZE - i); i+=t) {
-                
-                // write response
-                write(s_remote, response_buffer, strlen(response_buffer));
+            while( t = read(s_remote, response_buffer, BUFFER_SIZE))
+                write(s_double, response_buffer, t);
 
-                // reset buffer
-                for(i = 0; i < BUFFER_SIZE; i++) response_buffer[i] = 0;
-            }
-
+            // close socket
+            close(s_remote);
 
         } else if( !strcmp(method, "CONNECT") ) { // CONNECT www.example.com:443 HTTP/1.1
             
@@ -235,6 +253,12 @@ int main() {
             // resolve host name
             printf("CONNECT host=%s\n", host);
             struct hostent * remote = gethostbyname(host);
+
+            // terminate if error
+            if (remote == NULL) {
+                printf("gethostbyname() failed.\n");
+                return 1;
+            }
 
             // create socket to connect to the remote
             s_remote = socket( AF_INET, SOCK_STREAM, 0);
@@ -257,7 +281,7 @@ int main() {
             }
 
             // create request
-            snprintf(request_buffer, BUFFER_SIZE, "HTTP/1.1 200 Estrablished\r\n\r\n");
+            snprintf(request_buffer, BUFFER_SIZE, "HTTP/1.1 200 Established\r\n\r\n");
 
             // write request
             write(s, request_buffer, strlen(request_buffer));
@@ -265,14 +289,14 @@ int main() {
             // reset buffer
             for(i = 0; i < BUFFER_SIZE; i++) request_buffer[i] = 0;
 
-
+            // s_remote is the socket to the server
             if( fork() ) { // parent
 
-                // receive response
-                for(i = 0; t = read(s, response_buffer + i, BUFFER_SIZE - i); i+=t) {
+                // read response from server and forwards it to the client
+                for(i = 0; t = read(s_remote, response_buffer + i, BUFFER_SIZE - i); i+=t) {
                     
                     // write response
-                    write(s_remote, response_buffer, strlen(response_buffer));
+                    write(s_double, response_buffer, strlen(response_buffer));
 
                     // reset buffer
                     for(i = 0; i < BUFFER_SIZE; i++) response_buffer[i] = 0;
@@ -280,11 +304,11 @@ int main() {
 
             } else { // child
 
-                // receive response
-                for(i = 0; t = read(s_remote, response_buffer + i, BUFFER_SIZE - i); i+=t) {
+                // receive response from client and forwards it to the server
+                for(i = 0; t = read(s_double, response_buffer + i, BUFFER_SIZE - i); i+=t) {
                     
                     // write response
-                    write(s, response_buffer, strlen(response_buffer));
+                    write(s_remote, response_buffer, strlen(response_buffer));
 
                     // reset buffer
                     for(i = 0; i < BUFFER_SIZE; i++) response_buffer[i] = 0;
@@ -295,6 +319,12 @@ int main() {
 
             }
 
+        } else {
+            // create response
+            sprintf(response_buffer, "HTTP/1.1 501 Not Implemented\r\n\r\n");
+
+            // send
+            write(s_double, response_buffer, strlen(response_buffer));
         }
 
         // close socket and kill process
