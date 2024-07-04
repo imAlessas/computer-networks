@@ -1,0 +1,37 @@
+%C++
+\definecolor{lightgrey}{RGB}{250, 250, 250}
+\definecolor{bordeaux}{RGB}{186, 0, 0}
+\definecolor{turquoise}{RGB}{22, 161, 147}
+\definecolor{grey}{RGB}{175, 175, 175}
+\definecolor{green}{RGB}{0, 120, 0}
+\definecolor{blue}{RGB}{0,0,255}
+\definecolor{lightyellow}{RGB}{255,255,245}
+
+% \lstloadlanguages{c} 
+\lstdefinestyle{cpp}{language=c++,
+  % 
+  backgroundcolor=\color{lightyellow},
+  % 
+  basicstyle=\ttfamily, 
+  % 
+  keywordstyle=\bfseries\color{blue},
+  % 
+  commentstyle=\itshape\small\color{bordeaux},
+  % 
+  stringstyle=\color{green},
+  % o
+  numberstyle=\tiny\color{grey},
+  % 
+  belowskip=3mm,
+  breakatwhitespace=true,
+  breaklines=true,
+  classoffset=0,
+  columns=flexible,
+  framexleftmargin=0.25em,
+  frameshape={}{y}{}{}, %To remove to vertical lines on left, set `frameshape={}{}{}{}`
+  numbers=left, %If you want line numbers, set `numbers=left`
+  showstringspaces=false,
+  tabsize=3,
+  xleftmargin = 1.5em,
+  morekeywords = {nullptr, cout, cin}
+}
