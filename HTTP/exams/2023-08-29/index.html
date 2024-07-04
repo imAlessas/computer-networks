@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stuff</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .art-container {
+            position: relative;
+            width: 80vw;
+            height: 80vh;
+            background: #fff;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .shape {
+            position: absolute;
+            background: linear-gradient(135deg, #ff9a9e 25%, #fad0c4 50%, #ffd1ff 75%, #a1c4fd);
+        }
+
+        .shape.shape1 {
+            width: 50%;
+            height: 50%;
+            top: 0;
+            left: 0;
+            clip-path: polygon(0 0, 100% 0, 0 100%);
+        }
+
+        .shape.shape2 {
+            width: 60%;
+            height: 60%;
+            bottom: 0;
+            right: 0;
+            clip-path: polygon(0 100%, 100% 100%, 100% 0);
+            background: linear-gradient(135deg, #a1fdbe 25%, #fbc2f3 50%, #d1fdff 75%, #ffee9a);
+        }
+
+        .shape.shape3 {
+            width: 30%;
+            height: 30%;
+            top: 10%;
+            left: 50%;
+            clip-path: circle(50%);
+            background: linear-gradient(135deg, #fad0c4, #ffd1ff);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="art-container">
+        <div class="shape shape1"></div>
+        <div class="shape shape2"></div>
+        <div class="shape shape3"></div>
+    </div>
+</body>
+</html>
