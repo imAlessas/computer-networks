@@ -139,7 +139,7 @@ int main(){
     char CRLF[] = "\r\n";
     char response[RESPONSE_SIZE] = {0};
     char cache_date_string[200] = {0};
-
+    char flag = 0;
 
 
 
@@ -248,77 +248,36 @@ int main(){
         
         printf("File '%s' does NOT exist.\n", file_path);
 
-        // send request
-        char * request = "GET / HTTP/1.0\r\n\r\n";
-        write(s, request, strlen(request));
+        flag = 1;
 
-        // read and ignore header
-        for( i = 0; read(s, hbuf + i, 1); i++ ){
+    } else {
 
-            // end of line
-            if( hbuf[i - 1] == '\r' && hbuf[i] == '\n'){
-                
-                hbuf[i - 1] = 0;
-            
-                if( !( h[j].n[0] ) )
-                    break;
-                
-                j++;
-                h[j].n = &hbuf[i + 1];
-            }
+        printf("File '%s' EXISTS.\n", file_path);
 
-            // end of name
-            if( (hbuf[i] == ':') && (h[j].v == NULL) ){
+        // gets date
+        fgets(cache_date_string, 200, cache_file);
+        printf("File Date: %s\n", cache_date_string);
 
-                h[j].v = &hbuf[i + 1] + 1;
-                hbuf[i] = 0;
-            }
+        // converts date
+        struct tm cache_date = get_tm_date(cache_date_string);
+
+        // get current time
+        time_t now = time(NULL);
+        struct tm *current_time = localtime(&now);
+
+        printf("NOW:   %d\n", mktime(current_time));
+        printf("CACHE: %d\n", mktime(&cache_date));
+
+        if (difftime(mktime(current_time), mktime(&cache_date)) > 1){
+            printf("EXPIRED.\n");
+            flag = 1;
         }
 
-        // if file does not exist, create it
-
-        // opens the file to append
-        cache_file = fopen(file_path, "w");
-
-        // write in the file
-        char date_str[100];
-        strftime(date_str, sizeof(date_str), "%a, %d %b %Y %H:%M:%S %Z", &real_expires_date);
-        fprintf(cache_file, "%s\n", date_str);
-        
-        // add CRLF
-        fwrite(&CRLF, strlen(CRLF), 1, cache_file);
-
-        // write response file
-        for ( i = 0; t = read(s, response + i, RESPONSE_SIZE - 1 - i); i += t );
-        fprintf(cache_file, "%s", response);
-        printf("\n\n\n\n\n%s\n\n", response);
-
-        fclose(cache_file);
-
-        return 0;
-
-    } // cache file does not exist
+    } 
 
 
-    /* if cache file exist check date*/
-    printf("File '%s' EXISTS.\n", file_path);
-
-    fgets(cache_date_string, 200, cache_file);
-    printf("File Date: %s\n", cache_date_string);
-
-    struct tm cache_date = get_tm_date(cache_date_string);
-
-    // get current time
-    time_t now = time(NULL);
-    struct tm *current_time = localtime(&now);
-
-    printf("NOW:   %d\n", mktime(current_time));
-    printf("CACHE: %d\n", mktime(&cache_date));
-
-    // check if it is expired
-    if( difftime(mktime(current_time), mktime(&cache_date)) > 1) { // it is expired
-
-        printf("EXPIRED.\n", file_path);
+    /* enters if there is no cache or if the cache is expired */
+    if (flag) {
 
         // send request
         char * request = "GET / HTTP/1.0\r\n\r\n";
@@ -347,10 +306,11 @@ int main(){
             }
         }
 
-        // opens the file to append
+
+        // opens the: create or erase everything
         cache_file = fopen(file_path, "w");
 
-        // write in the file
+        // write date in the file
         char date_str[100];
         strftime(date_str, sizeof(date_str), "%a, %d %b %Y %H:%M:%S %Z", &real_expires_date);
         fprintf(cache_file, "%s\n", date_str);
@@ -358,7 +318,7 @@ int main(){
         // add CRLF
         fwrite(&CRLF, strlen(CRLF), 1, cache_file);
 
-        // write response file
+        // write response body in the file
         for ( i = 0; t = read(s, response + i, RESPONSE_SIZE - 1 - i); i += t );
         fprintf(cache_file, "%s", response);
         printf("\n\n\n\n\n%s\n\n", response);
@@ -367,15 +327,21 @@ int main(){
 
         return 0;
 
-    }
+    } // new request needed
+    
 
-    printf("NOT EXPIRED\n\n\n\n");
+    printf("NOT EXPIRED.\n\n\n\n");
 
 
     while ( !feof(cache_file) ) {
+        
+        // reads 1KB
         fread(response, 1024, 1, cache_file);
         printf("%s\n", response);
+        
+        // resets
         for( i=0; i < 1024; i++) response[i] = 0;
+    
     }
 
 
