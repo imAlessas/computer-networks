@@ -1,0 +1,346 @@
+\section{Client}
+
+\begin{lstlisting}
+#include <stdio.h>
+#include <sys/socket.h>             // socket
+#include <errno.h>                  // errno
+#include <arpa/inet.h>              // htons
+#include <unistd.h>                 // write
+#include <string.h>                 // strlen, strcmp
+#include <stdlib.h>                 // atoi
+
+
+#define RESPONSE_SIZE 100 * 1024
+
+
+char hbuf[10000];
+
+struct headers{
+    char * n; 
+    char * v; 
+} h[100];     
+
+
+
+int main(){
+
+    // local varibles
+    struct sockaddr_in server_addr;     // server address
+    int s;                              // socket
+    int t;                              // temporary
+    unsigned char * p;                  // ip address piointer
+    int i, j;
+    char * statusline;
+
+
+    // create socket
+    s = socket( AF_INET, SOCK_STREAM, 0 );
+    // printf("Socket: %d\n", s);
+
+    if( s == -1){
+        printf("ERRNO = %d (%d)\n", errno, EAFNOSUPPORT);
+        perror("Socket fallita\n");
+        return 1;
+    }
+
+
+    /* Setup for request */
+
+    // set server addr    
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(80);
+    
+    // IPv4 server
+    p = (unsigned char *) &server_addr.sin_addr.s_addr;
+    p[0] = 142;     p[1] = 250;     p[2] = 187;      p[3] = 196;
+
+
+    // connect server
+    if(-1 == connect(s, (struct sockaddr *) &server_addr, sizeof(struct sockaddr_in))){ 
+        perror("Connessione fallita\n");
+        return 1;
+    }
+
+
+    // send request
+    char * request = "GET / HTTP/1.1\r\n\r\n";
+    write(s, request, strlen(request));
+
+
+
+    statusline = h[0].n = hbuf;
+    j = 0;
+
+    // read headers
+    for( i = 0; read(s, hbuf + i, 1); i++ ){
+
+        // end of line
+        if( hbuf[i - 1] == '\r' && hbuf[i] == '\n'){
+            
+            hbuf[i - 1] = 0;
+            
+            if( !( h[j].n[0] ) )
+                break;
+            
+            h[++j].n = &hbuf[i + 1];
+        }
+
+        // end of name
+        if( (hbuf[i] == ':') && (h[j].v == NULL) ){
+
+            h[j].v = &hbuf[i + 1];
+            hbuf[i] = 0;
+        }
+    }
+
+    // print headers
+    for(i = 0; i < j; i++)
+        printf("%s ----> %s\n", h[i].n, h[i].v);
+    printf("\n\n");
+
+    char response[RESPONSE_SIZE];
+
+    for ( i = 0; t = read(s, response + i, RESPONSE_SIZE - 1 - i); i += t ) {}
+
+    // null-terminate response
+    response[i] = 0;
+
+    printf("%s\n\n", response);
+
+
+    return 0;
+
+} // main
+    
+\end{lstlisting}
+
+
+\newpage\subsection{Chuncked}
+
+\begin{lstlisting}
+int content_length;
+for(i = 0; i < j; i++)
+    if( !strcmp( h[i].n , "Content-Length" ))
+        content_length = atoi(h[i].v);
+
+char response[2000000];          
+if ( !content_length ){
+
+    // read and print response
+    for ( i = 0; t = read(s, response + i, content_length - i); i += t ) {}
+
+    response[i] = 0;
+    printf("%s\n\n", response);
+
+    return 0; // end
+}
+    
+
+// prepare reading chuncks
+long chunk_size;
+char chunk_buffer[8];
+
+// will contain all the read bytes
+j = 0;
+
+do {    // exit when chunk_size == 0
+
+    // chunck_buffer and hex2dex concersion
+    for(chunk_size = 0, i = 0;
+        read(s, chunk_buffer + i, 1)  &&  !(chunk_buffer[i - 1] == '\r' && chunk_buffer[i] == '\n');
+        i++) {
+        
+        // to lower case
+        if( chunk_buffer[i] >= 'A' && chunk_buffer[i] <= 'F')
+            chunk_buffer[i] = chunk_buffer[i] - ('a' - 'A');
+
+        
+        // conversion from letter to dec
+        if( chunk_buffer[i] >= 'a' && chunk_buffer[i] <= 'f')
+            chunk_size = chunk_size * 16 + chunk_buffer[i] - 'a' + 10;
+        
+        // convert numbers too
+        if( chunk_buffer[i] >= '0' && chunk_buffer[i] <= '9')
+            chunk_size = chunk_size * 16 + chunk_buffer[i] - '0';
+    
+    }
+
+    // read chunk and display inside response
+    for( i = 0;                                         // iterator
+        t = read(s, response + j, chunk_size - i);      // from response + j, add 'chunck-size - i- bytes
+        i += t, j += t);                                // increment i and totla bytes j
+
+    // read last 2 chars (CRLF)
+    read(s, chunk_buffer, 2);
+
+
+} while( chunk_size );
+
+
+// null-terminate
+response[j] = 0;
+printf("%s\n\n", response);
+\end{lstlisting}
+
+\newpage\subsection{Caching}
+
+\begin{lstlisting}
+// substitute '/' with '_'
+for( i = 0; i < strlen(file_name); i++)
+    if( file_name[i] == '/' )
+        file_name[i] = '_';
+
+// save file cached file path
+snprintf(file_path, 1024, "%s%s", CAHCE_PATH, file_name);
+
+printf("Cache file path: %s\n", file_path);
+
+
+// opens file
+FILE * cache_file = fopen(file_path, "r");
+
+if ( !cache_file ) {
+    
+    printf("File '%s' does NOT exist.\n", file_path);
+
+    flag = 1;
+
+} else {
+
+    printf("File '%s' EXISTS.\n", file_path);
+
+    // gets date
+    fgets(cache_date_string, 200, cache_file);
+    printf("File Date: %s\n", cache_date_string);
+
+    // converts date
+    struct tm cache_date = get_tm_date(cache_date_string);
+
+    // get current time
+    time_t now = time(NULL);
+    struct tm *current_time = localtime(&now);
+
+    printf("NOW:   %d\n", mktime(current_time));
+    printf("CACHE: %d\n", mktime(&cache_date));
+
+    if (difftime(mktime(current_time), mktime(&cache_date)) > 1){
+        printf("EXPIRED.\n");
+        flag = 1;
+    }
+
+} 
+
+
+/* enters if there is no cache or if the cache is expired */
+if (flag) {
+
+    // send request
+    char * request = "GET / HTTP/1.0\r\n\r\n";
+    write(s, request, strlen(request));
+
+    // read and ignore header
+    for( i = 0; read(s, hbuf + i, 1); i++ ){
+
+        // end of line
+        if( hbuf[i - 1] == '\r' && hbuf[i] == '\n'){
+            
+            hbuf[i - 1] = 0;
+        
+            if( !( h[j].n[0] ) )
+                break;
+            
+            j++;
+            h[j].n = &hbuf[i + 1];
+        }
+
+        // end of name
+        if( (hbuf[i] == ':') && (h[j].v == NULL) ){
+
+            h[j].v = &hbuf[i + 1] + 1;
+            hbuf[i] = 0;
+        }
+    }
+
+
+    // opens the: create or erase everything
+    cache_file = fopen(file_path, "w");
+
+    // write date in the file
+    char date_str[100];
+    strftime(date_str, sizeof(date_str), "%a, %d %b %Y %H:%M:%S %Z", &real_expires_date);
+    fprintf(cache_file, "%s\n", date_str);
+    
+    // add CRLF
+    fwrite(&CRLF, strlen(CRLF), 1, cache_file);
+
+    // write response body in the file
+    for ( i = 0; t = read(s, response + i, RESPONSE_SIZE - 1 - i); i += t );
+    fprintf(cache_file, "%s", response);
+    printf("\n\n\n\n\n%s\n\n", response);
+
+    fclose(cache_file);
+
+    return 0;
+
+} // new request needed
+
+
+printf("NOT EXPIRED.\n\n\n\n");
+
+
+while ( !feof(cache_file) ) {
+    
+    // reads 1KB
+    fread(response, 1024, 1, cache_file);
+    printf("%s\n", response);
+    
+    // resets
+    for( i=0; i < 1024; i++) response[i] = 0;
+
+}
+
+\end{lstlisting}
+
+\subsubsection{Date parsing}
+
+\begin{lstlisting}
+    struct tm get_tm_date(char * date_string) {
+
+    char * date_buffer = date_string;
+    struct tm date = {0};
+    int i;
+
+    // skip name of day
+    for(i = 0; date_string[i] != ','; i++);
+    date_string[i] = 0;
+    date.tm_wday = day2sunday(date_buffer);
+    date_string[++i] = 0;
+
+
+    // extract day
+    date_buffer = date_buffer + i + 1;
+    for(++i; date_string[i] != ' '; i++);
+    date_string[i++] = 0;
+
+    date.tm_mday = atoi(date_buffer);
+
+
+    // extract month
+    date_buffer = date_string + i;
+    for(; date_string[i] != ' '; i++);
+    date_string[i++] = 0;
+
+    date.tm_mon = month2int(date_buffer) - 1;
+
+    // [ . . . ]
+
+    // set the remaining fields
+    date.tm_isdst = -1;  // Let mktime determine if DST is in effect
+
+    char date_str[100];
+    strftime(date_str, sizeof(date_str), "%a, %d %b %Y %H:%M:%S %Z", &date);
+    printf("Converted Date: %s\n", date_str);
+
+    return date;
+}
+\end{lstlisting}
